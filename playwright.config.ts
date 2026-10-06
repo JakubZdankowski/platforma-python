@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  // Supabase-backed suites have their own runners (test:db, test:e2e:auth).
+  testIgnore: ['auth/**', 'db/**'],
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,

@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   worker: { format: 'es' },
   test: {
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'supabase/functions/**/*.test.ts'],
     environment: 'node',
   },
 });

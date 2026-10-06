@@ -1,6 +1,6 @@
-# Architektura — Milestone 1–2
+# Architektura — Milestone 1–3
 
-Status: lokalny playground z dwoma przykładowymi ćwiczeniami: konsolowym i Turtle. Szczegóły Turtle: [turtle.md](turtle.md). Punktem odniesienia jest [product-spec.md](product-spec.md), szczególnie sekcje 35, 45 i 46.
+Status: lokalny playground z dwoma przykładowymi ćwiczeniami (konsolowym i Turtle) pod `/` oraz konta nauczycieli i uczniów, klasy i logowanie ucznia bez e-maila (Milestone 3). Szczegóły Turtle: [turtle.md](turtle.md). Baza danych i RLS: [database.md](database.md). Punktem odniesienia jest [product-spec.md](product-spec.md), szczególnie sekcje 35, 45 i 46.
 
 ## Przepływ
 
@@ -22,7 +22,31 @@ flowchart LR
   Assets[Pliki statyczne tej samej aplikacji] --> Pyodide
 ```
 
-Serwer dostarcza wyłącznie pliki statyczne. Kod ucznia nie jest wysyłany do serwera i nie jest na nim wykonywany.
+Serwer aplikacji dostarcza wyłącznie pliki statyczne. Kod ucznia nie jest wysyłany do serwera i nie jest na nim wykonywany.
+
+## Konta i klasy (Milestone 3)
+
+```mermaid
+flowchart LR
+  Router[App / React Router] -->|/| Playground[ExercisePage]
+  Router -->|/join /login /student /teacher| Account[AccountApp, ładowany leniwie]
+  Account --> Auth[AuthProvider + RequireRole]
+  Account --> Services[authService / classService]
+  Services -->|klucz publishable + JWT| PostgREST[Supabase Data API + RLS]
+  Services -->|signInWithPassword| GoTrue[Supabase Auth]
+  Services -->|functions.invoke| Fn[Edge Function teacher-students]
+  Fn -->|klucz serwisowy| GoTrue
+  Fn --> PostgREST
+```
+
+- `/` to dotychczasowy playground bez logowania. Pozostałe ścieżki obsługuje `AccountApp`, osobny moduł ładowany leniwie, więc playground nie pobiera klienta Supabase.
+- `/join` to logowanie ucznia (kod klasy, nazwa użytkownika, hasło), `/login` — nauczyciela (e-mail i hasło), `/student` — klasy ucznia, `/teacher` i `/teacher/classes/:id` — klasy nauczyciela, uczniowie, tworzenie kont i reset haseł.
+- `AuthProvider` śledzi sesję Supabase i wczytuje profil z bazy. Rola z profilu służy tylko nawigacji (`RequireRole`). O dostępie decydują RLS, uprawnienia kolumnowe i Edge Function.
+- `authService` i `classService` (`src/auth`, `src/classes`) to jedyne miejsca z zapytaniami. Zwracają proste kody błędów, a szczegóły techniczne trafiają tylko do konsoli deweloperskiej.
+- `supabase/functions/teacher-students` tworzy konta uczniów i resetuje hasła, bo wymaga to klucza serwisowego. Logika (`handler.ts`) nie zależy od Deno i ma testy jednostkowe. `index.ts` tylko podłącza Supabase.
+- Rejestracja publiczna jest wyłączona (`supabase/config.toml`). Nauczyciel powstaje z seedu albo przez `pnpm teacher:create`, uczeń — przez nauczyciela.
+
+Model danych, adres techniczny ucznia i polityki RLS: [database.md](database.md).
 
 ## Podział odpowiedzialności
 
@@ -87,9 +111,18 @@ Wersja i obsługa workerów: [dokumentacja Pyodide](https://pyodide.org/en/stabl
 
 ## Bezpieczeństwo i prywatność
 
-M1 nie ma sesji, danych innych uczniów, rozwiązań ani sekretów. Nie dodano analityki, zewnętrznych fontów ani innych żądań do usług trzecich podczas zwykłego uruchomienia ćwiczenia.
+Nie dodano analityki, zewnętrznych fontów ani innych żądań do usług trzecich. Przeglądarka łączy się tylko z serwerem aplikacji i z projektem Supabase.
 
-Worker oddziela wykonanie od UI, ale nie jest pełnym sandboxem dla wrogiego kodu. Pyodide ma most do JavaScript, a worker tej samej domeny może mieć uprawnienia sieciowe przeglądarki. Protokół i telemetryka pochodzące z runtime’u są niezaufane. Przed dodaniem uwierzytelnienia trzeba ponownie ocenić izolację runtime’u, dostęp do domeny aplikacji i kontekst sesji. Nigdy nie wolno przekazywać mu sekretów ani traktować klienta jako źródła uprawnień.
+Konta (M3):
+
+- Przeglądarka zna tylko URL projektu i klucz publishable. Klucz serwisowy istnieje wyłącznie w Edge Function (wstrzykuje go Supabase) i w powłoce administratora uruchamiającego `pnpm teacher:create`.
+- Rola pochodzi z `app_metadata`, którego użytkownik nie może zmienić. Profil i rola są w bazie, a frontend ich nie ustala.
+- Uczeń widzi tylko własny profil, swoje klasy i swoje członkostwa. Nauczyciel widzi tylko swoje klasy i swoich uczniów, a do klasy może dodać tylko ucznia, którego sam utworzył. Testy: `tests/db/permissions.test.ts`.
+- Logowanie ucznia nie zdradza, czy kod klasy lub nazwa użytkownika istnieją. Limit prób logowania egzekwuje Supabase Auth: `sign_in_sign_ups` w `config.toml`, podniesiony do 300 na 5 minut na IP, bo cała klasa loguje się zza jednego adresu szkolnego. Na hostowanym Supabase trzeba ustawić to samo w panelu.
+- Hasła przechowuje Supabase Auth (bcrypt). Wygenerowane hasło ucznia pojawia się w UI nauczyciela tylko raz. Ani hasła, ani tokeny nie są logowane.
+- Sesja jest zapisywana w `localStorage` przeglądarki. Na wspólnych komputerach szkolnych uczeń powinien się wylogować; przycisk „Wyloguj się” jest stale widoczny.
+
+Worker oddziela wykonanie od UI, ale nie jest pełnym sandboxem dla wrogiego kodu. Pyodide ma most do JavaScript, a worker tej samej domeny może mieć uprawnienia sieciowe przeglądarki. Protokół i telemetryka pochodzące z runtime’u są niezaufane. Worker nie dostaje sesji ani tokenów. Sesja Supabase leży jednak w `localStorage` tej samej domeny, a kod Pythona ucznia ma przez Pyodide dostęp do API przeglądarki workera (nie do `localStorage`). Uczeń wykonuje własny kod we własnej sesji, więc może zrobić tylko to, na co pozwala mu RLS. Nigdy nie wolno przekazywać runtime’owi sekretów ani traktować klienta jako źródła uprawnień.
 
 Markdown przechodzi przez `react-markdown`, GFM i `rehype-sanitize`; surowy HTML jest pomijany. Wyjście programu nie jest wstawiane jako HTML. Błędy infrastruktury wyświetlane uczniowi nie zawierają stosu JavaScript ani adresów wewnętrznych. Worker loguje diagnostykę awarii w konsoli deweloperskiej bez celowego logowania źródła programu.
 
@@ -109,7 +142,7 @@ UI korzysta ze słowników `i18n/pl.ts` i `i18n/en.ts`; treść lekcji stanowi o
 
 Te mechanizmy nie są jeszcze zaimplementowane:
 
-- **M3–M5 / dane:** Supabase Auth i RLS, dane lekcji oraz trwałe `student_work`. Uprawnienia muszą być sprawdzane w bazie lub na serwerze. Rozwiązania wymagają osobnej chronionej reprezentacji; samo RLS nie ukrywa kolumn w dostępnych wierszach.
+- **M4–M5 / dane:** dane lekcji oraz trwałe `student_work`. Uprawnienia muszą być sprawdzane w bazie lub na serwerze. Rozwiązania wymagają osobnej chronionej reprezentacji; samo RLS nie ukrywa kolumn w dostępnych wierszach.
 - **M6–M7 / realtime:** PostgreSQL pozostaje źródłem zapisanego kodu, a prywatny Broadcast przenosi tylko aktualny widok. Awaria realtime nie może blokować runnera ani edytora. Widok nauczyciela pozostanie tylko do odczytu.
 
-Nie utworzono pustych modułów bazy, routingu ani realtime. Dokumentacja ich faktycznej implementacji powstanie wraz z odpowiednimi milestone’ami.
+Nie utworzono pustych modułów lekcji ani realtime. Dokumentacja ich faktycznej implementacji powstanie wraz z odpowiednimi milestone’ami.

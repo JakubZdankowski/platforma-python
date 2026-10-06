@@ -16,7 +16,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "check": "pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e"
+    "check": "pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types typescript --local --schema public > src/database/database.types.ts",
+    "teacher:create": "node scripts/create-teacher.mjs",
+    "test:db": "vitest run --config vitest.db.config.ts",
+    "test:e2e:auth": "playwright test --config playwright.auth.config.ts",
+    "check:db": "pnpm db:reset && pnpm test:db && pnpm test:e2e:auth"
   },
   "dependencies": {
     "@codemirror/commands": "6.11.1",
@@ -25,10 +33,12 @@
     "@codemirror/state": "6.7.6",
     "@codemirror/view": "6.43.13",
     "@lezer/highlight": "1.2.5",
+    "@supabase/supabase-js": "2.117.2",
     "pyodide": "314.0.7",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-markdown": "10.1.0",
+    "react-router": "8.4.0",
     "rehype-sanitize": "6.0.0",
     "remark-gfm": "4.0.1"
   },
@@ -38,6 +48,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.1",
+    "supabase": "2.119.0",
     "typescript": "7.0.2",
     "vite": "8.3.3",
     "vitest": "5.0.3"
