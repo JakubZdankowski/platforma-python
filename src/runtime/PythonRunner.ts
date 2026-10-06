@@ -3,6 +3,7 @@ import {
   type ExecutionOutcome, type ExecutionResult, type RunnerEvent,
   type RunnerStatus, type WorkerRequest, type WorkerResponse,
 } from './protocol';
+import { MAX_TURTLE_COMMANDS, type TurtleCommand } from '../turtle/turtleTypes';
 
 export interface WorkerPort {
   onmessage: ((event: MessageEvent<WorkerResponse>) => void) | null;
@@ -15,6 +16,8 @@ export interface WorkerPort {
 interface RunOptions {
   inputUnavailableMessage: string;
   timeoutMs?: number;
+  /** Provides the Turtle module and its functions as globals. */
+  turtle?: boolean;
 }
 
 interface PendingRun {
@@ -26,6 +29,8 @@ interface PendingRun {
   stdout: string;
   stderr: string;
   outputTruncated: boolean;
+  turtleCommands: number;
+  turtleTruncated: boolean;
 }
 
 interface RunnerOptions {
@@ -53,7 +58,7 @@ export class PythonRunner {
   run(code: string, options: RunOptions): Promise<ExecutionResult> {
     if (this.pending) return Promise.reject(new Error('A program is already running.'));
     return new Promise((resolve) => {
-      this.pending = { id: ++this.nextId, code, options, resolve, stdout: '', stderr: '', outputTruncated: false };
+      this.pending = { id: ++this.nextId, code, options, resolve, stdout: '', stderr: '', outputTruncated: false, turtleCommands: 0, turtleTruncated: false };
       if (this.worker && this.status === 'ready') {
         this.startExecution();
         return;
@@ -110,7 +115,7 @@ export class PythonRunner {
     this.setStatus('running');
     this.timer = setTimeout(() => this.abort('timeout'), pending.options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     try {
-      this.worker.postMessage({ type: 'run', runId: pending.id, code: pending.code, inputUnavailableMessage: pending.options.inputUnavailableMessage });
+      this.worker.postMessage({ type: 'run', runId: pending.id, code: pending.code, inputUnavailableMessage: pending.options.inputUnavailableMessage, turtle: pending.options.turtle ?? false });
     } catch {
       this.abort('runtime-error');
     }
@@ -131,10 +136,12 @@ export class PythonRunner {
       const remaining = MAX_OUTPUT_CHARS - pending.stdout.length - pending.stderr.length;
       const text = message.text.slice(0, remaining);
       pending[message.stream] += text;
-      this.emit({ type: 'output', stream: message.stream, text });
-      if (text.length < message.text.length) this.markTruncated();
+      this.emit({ type: 'output', stream: message.stream, text, turtleIndex: message.turtleIndex ?? 0 });
+      if (text.length < message.text.length) this.markTruncated(message.turtleIndex);
     } else if (message.type === 'output-truncated') {
-      this.markTruncated();
+      this.markTruncated(message.turtleIndex);
+    } else if (message.type === 'turtle') {
+      this.forwardTurtle(pending, message.commands, message.truncated);
     } else {
       this.finish({
         success: message.success,
@@ -149,10 +156,21 @@ export class PythonRunner {
     }
   }
 
-  private markTruncated(): void {
+  /** The Python module limits itself too; this cap also holds if a program bypasses it. */
+  private forwardTurtle(pending: PendingRun, received: TurtleCommand[], truncated: boolean): void {
+    if (pending.turtleTruncated) return;
+    const commands = received.slice(0, MAX_TURTLE_COMMANDS - pending.turtleCommands);
+    pending.turtleCommands += commands.length;
+    pending.turtleTruncated = truncated || commands.length < received.length;
+    if (commands.length > 0 || pending.turtleTruncated) {
+      this.emit({ type: 'turtle', commands, truncated: pending.turtleTruncated });
+    }
+  }
+
+  private markTruncated(turtleIndex = 0): void {
     if (!this.pending || this.pending.outputTruncated) return;
     this.pending.outputTruncated = true;
-    this.emit({ type: 'output-truncated' });
+    this.emit({ type: 'output-truncated', turtleIndex });
   }
 
   private abort(outcome: Extract<ExecutionOutcome, 'stopped' | 'timeout' | 'runtime-error'>): void {

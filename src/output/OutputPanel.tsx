@@ -9,10 +9,13 @@ interface Props {
   stdout: string;
   stderr: string;
   truncated: boolean;
+  /** The turtle is still drawing; the result is shown once it finishes. */
+  drawing?: boolean;
 }
 
-export function OutputPanel({ messages: t, locale, status, result, stdout, stderr, truncated }: Props) {
-  const busy = status === 'loading' || status === 'running';
+export function OutputPanel({ messages: t, locale, status, result, stdout, stderr, truncated, drawing = false }: Props) {
+  const runnerBusy = status === 'loading' || status === 'running';
+  const busy = runnerBusy || drawing;
   const resultText = result ? {
     success: t.success,
     'python-error': t.pythonError,
@@ -20,7 +23,7 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
     timeout: t.timeout,
     'runtime-error': t.runtimeError,
   }[result.outcome] : '';
-  const statusText = busy ? t[status] : resultText;
+  const statusText = drawing ? t.turtleDrawing : runnerBusy ? t[status] : resultText;
   const hasError = result?.outcome === 'python-error' || result?.outcome === 'runtime-error' || result?.outcome === 'timeout';
 
   return (

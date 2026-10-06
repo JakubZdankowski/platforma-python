@@ -1,6 +1,6 @@
-# Architektura — Milestone 1
+# Architektura — Milestone 1–2
 
-Status: lokalny playground jednego ćwiczenia. Punktem odniesienia jest [product-spec.md](product-spec.md), szczególnie sekcje 35, 45 i 46.
+Status: lokalny playground z dwoma przykładowymi ćwiczeniami: konsolowym i Turtle. Szczegóły Turtle: [turtle.md](turtle.md). Punktem odniesienia jest [product-spec.md](product-spec.md), szczególnie sekcje 35, 45 i 46.
 
 ## Przepływ
 
@@ -16,6 +16,9 @@ flowchart LR
   Pyodide --> Buffer[Ograniczony bufor stdout / stderr]
   Buffer --> Worker
   Hook --> Output[OutputPanel]
+  Worker -->|polecenia Turtle| Runner
+  Hook --> Playback[TurtlePlayback] --> Canvas[TurtleCanvas]
+  Playback --> Output
   Assets[Pliki statyczne tej samej aplikacji] --> Pyodide
 ```
 
@@ -23,26 +26,28 @@ Serwer dostarcza wyłącznie pliki statyczne. Kod ucznia nie jest wysyłany do s
 
 ## Podział odpowiedzialności
 
-- `ExercisePage` przechowuje kod niezależnie od workera. Przekazuje jego kopię do wykonania. Edycja podczas działania programu nie zmienia już uruchomionej kopii.
+- `ExercisePage` przechowuje kod każdego przykładowego ćwiczenia niezależnie od workera. Przełącznik `SampleExercisePicker` (strzałki poprzednie/następne i nazwa bieżącego ćwiczenia) jest tymczasowy; nawigacja po lekcjach należy do Milestone 4. Dla `runtimeType: 'python-turtle'` strona pokazuje panel rysunku nad konsolą i uruchamia program z włączonym Turtle. Przekazuje jego kopię do wykonania. Edycja podczas działania programu nie zmienia już uruchomionej kopii.
 - `CodeEditor` opakowuje CodeMirror bez logiki wykonania. Cięższa część edytora jest ładowana osobnym modułem, aby początkowy pakiet interfejsu pozostał mniejszy.
-- `usePythonRunner` wiąże zdarzenia runnera ze stanem React i zwalnia zasoby po odmontowaniu.
+- `usePythonRunner` wiąże zdarzenia runnera ze stanem React i zwalnia zasoby po odmontowaniu. Wyjście, polecenia Turtle i wynik przechodzą przez `TurtlePlayback`, który synchronizuje konsolę z animacją. W ćwiczeniach konsolowych wyjście pojawia się od razu.
 - `PythonRunner` obsługuje inicjalizację, jeden aktywny program, timery, identyfikatory wykonań, Stop, restart i awarie. Nie importuje Pyodide do głównego wątku.
 - `python.worker.ts` ładuje Pyodide, uruchamia wrapper i wysyła strukturalne wyniki.
 - `execute.py` uruchamia kod pod nazwą `main.py`, w nowym słowniku globalnym, zachowuje traceback ucznia oraz wyklucza z niego własną ramkę `exec`.
 - `OutputBuffer` ogranicza ilość danych oraz częstość komunikatów. `OutputPanel` renderuje tekst jako zwykły tekst React.
+- `turtle.py`, `turtleBridge.ts`, `TurtleEngine`, `renderTurtle` i `TurtleCanvas` tworzą warstwę Turtle: Python emituje polecenia, worker je waliduje, silnik liczy stan, a canvas tylko rysuje. Opis w [turtle.md](turtle.md).
 
 ## Protokół i cykl życia
 
 Polecenia do workera:
 
 - `initialize(indexURL)`;
-- `run(runId, code, inputUnavailableMessage)`.
+- `run(runId, code, inputUnavailableMessage, turtle)`.
 
 Odpowiedzi:
 
 - `ready`;
-- `output(runId, stream, text)`;
-- `output-truncated(runId)`;
+- `output(runId, stream, text, turtleIndex?)` — `turtleIndex` to liczba poleceń Turtle wydanych przed tekstem;
+- `output-truncated(runId, turtleIndex?)`;
+- `turtle(runId, commands, truncated)` — zwalidowana paczka poleceń rysowania;
 - `finished(runId, success, durationMs, errorType?, errorMessage?, traceback?)`;
 - `fatal` dla problemów infrastrukturalnych.
 
@@ -62,12 +67,13 @@ Identyfikator wykonania oraz porównanie instancji workera zapobiegają przyjęc
 - Worker dekoduje UTF-8 strumieniowo, zachowuje końce linii i częściowe linie. Wrapper opróżnia strumienie po wykonaniu.
 - Wiadomości wyjścia są łączone w paczki z odstępem co najmniej około 40 ms podczas wypisywania oraz opróżniane na końcu wykonania. To sprawdzenie odbywa się w obsłudze zapisu, a nie w timerze workera blokowanym przez Python.
 - Traceback jest ograniczony do 12 000 znaków, a komunikat wyjątku do 4 000.
+- Polecenia Turtle: do 50 000 na uruchomienie, w paczkach co 500 poleceń lub około 40 ms. Przed policzeniem każdego polecenia worker opróżnia bufor wyjścia, więc przy przeplataniu `print()` i ruchów wiadomości wyjścia są częstsze.
 
 Twarde zakończenie może zgubić końcówkę jeszcze niewysłanego stdout. Zapisany w React kod pozostaje bez zmian. Limit czasu nie stanowi twardego limitu pamięci procesu przeglądarki.
 
 ## Powtarzalność wykonań
 
-Każde uruchomienie dostaje nowy słownik zmiennych oraz kopię słownika builtins. Zwykłe zmienne i funkcje ucznia nie przechodzą do kolejnego wykonania. Interpreter, cache importów i jego wirtualny system plików są współdzielone między zwykłymi uruchomieniami w tej samej karcie. Ten kompromis skraca oczekiwanie na kolejne uruchomienie. Pełne odtworzenie workera usuwa również ten stan.
+Każde uruchomienie dostaje nowy słownik zmiennych oraz kopię słownika builtins. Moduł `turtle` jest tworzony od nowa przy każdym uruchomieniu ćwiczenia Turtle i usuwany z `sys.modules` w pozostałych. Zwykłe zmienne i funkcje ucznia nie przechodzą do kolejnego wykonania. Interpreter, cache importów i jego wirtualny system plików są współdzielone między zwykłymi uruchomieniami w tej samej karcie. Ten kompromis skraca oczekiwanie na kolejne uruchomienie. Pełne odtworzenie workera usuwa również ten stan.
 
 `input()` jest zastąpione funkcją zgłaszającą `NotImplementedError` z przetłumaczoną wskazówką. Dodatkowo standardowe wejście interpretera zwraca EOF, co zapobiega domyślnemu promptowi. Terminalowe wejście odroczono poza M1; nie używamy blokującego okna przeglądarki ani automatycznego przepisywania kodu ucznia.
 
@@ -93,15 +99,16 @@ Interfejs używa ciemnej palety granatów i szarości, z jasnym tekstem oraz dop
 
 Na ekranie 1366×768 instrukcja znajduje się po lewej, edytor pośrodku, a konsola po prawej. Panele wykorzystują dostępną wysokość ekranu; długie instrukcje, kod i wyjście przewijają się wewnątrz paneli. Zwijanie instrukcji pozostawia wąski pasek, a zwolnioną szerokość przejmuje edytor. Przycisk działa klawiaturą i udostępnia `aria-expanded` oraz `aria-controls`; zwinięcie nie odmontowuje edytora ani nie resetuje kodu.
 
+Między edytorem a prawą kolumną jest uchwyt `PanelResizer` (`role="separator"`) do zmiany szerokości. Szerokość prawej kolumny trafia do zmiennej CSS `--output-width`, a edytor zajmuje resztę miejsca (`1fr`). Limity: kolumna ma co najmniej 260 px, edytor co najmniej 320 px, a CSS ogranicza kolumnę do 60% siatki, także po zmniejszeniu okna. Rozmiar canvasu żółwia zależy od jednostek kontenera (`cqh`): rysunek rośnie z szerokością kolumny, a pod nim zostaje miejsce na konsolę. Szerokość jest pamiętana do odświeżenia karty i nie zmienia się przy przełączaniu ćwiczeń.
+
 Przy szerokości do 1100 px instrukcja zajmuje górny rząd nad edytorem i konsolą. Do 720 px wszystkie panele układają się pionowo. Edytor ma font 16 px, widoczny fokus, nazwę dostępną i instrukcję wyjścia klawiaturą. Statusy mają tekst, a nie tylko kolor. Komunikat zakończenia używa `role="status"`; całe stdout nie jest agresywnie odczytywane przy każdej zmianie.
 
 UI korzysta ze słowników `i18n/pl.ts` i `i18n/en.ts`; treść lekcji stanowi oddzielne dane. Informacja o przechowywaniu kodu wyłącznie do zamknięcia lub odświeżenia karty jest widoczna pod ćwiczeniem.
 
 ## Kolejne milestone’y — granice modułów
 
-Te mechanizmy nie są zaimplementowane w M1:
+Te mechanizmy nie są jeszcze zaimplementowane:
 
-- **M2 / Turtle:** nowe komunikaty rysowania między workerem a osobnym rendererem. Edytor i konsola zachowują obecne role.
 - **M3–M5 / dane:** Supabase Auth i RLS, dane lekcji oraz trwałe `student_work`. Uprawnienia muszą być sprawdzane w bazie lub na serwerze. Rozwiązania wymagają osobnej chronionej reprezentacji; samo RLS nie ukrywa kolumn w dostępnych wierszach.
 - **M6–M7 / realtime:** PostgreSQL pozostaje źródłem zapisanego kodu, a prywatny Broadcast przenosi tylko aktualny widok. Awaria realtime nie może blokować runnera ani edytora. Widok nauczyciela pozostanie tylko do odczytu.
 

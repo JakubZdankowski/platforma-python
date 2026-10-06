@@ -1,27 +1,60 @@
-import { lazy, Suspense, useCallback, useState } from 'react';
-import { sampleExercise } from '../exercises/sampleExercise';
+import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties } from 'react';
+import { sampleExercises } from '../exercises/sampleExercise';
 import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
 import { OutputPanel } from '../output/OutputPanel';
 import { usePythonRunner } from '../runtime/usePythonRunner';
+import { TurtlePanel } from '../turtle/TurtlePanel';
+import { PanelResizer } from './PanelResizer';
+import { SampleExercisePicker } from './SampleExercisePicker';
 import type { Messages, Locale } from '../i18n/en';
 
 const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })));
 
 export function ExercisePage({ messages: t, locale }: { messages: Messages; locale: Locale }) {
-  const [code, setCode] = useState(sampleExercise.starterCode);
+  const [exerciseIndex, setExerciseIndex] = useState(0);
+  const exercise = sampleExercises[exerciseIndex] ?? sampleExercises[0]!;
+  const turtleEnabled = exercise.runtimeType === 'python-turtle';
+  // Each demo exercise keeps its own code for as long as the tab is open.
+  const [codes, setCodes] = useState(() => sampleExercises.map((item) => item.starterCode));
+  const code = codes[exerciseIndex] ?? exercise.starterCode;
+  const setCode = useCallback((value: string) => {
+    setCodes((previous) => previous.map((item, index) => (index === exerciseIndex ? value : item)));
+  }, [exerciseIndex]);
   const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
+  // Width of the output column chosen with the resizer; null means the default responsive width.
+  const [outputWidth, setOutputWidth] = useState<number | null>(null);
+  const editorRef = useRef<HTMLElement>(null);
+  const outputRef = useRef<HTMLDivElement>(null);
   const runner = usePythonRunner();
-  const run = useCallback(() => { void runner.run(code, t.inputUnavailable); }, [runner.run, code, t.inputUnavailable]);
-  const runtimeLabel = runner.status === 'error' ? t.runtimeError : t[runner.status];
+  const run = useCallback(() => { void runner.run(code, t.inputUnavailable, turtleEnabled); }, [runner.run, code, t.inputUnavailable, turtleEnabled]);
+  const selectExercise = useCallback((index: number) => {
+    if (index < 0 || index >= sampleExercises.length || index === exerciseIndex) return;
+    setExerciseIndex(index);
+    runner.clear();
+  }, [exerciseIndex, runner.clear]);
+  const output = <OutputPanel messages={t} locale={locale} status={runner.status} result={runner.result} stdout={runner.output.stdout} stderr={runner.output.stderr} truncated={runner.truncated} drawing={runner.drawing} />;
+  const runtimeLabel = runner.drawing ? t.turtleDrawing : runner.status === 'error' ? t.pythonError : t[runner.status];
 
   return (
     <main className="page">
       <header className="exercise-header">
-        <p className="eyebrow">{t.lessonLabel}</p>
-        <h1>{sampleExercise.title}</h1>
-        <p>{t.lessonDescription}</p>
+        <div>
+          <p className="eyebrow">{t.lessonLabel}</p>
+          <h1>{exercise.title}</h1>
+          <p className="exercise-description">{t.lessonDescription}</p>
+        </div>
+        <SampleExercisePicker
+          exercises={sampleExercises}
+          selectedIndex={exerciseIndex}
+          disabled={runner.isBusy}
+          labels={{ navigation: t.sampleExercises, previous: t.previousExercise, next: t.nextExercise }}
+          onSelect={selectExercise}
+        />
       </header>
-      <div className={`exercise-layout${instructionsCollapsed ? ' instructions-collapsed' : ''}`}>
+      <div
+        className={`exercise-layout${instructionsCollapsed ? ' instructions-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
+        style={outputWidth === null ? undefined : { '--output-width': `${outputWidth}px` } as CSSProperties}
+      >
         <aside className="instructions-panel" aria-labelledby="instructions-title">
           <div className="panel-heading instructions-heading">
             <h2 id="instructions-title">{t.instructions}</h2>
@@ -40,21 +73,21 @@ export function ExercisePage({ messages: t, locale }: { messages: Messages; loca
             </button>
           </div>
           <div id="instructions-content" className="instructions-content" hidden={instructionsCollapsed}>
-            <span className="exercise-number">{t.exerciseNumber}</span>
-            <MarkdownInstructions markdown={sampleExercise.instructionsMarkdown} />
+            <span className="exercise-number">{t.exerciseLabel} {String(exerciseIndex + 1).padStart(2, '0')}</span>
+            <MarkdownInstructions markdown={exercise.instructionsMarkdown} />
             <div className="tip">
               <h3>{t.tipTitle}</h3>
-              <p>{t.tip}</p>
+              <p>{turtleEnabled ? t.turtleTip : t.tip}</p>
             </div>
           </div>
         </aside>
-        <section className="editor-panel" aria-labelledby="editor-title">
+        <section ref={editorRef} className="editor-panel" aria-labelledby="editor-title">
           <div className="panel-heading">
             <h2 id="editor-title">{t.editorTitle}</h2>
             <span className="language-badge">Python</span>
           </div>
           <Suspense fallback={<div className="code-editor editor-loading" role="status">{t.loadingEditor}</div>}>
-            <CodeEditor value={code} onChange={setCode} onRun={run} label={t.editorLabel} helpId="editor-help" />
+            <CodeEditor key={exercise.id} value={code} onChange={setCode} onRun={run} label={t.editorLabel} helpId="editor-help" />
           </Suspense>
           <p id="editor-help" className="sr-only">{t.editorHelp}</p>
           <div className="editor-toolbar">
@@ -67,10 +100,23 @@ export function ExercisePage({ messages: t, locale }: { messages: Messages; loca
                 ? <button type="button" className="button button-stop" onClick={runner.stop}><span className="stop-symbol" aria-hidden="true" />{t.stop}</button>
                 : <span className="shortcut">{t.shortcut}</span>}
             </div>
-            <span className="runtime-status"><span className={`status-dot ${runner.isBusy ? 'is-busy' : ''}`} aria-hidden="true" />{runner.status === 'error' ? t.pythonError : runtimeLabel}</span>
+            <span className="runtime-status"><span className={`status-dot ${runner.isBusy ? 'is-busy' : ''}`} aria-hidden="true" />{runtimeLabel}</span>
           </div>
         </section>
-        <OutputPanel messages={t} locale={locale} status={runner.status} result={runner.result} stdout={runner.output.stdout} stderr={runner.output.stderr} truncated={runner.truncated} />
+        <div ref={outputRef} className="output-column">
+          <PanelResizer label={t.resizePanels} editorRef={editorRef} outputRef={outputRef} onResize={setOutputWidth} />
+          {turtleEnabled && (
+            <TurtlePanel
+              messages={t}
+              drawing={runner.turtle}
+              speed={runner.turtleSpeed}
+              onSpeedChange={runner.setTurtleSpeed}
+              canSkip={runner.isBusy}
+              onSkip={runner.skipAnimation}
+            />
+          )}
+          {output}
+        </div>
       </div>
       <footer className="page-footer">{t.localNotice}</footer>
     </main>

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PythonRunner, type WorkerPort } from './PythonRunner';
-import { MAX_OUTPUT_CHARS, type WorkerRequest, type WorkerResponse } from './protocol';
+import { MAX_OUTPUT_CHARS, type RunnerEvent, type WorkerRequest, type WorkerResponse } from './protocol';
+import { MAX_TURTLE_COMMANDS } from '../turtle/turtleTypes';
 
 class FakeWorker implements WorkerPort {
   onmessage: WorkerPort['onmessage'] = null;
@@ -158,5 +159,53 @@ describe('PythonRunner', () => {
     runner.dispose();
     expect((await next).outcome).toBe('stopped');
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('requests Turtle only when enabled and forwards drawing commands of the current run', async () => {
+    const events: RunnerEvent[] = [];
+    runner.subscribe((event) => { if (event.type === 'turtle') events.push(event); });
+    const result = runner.run('forward(100)', { ...options, turtle: true });
+    latest().send({ type: 'ready' });
+    expect(latest().postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'run', turtle: true }));
+    latest().send({ type: 'turtle', runId: latest().runId - 1, commands: [{ type: 'penup' }], truncated: false });
+    latest().send({ type: 'turtle', runId: latest().runId, commands: [{ type: 'forward', distance: 100 }], truncated: false });
+    finish(latest());
+    await result;
+    expect(events).toEqual([{ type: 'turtle', commands: [{ type: 'forward', distance: 100 }], truncated: false }]);
+    const consoleRun = runner.run('print(1)', options);
+    expect(latest().postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'run', turtle: false }));
+    finish(latest());
+    await consoleRun;
+  });
+
+  it('passes the Turtle position of console output to listeners', async () => {
+    const events: RunnerEvent[] = [];
+    runner.subscribe((event) => { if (event.type !== 'status') events.push(event); });
+    const result = runner.run('print(1)', { ...options, turtle: true });
+    latest().send({ type: 'ready' });
+    latest().send({ type: 'output', runId: latest().runId, stream: 'stdout', text: 'a', turtleIndex: 3 });
+    latest().send({ type: 'output', runId: latest().runId, stream: 'stdout', text: 'b' });
+    latest().send({ type: 'output-truncated', runId: latest().runId, turtleIndex: 4 });
+    finish(latest());
+    await result;
+    expect(events).toEqual([
+      { type: 'output', stream: 'stdout', text: 'a', turtleIndex: 3 },
+      { type: 'output', stream: 'stdout', text: 'b', turtleIndex: 0 },
+      { type: 'output-truncated', turtleIndex: 4 },
+    ]);
+  });
+
+  it('enforces an aggregate Turtle command limit', async () => {
+    const events: RunnerEvent[] = [];
+    runner.subscribe((event) => { if (event.type === 'turtle') events.push(event); });
+    const result = runner.run('while True: forward(1)', { ...options, turtle: true });
+    latest().send({ type: 'ready' });
+    const batch = (count: number) => ({ type: 'turtle' as const, runId: latest().runId, commands: Array.from({ length: count }, () => ({ type: 'forward' as const, distance: 1 })), truncated: false });
+    latest().send(batch(MAX_TURTLE_COMMANDS - 1));
+    latest().send(batch(3));
+    latest().send(batch(3));
+    finish(latest());
+    await result;
+    expect(events.map((event) => event.type === 'turtle' && [event.commands.length, event.truncated])).toEqual([[MAX_TURTLE_COMMANDS - 1, false], [1, true]]);
   });
 });
