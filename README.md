@@ -2,11 +2,12 @@
 
 Proste środowisko do nauki Pythona w przeglądarce, przeznaczone docelowo do lekcji z dziećmi w wieku około 9–12 lat.
 
-Obecny zakres: **Milestone 1 — Local coding playground**, **Milestone 2 — Turtle** i **Milestone 3 — Authentication and classes** z [specyfikacji](docs/product-spec.md).
+Obecny zakres: M1–M3 oraz **krok A — lekcje i autosave** i **krok B — dashboard i podgląd pracy klasy** z [planu MVP](docs/mvp-plan.md). Pozostała publikacja na GitHub Pages i hostowanym Supabase (C).
 
 - Pod `/` działa playground bez logowania z dwoma przykładowymi ćwiczeniami: „Pierwszy program” (konsola) i „Narysuj kwadrat” (Turtle). Ma instrukcję Markdown, edytor CodeMirror, Uruchom/Zatrzymaj, stdout, stderr, błędy Pythona i rysunek żółwia. Kod wykonuje się wyłącznie w przeglądarce, w Web Workerze.
 - Nauczyciel loguje się e-mailem pod `/login`. Tworzy klasy i zmienia ich nazwy, zakłada konta uczniów z wygenerowanym hasłem, resetuje hasła oraz dodaje uczniów do klas i usuwa z nich.
-- Uczeń loguje się pod `/join` kodem klasy, nazwą użytkownika i hasłem, bez adresu e-mail. Widzi tylko swoje klasy. Lekcje pojawią się w Milestone 4.
+- Ze strony klasy nauczyciel otwiera „Podgląd pracy klasy” (`/teacher/classes/:id/live`): bieżące ćwiczenie każdego ucznia, szacowaną aktywność, ostatni wynik i kod tylko do odczytu. Zmiany docierają przez Supabase Realtime po autosave.
+- Uczeń loguje się pod `/join` kodem klasy, nazwą użytkownika i hasłem, bez adresu e-mail. Widzi swoje klasy i przypisane lekcje. Ćwiczenia pod `/student/exercises/:id` zapisują kod i ostatni wynik uruchomienia na jego koncie.
 - Backend to Supabase: Postgres z RLS, Auth i jedna Edge Function.
 
 ## Uruchomienie lokalne
@@ -58,7 +59,7 @@ Wyłącznie do lokalnego developmentu:
 | Nauczyciel | `/login`: `teacher@example.test` / `teacher-dev-password` |
 | Uczniowie klasy „Python 101” | `/join`: kod `PYTHON25`, użytkownik `ania`, `kuba` lub `ola`, hasło `<użytkownik>-dev-pass` (np. `ania-dev-pass`) |
 
-Lekcja „Turtle — podstawy” z seedu w specyfikacji należy do Milestone 4.
+Seed nie tworzy lekcji. Przykładowe treści można zaimportować z `course-example/` (instrukcja poniżej).
 
 ### Hostowany projekt Supabase
 
@@ -76,13 +77,29 @@ Lekcja „Turtle — podstawy” z seedu w specyfikacji należy do Milestone 4.
 
 6. Do builda produkcyjnego ustaw `VITE_SUPABASE_URL` i `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
+## Lekcje z Markdown
+
+Ustaw `SUPABASE_URL`, `SUPABASE_SECRET_KEY` i `SUPABASE_TEACHER_ID` (UUID nauczyciela z `profiles`, dostępny w Supabase Studio). Klucz serwisowy pozostaje tylko w powłoce. Następnie:
+
+```powershell
+pnpm content:sync course-example
+# albo własny katalog course/ lub ścieżka do prywatnego repozytorium
+pnpm content:sync course
+```
+
+Katalog kursu zawiera podkatalogi lekcji, np. `01-pierwsza-lekcja/`. Każdy ma `lesson.md` z frontmatter `title` oraz pliki `exercise-01.md`, `exercise-02.md` itd. Frontmatter ćwiczenia ma `title` i `runtime: python-console` albo `python-turtle`. Treść poniżej to instrukcja Markdown; blok ogrodzony oznaczony `python starter` dostarcza kod początkowy i jest usuwany z instrukcji. Opcjonalne bloki `python solution` są usuwane i **nigdy nie trafiają do bazy**. Umieszczaj rozwiązania wyłącznie w takich blokach albo osobnych prywatnych plikach, nigdy w instrukcji.
+
+Slug lekcji pochodzi z nazwy katalogu, slug ćwiczenia z nazwy pliku. Kolejność lekcji wynika z nazw katalogów, ćwiczeń z numerów plików. Ponowny import aktualizuje te same rekordy i zachowuje kod uczniów; zmiana slugu tworzy nowy rekord. Import nie usuwa treści, które zniknęły z plików, i nie jest transakcją całego kursu — po błędzie można go ponowić.
+
+Własny `course/` jest ignorowany przez Git. Przy publicznym repozytorium rzeczywiste materiały i rozwiązania trzymaj w ignorowanym katalogu lub prywatnym repozytorium. `course-example/` zawiera tylko publiczne przykłady bez rozwiązań. Po imporcie zaznacz lekcję na stronie klasy nauczyciela. Uczeń zobaczy ją pod `/student`.
+
 ## Konfiguracja i przykładowe dane
 
 Zmienne środowiskowe opisuje `.env.example`: tylko URL projektu i klucz publishable, bezpieczne dla przeglądarki. Klucza secret / service_role nie wolno umieszczać w zmiennych `VITE_*` ani commitować.
 
-Treść przykładowych ćwiczeń playgroundu i kod początkowy znajdują się w `src/exercises/sampleExercise.ts`. Pole `runtimeType` (`python-console` lub `python-turtle`) decyduje, czy ćwiczenie ma panel rysunku. Lekcje i ćwiczenia w bazie to zakres Milestone 4.
+Treść przykładowych ćwiczeń playgroundu i kod początkowy znajdują się w `src/exercises/sampleExercise.ts`. Pole `runtimeType` (`python-console` lub `python-turtle`) decyduje, czy ćwiczenie ma panel rysunku. Lekcje i ćwiczenia w bazie importuje skrypt `content:sync`.
 
-Interfejs domyślnie używa polskiego. Selektor pozwala przełączyć etykiety na angielski bez utraty kodu. Treść ćwiczenia jest niezależna od języka interfejsu i pozostaje po polsku.
+Interfejs i treść ćwiczeń są po polsku. Przełącznik języka został usunięty.
 
 ## Obsługa
 
@@ -94,11 +111,13 @@ Interfejs domyślnie używa polskiego. Selektor pozwala przełączyć etykiety n
 - Tab wcina kod. Escape, a następnie Tab pozwala opuścić edytor klawiaturą.
 - Strzałki „Poprzednie zadanie” / „Następne zadanie” nad panelami przełączają przykładowe ćwiczenia, a przycisk między nimi pokazuje nazwę bieżącego. Każde ćwiczenie zachowuje własny kod. W trakcie wykonania przełączanie jest zablokowane.
 - W ćwiczeniu Turtle funkcje takie jak `forward(100)` i `left(90)` działają bez importu. Żółw rysuje stopniowo w panelu „Rysunek” nad konsolą. Suwak „Tempo” zmienia szybkość, „Pomiń animację” od razu pokazuje gotowy rysunek, a „Zatrzymaj” przerywa program i czyści ekran żółwia. Konsola pokazuje tekst dopiero wtedy, gdy żółw dojdzie do miejsca, w którym go wypisano. Lista poleceń, układ współrzędnych i ograniczenia: [docs/turtle.md](docs/turtle.md).
-- Kod jest przechowywany w pamięci bieżącej karty. Odświeżenie lub zamknięcie karty przywraca starter code. Automatyczny zapis jest zakresem Milestone 5.
+- W playgroundzie kod pozostaje w pamięci karty. W przypisanych ćwiczeniach zapisuje się 1,5 s po zakończeniu pisania, przed uruchomieniem i zmianą ćwiczenia oraz przy ukryciu lub opuszczaniu strony. Wskaźnik pokazuje zapis lub ponawianie po błędzie. Przycisk resetu wymaga potwierdzenia i przywraca kod początkowy.
 
 Konta:
 
 - **Nauczyciel** (`/login`, potem `/teacher`) widzi listę klas z kodami i liczbą uczniów i może utworzyć klasę. Na stronie klasy może:
+  - przypisać lub odpiąć lekcje zaimportowane z Markdown;
+  - otworzyć podgląd pracy klasy, a klikając imię ucznia — jego kod;
   - zmienić jej nazwę;
   - dodać ucznia (imię i nazwa użytkownika podpowiadana z imienia, np. „Łucja” → `lucja`);
   - ustawić uczniowi nowe hasło;
@@ -106,7 +125,8 @@ Konta:
   - dodać ucznia z innej swojej klasy.
 
   Wygenerowane hasło (8 znaków bez łatwych do pomylenia) jest pokazywane raz, razem z kodem klasy i nazwą użytkownika.
-- **Uczeń** (`/join`, potem `/student`) wpisuje kod klasy, nazwę użytkownika i hasło. Wielkość liter w kodzie i nazwie nie ma znaczenia. Błędne dane dają jeden komunikat, który nie zdradza, co było źle. Pasek pod nagłówkiem pokazuje, kto jest zalogowany, i ma przycisk „Wyloguj się”. Na wspólnych komputerach uczeń powinien się wylogować.
+  Podgląd pokazuje „pisze” przez 30 s od edycji, „aktywny” przez 2 min od edycji lub uruchomienia, a potem „bezczynny X min”. Samo otwarcie startera to „nie zaczął”. To oszacowanie z zapisanych danych, bez Presence. Bieżące ćwiczenie wynika z ostatniej edycji, a ostatnie uruchomienie w tabeli z najnowszego wyniku ucznia, również z innego ćwiczenia. Po rozłączeniu pozostaje ostatnio pobrany kod; powrót połączenia pobiera aktualny stan. Podgląd nie pozwala edytować ani uruchamiać kodu ucznia.
+- **Uczeń** (`/join`, potem `/student`) wpisuje kod klasy, nazwę użytkownika i hasło. Wielkość liter w kodzie i nazwie nie ma znaczenia. Błędne dane dają jeden komunikat, który nie zdradza, co było źle. Główny nagłówek pokazuje, kto jest zalogowany, i ma przycisk „Wyloguj się”. Na wspólnych komputerach uczeń powinien się wylogować.
 
 ## Architektura
 
@@ -115,22 +135,23 @@ src/
   app/           aplikacja, routing, leniwie ładowana część z kontami (AccountApp), style
   auth/          sesja i profil (AuthProvider), strażnik ról, logowanie ucznia i nauczyciela
   classes/       zapytania o klasy i członkostwa, wywołania funkcji teacher-students
-  teacher/       lista klas, strona klasy, tworzenie uczniów i reset haseł
+  teacher/       klasy, konta uczniów, dashboard i podgląd kodu przez Realtime
   database/      klient Supabase i typy bazy
+  lessons/       odczyt dostępnych lekcji i ćwiczeń
   exercises/     typ ćwiczenia i lokalny przykład
-  student/       strona ćwiczenia, przełącznik przykładowych ćwiczeń, strona startowa ucznia
+  student/       strona ćwiczenia, przełącznik przykładowych ćwiczeń, strona startowa ucznia, ćwiczenia z bazy i autosave
   editor/        CodeMirror 6, ładowany jako osobny moduł
   markdown/      Markdown + GFM + sanitizacja
   runtime/       PythonRunner, protokół, worker, wrapper Pythona, moduł turtle.py i most Turtle
   turtle/        TurtleEngine (stan), renderer canvas, panel rysunku
   output/        konsola i komunikaty wykonania
-  i18n/          etykiety polskie i angielskie
+  i18n/          etykiety polskie i typy komunikatów
 supabase/
   migrations/    schemat, RLS, wyzwalacze, funkcja logowania ucznia
   functions/     Edge Function teacher-students (konta uczniów)
   seed.sql       dane deweloperskie
   config.toml    lokalny stos Supabase (rejestracja wyłączona, limity logowania)
-scripts/         przygotowanie plików Pyodide, tworzenie konta nauczyciela
+scripts/         przygotowanie Pyodide, tworzenie nauczyciela, import Markdown
 tests/           testy Playwright playgroundu; tests/db i tests/auth — testy z lokalnym Supabase
 docs/            specyfikacja i decyzje architektoniczne
 ```
@@ -187,28 +208,7 @@ pnpm check:db          # db:reset + test:db + test:e2e:auth
 
 `test:e2e:auth` sam pobiera klucze z `supabase status` i uruchamia serwer deweloperski pod `http://127.0.0.1:5174`, więc `.env` nie jest potrzebny. Testy sprzątają po sobie utworzone konta.
 
-Zakres testów:
-
-- 17 testów uprawnień na prawdziwej bazie (`tests/db`). Sprawdzają, że:
-  - kryterium akceptacji M3 jest spełnione: trzech uczniów loguje się osobno i każdy widzi tylko swój profil, klasę i członkostwo;
-  - niezalogowany nie widzi niczego i nie założy sobie konta;
-  - błędny kod, nazwa lub hasło dają ten sam błąd, a funkcja logowania nie zdradza istnienia kont;
-  - uczeń nie utworzy klasy, nie zmieni nazwy, członkostwa ani roli i nie użyje funkcji nauczyciela;
-  - nauczyciel widzi tylko swoje klasy i uczniów, nie doda cudzego ucznia, nie wybierze właściciela ani kodu klasy;
-  - konto utworzone przez nauczyciela działa, a po resecie stare hasło i stare sesje przestają działać;
-  - ta sama nazwa użytkownika może istnieć u dwóch nauczycieli;
-  - konto bez roli (także z rolą w `user_metadata`) nie ma dostępu.
-- 8 testów E2E kont (`tests/auth`): link z playgroundu, logowanie i wylogowanie ucznia, komunikat błędu, trzech uczniów w osobnych przeglądarkach, strażnicy tras, utworzenie ucznia przez nauczyciela i jego logowanie wygenerowanym hasłem, tworzenie i zmiana nazwy klasy, układ na telefonie.
-- 27 testów jednostkowych M3:
-  - Edge Function: autoryzacja, walidacja, normalizacja, cofnięcie utworzenia konta po błędzie, reset tylko dla własnych uczniów, rozkład znaków hasła, format adresu technicznego;
-  - logowanie: normalizacja, mapowanie błędów Supabase, brak hasła w logach;
-  - podpowiadanie nazw użytkownika z polskich imion.
-- 47 testów jednostkowych M1–M2: limity szerokości przy zmianie podziału paneli, cykl życia workera, limity czasu i wyjścia, Stop/restart, awarie, stare komunikaty, równoległe żądania, sanitizacja i Unicode w Markdown, a także stan Turtle (forward/backward, obroty, goto, home, penup/pendown, kolor, grubość, okręgi i łuki, clear, widoczność, determinizm, podgląd częściowego polecenia, długość animacji), animacja w czasie i zmiana tempa, synchronizacja konsoli, Pomiń animację i Zatrzymaj, walidacja i paczkowanie poleceń w moście oraz przekazywanie, `turtleIndex` i limit poleceń w runnerze.
-- 10 testów E2E Turtle: kwadrat z kryterium akceptacji sprawdzany pikselami canvasu, kolory, goto, okrąg i style importu, clear i czyszczenie między uruchomieniami, czytelne błędy argumentów, stopniowe rysowanie z konsolą czekającą na żółwia i statusem „Żółw rysuje…”, Pomiń animację, Zatrzymaj czyszczące ekran, Stop nieskończonej pętli rysującej, brak Turtle w ćwiczeniu konsolowym oraz układ 1366×768, 900×900 i 390×844.
-- 4 testy E2E zmiany szerokości paneli: przeciąganie, limity, klawiatura, przywracanie domyślnego podziału, większy rysunek żółwia, zachowanie szerokości po zmianie ćwiczenia i brak uchwytu w układzie piętrowym.
-- 12 testów E2E Milestone 1: przykładowy program, dokładne stdout/stderr z polskimi znakami, SyntaxError i ZeroDivisionError, świeża przestrzeń nazw, Stop i timeout nieskończonej pętli, zalew konsoli, błąd ładowania i retry, Stop podczas inicjalizacji, komunikat `input()`, skrót klawiaturowy, przełączanie języka oraz układ 1366×768 i 390×844.
-
-Zrzuty widoków trafiają do `test-results/playground-desktop.png`, `playground-collapsed.png`, `playground-tablet.png`, `playground-mobile.png`, `turtle-desktop.png`, `turtle-mobile.png`, `resize-console.png`, `resize-turtle.png`, `student-home.png`, `teacher-class.png` i `join-mobile.png`. Test układu sprawdza również kolejność trzech kolumn, zwijanie instrukcji klawiaturą oraz zachowanie kodu. Przy błędzie Playwright zachowuje dodatkowo ślad wykonania i zrzut ekranu.
+Testy jednostkowe obejmują runtime, Turtle, Markdown, konta, autosave, parser treści i granice aktywności dashboardu. Testy bazy sprawdzają izolację danych, przypisania i prywatność zdarzeń Realtime. E2E obejmują playground, konta, trwały zapis oraz podgląd w dwóch przeglądarkach: aktualizacja w ciągu 3 s, tylko do odczytu, ostatni wynik i odzyskanie zmian po rozłączeniu. Zestawy Playwright uruchamiaj kolejno, ponieważ współdzielą katalog wyników.
 
 ## Build i publikacja
 
@@ -225,7 +225,7 @@ Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy akt
 
 ## Ograniczenia
 
-- Brak lekcji w bazie, trwałego zapisu kodu, realtime i panelu monitorowania klasy (M4–M7). Uczeń po zalogowaniu widzi swoje klasy, a ćwiczenia ma na razie tylko w playgroundzie.
+- Podgląd pokazuje zapisany kod, z opóźnieniem autosave; bez rzeczywistego online/offline, historii wykonań, przejmowania sterowania i odtwarzania konsoli lub rysunku ucznia.
 - Nauczyciel nie zmieni w aplikacji imienia ani nazwy użytkownika ucznia, nie usunie konta ucznia ani klasy i nie zmieni własnego hasła. Te operacje są dostępne w Supabase Studio lub przez administratora.
 - Uczeń, którego nauczyciel ma kilka klas, może zalogować się kodem dowolnej klasy, do której należy.
 - Reset hasła kończy wszystkie sesje ucznia. Wydany już token dostępu działa jednak do wygaśnięcia, najdłużej godzinę (`jwt_expiry`).
@@ -235,6 +235,6 @@ Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy akt
 - Wynik stdout i stderr jest ograniczony łącznie do 50 000 znaków. Przy Stop część jeszcze zbuforowanego wyjścia może nie zdążyć dotrzeć do UI.
 - Nowa przestrzeń nazw usuwa zwykłe zmienne między uruchomieniami, ale nie resetuje wszystkich zaimportowanych modułów i wirtualnego systemu plików. Pełny reset następuje po odtworzeniu workera.
 - Surowy HTML w Markdown jest pomijany; `<details>` nie jest jeszcze obsługiwane.
-- Brak instalowania dodatkowych pakietów, gwarancji pełnego offline i trwałości po przeładowaniu strony.
+- Brak instalowania dodatkowych pakietów i gwarancji pełnego offline. Niezapisany kod pozostaje w pamięci; bez kopii localStorage zamknięcie karty podczas awarii sieci może go utracić. Zapis przy opuszczaniu strony jest best effort; małe żądania używają `keepalive`, a większe niż około 60 KB wymagają pozostawienia strony otwartej do potwierdzenia zapisu.
 
-Milestone 4 nie został rozpoczęty.
+Kroki A i B są zaimplementowane. Publikacja na GitHub Pages pozostaje do realizacji.

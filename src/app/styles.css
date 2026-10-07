@@ -30,8 +30,6 @@ h1, h2, h3, p { margin: 0; }
 .brand { display: flex; align-items: center; gap: 22px; min-width: 0; font-weight: 650; font-size: 17px; letter-spacing: -.3px; line-height: 1.4; }
 .brand-logo { display: block; width: 90px; height: auto; flex-shrink: 0; }
 .brand-name { min-width: 0; }
-.language-control { flex-shrink: 0; }
-.language-control select { background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 6px 28px 6px 11px; font-size: 13px; }
 .page { max-width: 1800px; height: calc(100dvh - 80px); min-height: 620px; margin: 0 auto; padding: 26px 32px 16px; display: flex; flex-direction: column; }
 .exercise-header { margin-bottom: 24px; flex-shrink: 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; }
 .eyebrow { font-size: 11px; letter-spacing: 1.6px; font-weight: 700; color: var(--text-subtle); margin-bottom: 5px; }
@@ -45,14 +43,14 @@ h1 { font-size: 28px; letter-spacing: -.7px; line-height: 1.3; font-weight: 650;
 .exercise-layout.instructions-collapsed { grid-template-columns: 52px minmax(0, 1fr) var(--output-column); }
 .instructions-panel, .editor-panel, .output-panel, .turtle-panel { border: 1px solid var(--border); border-radius: 9px; background: var(--surface); overflow: hidden; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .panel-heading { min-height: 52px; flex-shrink: 0; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); background: var(--surface); }
-.panel-heading h2 { font-size: 14px; font-weight: 600; }
+.panel-heading h2, .instructions-heading h1 { font-size: 14px; font-weight: 600; letter-spacing: normal; }
 .instructions-heading { padding-right: 11px; }
 .instructions-toggle { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 30px; height: 30px; padding: 0; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text-muted); }
 .instructions-toggle:hover { background: #22324a; color: var(--text); border-color: #344962; }
 .instructions-content { padding: 22px 20px; overflow-y: auto; }
-.exercise-number { display: inline-block; padding: 3px 8px; border: 1px solid #32445e; border-radius: 4px; background: #1b2b42; color: #b6c8e1; font-size: 11px; font-weight: 500; margin-bottom: 20px; }
+.exercise-number { display: inline-block; max-width: 100%; overflow-wrap: anywhere; padding: 3px 8px; border: 1px solid #32445e; border-radius: 4px; background: #1b2b42; color: #b6c8e1; font-size: 11px; font-weight: 500; margin-bottom: 20px; }
 .instructions-collapsed .instructions-heading { flex-direction: column; justify-content: flex-start; padding: 11px 0; gap: 22px; border: 0; }
-.instructions-collapsed .instructions-heading h2 { writing-mode: vertical-rl; color: var(--text-muted); letter-spacing: .3px; }
+.instructions-collapsed .instructions-heading h2, .instructions-collapsed .instructions-heading h1 { writing-mode: vertical-rl; color: var(--text-muted); letter-spacing: .3px; }
 .instructions-collapsed .instructions-toggle { order: -1; }
 .instructions-collapsed .instructions-toggle svg { transform: rotate(180deg); }
 .markdown { font-size: 16px; color: #c0cbdc; overflow-wrap: anywhere; }
@@ -107,17 +105,17 @@ h1 { font-size: 28px; letter-spacing: -.7px; line-height: 1.3; font-weight: 650;
 .panel-resizer:focus-visible::before { height: 96px; background: var(--accent); outline: 2px solid var(--accent); outline-offset: 3px; }
 body.is-resizing { cursor: col-resize; user-select: none; }
 .output-column .output-panel { flex: 1; min-height: 120px; }
-.turtle-panel { flex-shrink: 0; }
+.turtle-panel { flex: 0 1 auto; }
 .turtle-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--border); }
 .turtle-speed { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); min-width: 0; }
 .turtle-speed input { width: 104px; accent-color: var(--accent); }
 .turtle-skip { border: 1px solid var(--border); border-radius: 5px; background: var(--surface-raised); color: var(--text); padding: 4px 10px; font-size: 12px; }
 .turtle-skip:hover:not(:disabled) { background: #22324a; }
-.turtle-stage { padding: 12px; background: #101a2a; }
-/* 260px: panel heading, controls, padding, gap and a minimum console height. */
-.turtle-canvas-frame { width: min(100%, max(160px, 100cqh - 260px)); aspect-ratio: 1; margin: 0 auto; border-radius: 4px; overflow: hidden; background: #ffffff; }
+.turtle-stage { padding: 12px; background: #101a2a; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.turtle-viewport { width: 100%; aspect-ratio: 1; flex: 1 1 auto; min-height: 0; container-type: size; display: flex; align-items: center; justify-content: center; }
+.turtle-canvas-frame { width: min(100cqw, 100cqh); aspect-ratio: 1; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #ffffff; }
 .turtle-canvas { display: block; width: 100%; height: 100%; }
-.turtle-stage .output-notice { font-size: 12px; }
+.turtle-stage .output-notice { font-size: 12px; flex-shrink: 0; }
 .page-footer { flex-shrink: 0; padding-top: 14px; text-align: right; font-size: 12px; color: var(--text-subtle); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 /* Accounts: sign-in, student home, teacher classes (Milestone 3) */
@@ -125,8 +123,10 @@ a.brand { color: inherit; text-decoration: none; }
 .header-actions { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
 .header-link { color: var(--text-muted); font-size: 14px; font-weight: 600; text-decoration: none; padding: 6px 4px; }
 .header-link:hover { color: var(--text); text-decoration: underline; }
-.account-bar { background: #0f1928; border-bottom: 1px solid var(--border); }
-.account-bar-inner { max-width: 960px; margin: 0 auto; padding: 8px 32px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; }
+.account-header-controls { display: flex; align-items: center; gap: 16px; }
+.account-header-controls:empty { display: none; }
+.header-account-summary { font-size: 14px; text-align: right; }
+.account-header-controls .button { flex-shrink: 0; }
 .account-page { max-width: 960px; margin: 0 auto; padding: 36px 32px 48px; }
 .account-page a { color: #a8c7f4; }
 .account-narrow { max-width: 480px; }
@@ -156,6 +156,48 @@ a.brand { color: inherit; text-decoration: none; }
 .data-table code, .credential-list code { font-family: Consolas, monospace; color: #c4d7f3; }
 .table-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .class-list { margin: 0; padding-left: 20px; font-size: 17px; line-height: 1.9; }
+.lesson-list { list-style: none; padding: 0; display: grid; gap: 14px; }
+.lesson-list h3 { font-size: 16px; margin-bottom: 8px; }
+.lesson-list ol { padding-left: 24px; line-height: 1.9; }
+.lesson-list label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.lesson-list input { width: 18px; height: 18px; accent-color: #a8c7f4; }
+.save-status { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+.exercise-back { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.exercise-back a { color: #a8c7f4; }
+.exercise-header-compact { margin-bottom: 8px; gap: 8px 24px; align-items: center; }
+.exercise-header-compact > div { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.exercise-header-compact .eyebrow { margin: 0; }
+.exercise-header-compact .exercise-back { font-size: 16px; }
+.page.saved-exercise { height: calc(100dvh - 53px); padding-top: 8px; padding-bottom: 8px; }
+.saved-exercise .panel-heading { min-height: 36px; padding-left: 12px; padding-right: 12px; }
+.saved-exercise .turtle-controls { padding: 4px 10px; }
+.saved-exercise .turtle-stage { padding: 8px; }
+.saved-exercise .page-footer { padding-top: 6px; font-size: 10px; }
+@media (min-width: 1101px) {
+  .site-header:has(~ .saved-exercise) .site-header-inner { height: 52px; }
+  .site-header:has(~ .saved-exercise) .brand-logo { width: 54px; }
+  .site-header:has(~ .saved-exercise) .brand { font-size: 15px; gap: 14px; }
+}
+.class-live-link { margin-top: 16px; }
+.live-class-page { max-width: 1200px; }
+.live-connection-line, .live-viewer-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
+.live-connection { font-size: 14px; color: #e4c19a; }
+.live-connection.live, .run-success { color: #abd2b2; }
+.live-table-scroll { overflow-x: auto; }
+.live-table { min-width: 560px; }
+.live-table td { vertical-align: top; }
+.live-table tr.is-selected { background: #17263b; }
+.student-watch-button { border: 0; background: transparent; color: #a8c7f4; padding: 2px 0; text-align: left; font: inherit; font-weight: 600; }
+.student-watch-button:hover { text-decoration: underline; }
+.live-username, .live-lesson-title { display: block; color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+.activity-label { color: var(--text-muted); }
+.activity-label.typing { color: #abd2b2; }
+.activity-label.active { color: #a8c7f4; }
+.live-viewer-heading h2 { margin: 0; }
+.live-exercise-title { margin: 12px 0; font-weight: 600; }
+.live-work-details { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+.live-code-container { height: min(55dvh, 560px); min-height: 280px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 14px; }
+.live-code-container .cm-content { cursor: text; }
 .class-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 12px; }
 .class-title h1 { margin-bottom: 0; }
 .join-code-line { font-size: 16px; margin-bottom: 6px; }
@@ -167,13 +209,14 @@ a.brand { color: inherit; text-decoration: none; }
 .credential-list dd { margin: 0; }
 .credential-list code { font-size: 18px; letter-spacing: 1px; }
 @media (max-width: 1100px) {
+  .page.saved-exercise { height: auto; }
   .site-header-inner { padding: 0 24px; }
   .page { height: auto; min-height: calc(100dvh - 80px); padding: 24px; }
   .exercise-layout, .exercise-layout.instructions-collapsed { grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); grid-template-rows: auto minmax(440px, 60dvh); }
   .instructions-panel { grid-column: 1 / -1; }
   .instructions-content { max-height: 260px; }
   .instructions-collapsed .instructions-heading { flex-direction: row; justify-content: space-between; padding: 0 11px 0 18px; }
-  .instructions-collapsed .instructions-heading h2 { writing-mode: horizontal-tb; letter-spacing: normal; }
+  .instructions-collapsed .instructions-heading h2, .instructions-collapsed .instructions-heading h1 { writing-mode: horizontal-tb; letter-spacing: normal; }
   .instructions-collapsed .instructions-toggle { order: initial; }
   .instructions-toggle svg { transform: rotate(90deg); }
   .instructions-collapsed .instructions-toggle svg { transform: rotate(-90deg); }
@@ -184,7 +227,6 @@ a.brand { color: inherit; text-decoration: none; }
   .output-column { flex-direction: row; container-type: normal; }
   .panel-resizer { display: none; }
   .output-column .turtle-panel { width: min(424px, 55%); }
-  .turtle-canvas-frame { width: 100%; }
 }
 @media (max-width: 720px) {
   .site-header-inner { height: auto; min-height: 80px; padding: 12px 16px; gap: 12px; }
@@ -205,10 +247,12 @@ a.brand { color: inherit; text-decoration: none; }
   .exercise-layout.has-turtle { grid-template-rows: auto 400px auto; }
   .output-column { flex-direction: column; }
   .output-column .turtle-panel { width: 100%; }
-  .turtle-canvas-frame { max-width: 400px; }
   .output-column .output-panel { min-height: 240px; }
   .header-actions { gap: 10px; }
   .account-page { padding: 24px 16px 40px; }
-  .account-bar-inner { padding: 8px 16px; }
+  .site-header-inner { flex-wrap: wrap; }
+  .header-actions { margin-left: auto; max-width: 100%; }
+  .account-header-controls { gap: 10px; min-width: 0; }
+  .header-account-summary { font-size: 12px; overflow-wrap: anywhere; }
   .data-table td, .data-table th { padding-left: 6px; padding-right: 6px; }
 }

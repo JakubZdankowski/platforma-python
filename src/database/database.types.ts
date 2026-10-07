@@ -5,7 +5,32 @@ export type Database = {
   
   "public": {
           Tables: {
-            "class_members": {
+            "assignments": {
+                  Row: {
+                    "class_id": string,"lesson_id": string
+                  }
+                  Insert: {
+                    "class_id": string,"lesson_id": string
+                  }
+                  Update: {
+                    "class_id"?: string,"lesson_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "assignments_class_id_fkey"
+      columns: ["class_id"]
+isOneToOne: false
+      referencedRelation: "classes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "assignments_lesson_id_fkey"
+      columns: ["lesson_id"]
+isOneToOne: false
+      referencedRelation: "lessons"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"class_members": {
                   Row: {
                     "class_id": string,"id": string,"joined_at": string,"student_id": string
                   }
@@ -49,6 +74,44 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"exercises": {
+                  Row: {
+                    "id": string,"instructions_markdown": string,"lesson_id": string,"position": number,"runtime_type": string,"slug": string,"starter_code": string,"title": string
+                  }
+                  Insert: {
+                    "id"?: string,"instructions_markdown": string,"lesson_id": string,"position"?: number,"runtime_type": string,"slug": string,"starter_code": string,"title": string
+                  }
+                  Update: {
+                    "id"?: string,"instructions_markdown"?: string,"lesson_id"?: string,"position"?: number,"runtime_type"?: string,"slug"?: string,"starter_code"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "exercises_lesson_id_fkey"
+      columns: ["lesson_id"]
+isOneToOne: false
+      referencedRelation: "lessons"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"lessons": {
+                  Row: {
+                    "id": string,"position": number,"slug": string,"teacher_id": string,"title": string
+                  }
+                  Insert: {
+                    "id"?: string,"position"?: number,"slug": string,"teacher_id": string,"title": string
+                  }
+                  Update: {
+                    "id"?: string,"position"?: number,"slug"?: string,"teacher_id"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lessons_teacher_id_fkey"
+      columns: ["teacher_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"created_by": string | null,"display_name": string,"id": string,"role": Database["public"]['Enums']["user_role"],"updated_at": string,"username": string | null
@@ -63,6 +126,31 @@ isOneToOne: false
                     {
       foreignKeyName: "profiles_created_by_fkey"
       columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"student_work": {
+                  Row: {
+                    "code": string,"exercise_id": string,"last_edited_at": string,"last_error_summary": string | null,"last_error_type": string | null,"last_run_at": string | null,"last_run_success": boolean | null,"status": string,"student_id": string
+                  }
+                  Insert: {
+                    "code": string,"exercise_id": string,"last_edited_at"?: string,"last_error_summary"?: string | null,"last_error_type"?: string | null,"last_run_at"?: string | null,"last_run_success"?: boolean | null,"status"?: string,"student_id": string
+                  }
+                  Update: {
+                    "code"?: string,"exercise_id"?: string,"last_edited_at"?: string,"last_error_summary"?: string | null,"last_error_type"?: string | null,"last_run_at"?: string | null,"last_run_success"?: boolean | null,"status"?: string,"student_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "student_work_exercise_id_fkey"
+      columns: ["exercise_id"]
+isOneToOne: false
+      referencedRelation: "exercises"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "student_work_student_id_fkey"
+      columns: ["student_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]

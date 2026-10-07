@@ -14,7 +14,7 @@ const arrow = (direction: 'left' | 'right') => (
   </svg>
 );
 
-/** Temporary previous/next switch between local demo exercises; lesson navigation belongs to a later milestone. */
+/** Previous/next navigation shared by the playground and assigned lessons. */
 export function SampleExercisePicker({ exercises, selectedIndex, disabled, labels, onSelect }: Props) {
   const current = exercises[selectedIndex];
   return (

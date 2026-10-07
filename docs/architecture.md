@@ -1,6 +1,6 @@
-# Architektura — Milestone 1–3
+# Architektura — M1–M3 i kroki A–B MVP
 
-Status: lokalny playground z dwoma przykładowymi ćwiczeniami (konsolowym i Turtle) pod `/` oraz konta nauczycieli i uczniów, klasy i logowanie ucznia bez e-maila (Milestone 3). Szczegóły Turtle: [turtle.md](turtle.md). Baza danych i RLS: [database.md](database.md). Punktem odniesienia jest [product-spec.md](product-spec.md), szczególnie sekcje 35, 45 i 46.
+Status: playground konsolowy i Turtle, konta i klasy, lekcje z Markdown, trwała praca ucznia oraz dashboard i podgląd kodu nauczyciela. Szczegóły Turtle: [turtle.md](turtle.md). Baza danych i RLS: [database.md](database.md). Kolejność dalszych prac określa [mvp-plan.md](mvp-plan.md).
 
 ## Przepływ
 
@@ -22,13 +22,13 @@ flowchart LR
   Assets[Pliki statyczne tej samej aplikacji] --> Pyodide
 ```
 
-Serwer aplikacji dostarcza wyłącznie pliki statyczne. Kod ucznia nie jest wysyłany do serwera i nie jest na nim wykonywany.
+Serwer aplikacji dostarcza pliki statyczne. Python wykonuje się w przeglądarce. Kod przypisanych ćwiczeń i ostatni wynik uruchomienia są zapisywane w Supabase; kod publicznego playgroundu pozostaje w pamięci karty.
 
 ## Konta i klasy (Milestone 3)
 
 ```mermaid
 flowchart LR
-  Router[App / React Router] -->|/| Playground[ExercisePage]
+  Router[App / React Router] -->|/| Playground[PlaygroundPage / ExercisePage]
   Router -->|/join /login /student /teacher| Account[AccountApp, ładowany leniwie]
   Account --> Auth[AuthProvider + RequireRole]
   Account --> Services[authService / classService]
@@ -40,9 +40,9 @@ flowchart LR
 ```
 
 - `/` to dotychczasowy playground bez logowania. Pozostałe ścieżki obsługuje `AccountApp`, osobny moduł ładowany leniwie, więc playground nie pobiera klienta Supabase.
-- `/join` to logowanie ucznia (kod klasy, nazwa użytkownika, hasło), `/login` — nauczyciela (e-mail i hasło), `/student` — klasy ucznia, `/teacher` i `/teacher/classes/:id` — klasy nauczyciela, uczniowie, tworzenie kont i reset haseł.
+- `/join` to logowanie ucznia (kod klasy, nazwa użytkownika, hasło), `/login` — nauczyciela (e-mail i hasło), `/student` — klasy i przypisane lekcje, `/student/exercises/:id` — ćwiczenie z autosave, `/teacher` i `/teacher/classes/:id` — klasy nauczyciela, uczniowie, przypisania, tworzenie kont i reset haseł.
 - `AuthProvider` śledzi sesję Supabase i wczytuje profil z bazy. Rola z profilu służy tylko nawigacji (`RequireRole`). O dostępie decydują RLS, uprawnienia kolumnowe i Edge Function.
-- `authService` i `classService` (`src/auth`, `src/classes`) to jedyne miejsca z zapytaniami. Zwracają proste kody błędów, a szczegóły techniczne trafiają tylko do konsoli deweloperskiej.
+- Zapytania kont i klas są w `authService` i `classService`; treści w `lessonService`, przypisania w `LessonAssignments`, praca ucznia w `useStudentWork`. Uprawnienia wszystkich żądań egzekwuje RLS.
 - `supabase/functions/teacher-students` tworzy konta uczniów i resetuje hasła, bo wymaga to klucza serwisowego. Logika (`handler.ts`) nie zależy od Deno i ma testy jednostkowe. `index.ts` tylko podłącza Supabase.
 - Rejestracja publiczna jest wyłączona (`supabase/config.toml`). Nauczyciel powstaje z seedu albo przez `pnpm teacher:create`, uczeń — przez nauczyciela.
 
@@ -50,7 +50,10 @@ Model danych, adres techniczny ucznia i polityki RLS: [database.md](database.md)
 
 ## Podział odpowiedzialności
 
-- `ExercisePage` przechowuje kod każdego przykładowego ćwiczenia niezależnie od workera. Przełącznik `SampleExercisePicker` (strzałki poprzednie/następne i nazwa bieżącego ćwiczenia) jest tymczasowy; nawigacja po lekcjach należy do Milestone 4. Dla `runtimeType: 'python-turtle'` strona pokazuje panel rysunku nad konsolą i uruchamia program z włączonym Turtle. Przekazuje jego kopię do wykonania. Edycja podczas działania programu nie zmienia już uruchomionej kopii.
+- `ExercisePage` przyjmuje ćwiczenie, kod, nawigację i status zapisu. `PlaygroundPage` przechowuje lokalne kopie przykładów, a `StudentExercisePage` ładuje przypisane treści i `useStudentWork`. `SampleExercisePicker` obsługuje oba przypadki. Dla `python-turtle` strona pokazuje rysunek. Edycja podczas działania programu nie zmienia uruchomionej kopii.
+- `WorkAutosaver` serializuje żądania, łączy zmiany kodu i ostatniego wyniku oraz ponawia nieudane zapisy. Debounce to 1,5 s; uruchomienie i nawigacja czekają na zapis. Ukrycie/opuszczenie strony wywołuje flush. Małe żądania PATCH używają `fetch` z `keepalive` i JWT ucznia; brak kopii localStorage oznacza, że zapis przy zamykaniu karty podczas awarii jest best effort.
+- `scripts/sync-content.mjs` waliduje Markdown i upsertuje po slugach kluczem serwisowym. Bloki `python solution` są usuwane przed wysyłką, a rzeczywisty kurs pozostaje poza publicznym repozytorium.
+- `TeacherLivePage` pod `/teacher/classes/:id/live` pokazuje tabelę i podgląd CodeMirror (`readOnly` oraz `editable: false`, bez wywołań zapisu i uruchomienia). `useLiveClass` współdzieli jedną subskrypcję Postgres Changes między obiema częściami. Potwierdzona gotowość subskrypcji i udany snapshot warunkują „Na żywo”; rozłączenie zachowuje ostatnie dane. Snapshoty są pobierane kolejno, zdarzenie podczas pobierania wymusza kolejne odczytanie, a reconnect uzupełnia pominięte zmiany. `liveWorkService` czyta przez istniejące RLS i wylicza bieżące ćwiczenie, ostatnie uruchomienie oraz aktywność aktualizowaną co 5 s.
 - `CodeEditor` opakowuje CodeMirror bez logiki wykonania. Cięższa część edytora jest ładowana osobnym modułem, aby początkowy pakiet interfejsu pozostał mniejszy.
 - `usePythonRunner` wiąże zdarzenia runnera ze stanem React i zwalnia zasoby po odmontowaniu. Wyjście, polecenia Turtle i wynik przechodzą przez `TurtlePlayback`, który synchronizuje konsolę z animacją. W ćwiczeniach konsolowych wyjście pojawia się od razu.
 - `PythonRunner` obsługuje inicjalizację, jeden aktywny program, timery, identyfikatory wykonań, Stop, restart i awarie. Nie importuje Pyodide do głównego wątku.
@@ -136,13 +139,12 @@ Między edytorem a prawą kolumną jest uchwyt `PanelResizer` (`role="separator"
 
 Przy szerokości do 1100 px instrukcja zajmuje górny rząd nad edytorem i konsolą. Do 720 px wszystkie panele układają się pionowo. Edytor ma font 16 px, widoczny fokus, nazwę dostępną i instrukcję wyjścia klawiaturą. Statusy mają tekst, a nie tylko kolor. Komunikat zakończenia używa `role="status"`; całe stdout nie jest agresywnie odczytywane przy każdej zmianie.
 
-UI korzysta ze słowników `i18n/pl.ts` i `i18n/en.ts`; treść lekcji stanowi oddzielne dane. Informacja o przechowywaniu kodu wyłącznie do zamknięcia lub odświeżenia karty jest widoczna pod ćwiczeniem.
+UI korzysta z polskich etykiet `i18n/pl.ts`; treść lekcji stanowi oddzielne dane. Przełącznik języka został usunięty. Informacja o użytkowniku i wylogowanie są w głównym nagłówku, bez dodatkowego paska. Playground informuje o kodzie w pamięci karty; ćwiczenia z konta pokazują status automatycznego zapisu.
 
 ## Kolejne milestone’y — granice modułów
 
 Te mechanizmy nie są jeszcze zaimplementowane:
 
-- **M4–M5 / dane:** dane lekcji oraz trwałe `student_work`. Uprawnienia muszą być sprawdzane w bazie lub na serwerze. Rozwiązania wymagają osobnej chronionej reprezentacji; samo RLS nie ukrywa kolumn w dostępnych wierszach.
-- **M6–M7 / realtime:** PostgreSQL pozostaje źródłem zapisanego kodu, a prywatny Broadcast przenosi tylko aktualny widok. Awaria realtime nie może blokować runnera ani edytora. Widok nauczyciela pozostanie tylko do odczytu.
+- **Krok C:** GitHub Pages i hostowany Supabase.
 
-Nie utworzono pustych modułów lekcji ani realtime. Dokumentacja ich faktycznej implementacji powstanie wraz z odpowiednimi milestone’ami.
+Broadcast, Presence, rozwiązania, historia wykonań i edytor treści w aplikacji pozostają poza MVP zgodnie z planem.

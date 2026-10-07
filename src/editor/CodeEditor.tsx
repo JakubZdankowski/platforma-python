@@ -8,10 +8,11 @@ import { tags } from '@lezer/highlight';
 
 interface Props {
   value: string;
-  onChange: (value: string) => void;
-  onRun: () => void;
+  onChange?: (value: string) => void;
+  onRun?: () => void;
   label: string;
   helpId: string;
+  readOnly?: boolean;
 }
 
 const editorTheme = EditorView.theme({
@@ -41,12 +42,14 @@ const highlighting = HighlightStyle.define([
   { tag: tags.operator, color: '#bdc7d8' },
 ]);
 
-export function CodeEditor({ value, onChange, onRun, label, helpId }: Props) {
+export function CodeEditor({ value, onChange, onRun, label, helpId, readOnly = false }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const callbacks = useRef({ onChange, onRun });
-  const initial = useRef({ value, label, helpId });
+  const initial = useRef({ value, label, helpId, readOnly });
   const accessibility = useRef(new Compartment());
+  const editing = useRef(new Compartment());
+  const syncing = useRef(false);
 
   useEffect(() => { callbacks.current = { onChange, onRun }; }, [onChange, onRun]);
 
@@ -60,19 +63,22 @@ export function CodeEditor({ value, onChange, onRun, label, helpId }: Props) {
           lineNumbers(), highlightActiveLineGutter(), history(), drawSelection(),
           indentOnInput(), bracketMatching(), python(), highlightActiveLine(),
           syntaxHighlighting(highlighting), editorTheme,
+          editing.current.of([EditorState.readOnly.of(initial.current.readOnly), EditorView.editable.of(!initial.current.readOnly)]),
           accessibility.current.of(EditorView.contentAttributes.of({
             'aria-label': initial.current.label,
             'aria-describedby': initial.current.helpId,
             'aria-multiline': 'true',
+            'aria-readonly': String(initial.current.readOnly),
+            tabindex: '0',
             spellcheck: 'false',
           })),
           keymap.of([
-            { key: 'Ctrl-Enter', run: () => { callbacks.current.onRun(); return true; } },
-            { key: 'Meta-Enter', run: () => { callbacks.current.onRun(); return true; } },
+            { key: 'Ctrl-Enter', run: (view) => { if (!view.state.readOnly) callbacks.current.onRun?.(); return true; } },
+            { key: 'Meta-Enter', run: (view) => { if (!view.state.readOnly) callbacks.current.onRun?.(); return true; } },
             indentWithTab, ...defaultKeymap, ...historyKeymap,
           ]),
           EditorView.updateListener.of((update) => {
-            if (update.docChanged) callbacks.current.onChange(update.state.doc.toString());
+            if (update.docChanged && !update.state.readOnly && !syncing.current) callbacks.current.onChange?.(update.state.doc.toString());
           }),
         ],
       }),
@@ -84,15 +90,18 @@ export function CodeEditor({ value, onChange, onRun, label, helpId }: Props) {
   useEffect(() => {
     const editor = view.current;
     if (editor && value !== editor.state.doc.toString()) {
-      editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } });
+      syncing.current = true;
+      try { editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } }); }
+      finally { syncing.current = false; }
     }
   }, [value]);
 
   useEffect(() => {
     view.current?.dispatch({ effects: accessibility.current.reconfigure(EditorView.contentAttributes.of({
-      'aria-label': label, 'aria-describedby': helpId, 'aria-multiline': 'true', spellcheck: 'false',
+      'aria-label': label, 'aria-describedby': helpId, 'aria-multiline': 'true', 'aria-readonly': String(readOnly), tabindex: '0', spellcheck: 'false',
     })) });
-  }, [label, helpId]);
+    view.current?.dispatch({ effects: editing.current.reconfigure([EditorState.readOnly.of(readOnly), EditorView.editable.of(!readOnly)]) });
+  }, [label, helpId, readOnly]);
 
   return <div className="code-editor" ref={host} />;
 }

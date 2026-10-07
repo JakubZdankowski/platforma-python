@@ -40,6 +40,7 @@ export function usePythonRunner() {
       const execution = await runner.run(code, { inputUnavailableMessage, turtle: turtleEnabled });
       // The result appears once the turtle has finished drawing everything the program sent.
       if (mounted.current) playback.finish(execution, (final) => { if (mounted.current) setResult(final); });
+      return execution;
     } finally {
       busy.current = false;
     }

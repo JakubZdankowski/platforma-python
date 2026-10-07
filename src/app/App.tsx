@@ -1,16 +1,15 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router';
-import { en, type Locale } from '../i18n/en';
 import { pl } from '../i18n/pl';
-import { ExercisePage } from '../student/ExercisePage';
+import { PlaygroundPage } from '../student/PlaygroundPage';
 import blueLogo from '../assets/blue-logo.png';
 
 const AccountApp = lazy(() => import('./AccountApp'));
 
 export function App() {
-  const [locale, setLocale] = useState<Locale>('pl');
-  const messages = locale === 'pl' ? pl : en;
-  useEffect(() => { document.documentElement.lang = locale; document.title = messages.appName; }, [locale, messages.appName]);
+  const [headerTarget, setHeaderTarget] = useState<HTMLDivElement | null>(null);
+  const messages = pl;
+  useEffect(() => { document.documentElement.lang = 'pl'; document.title = messages.appName; }, [messages.appName]);
 
   return <BrowserRouter>
     <header className="site-header">
@@ -21,17 +20,13 @@ export function App() {
         </Link>
         <div className="header-actions">
           <SignInLink label={messages.signIn} />
-          <label className="language-control"><span className="sr-only">{messages.language}</span>
-            <select value={locale} onChange={(event) => setLocale(event.target.value === 'en' ? 'en' : 'pl')}>
-              <option value="pl">Polski</option><option value="en">English</option>
-            </select>
-          </label>
+          <div className="account-header-controls" ref={setHeaderTarget} />
         </div>
       </div>
     </header>
     <Routes>
-      <Route index element={<ExercisePage messages={messages} locale={locale} />} />
-      <Route path="*" element={<Suspense fallback={<main className="account-page" />}><AccountApp messages={messages} /></Suspense>} />
+      <Route index element={<PlaygroundPage messages={messages} locale="pl" />} />
+      <Route path="*" element={<Suspense fallback={<main className="account-page" />}><AccountApp messages={messages} locale="pl" headerTarget={headerTarget} /></Suspense>} />
     </Routes>
   </BrowserRouter>;
 }

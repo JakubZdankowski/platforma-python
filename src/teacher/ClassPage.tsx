@@ -8,6 +8,7 @@ import { CredentialNotice, type IssuedCredentials } from './CredentialNotice';
 import { NewStudentForm } from './NewStudentForm';
 import { RenameClassForm } from './RenameClassForm';
 import { useClassData } from './useClassData';
+import { LessonAssignments } from './LessonAssignments';
 
 export function ClassPage({ messages: t }: { messages: Messages }) {
   const { client } = useAuth();
@@ -37,6 +38,8 @@ export function ClassPage({ messages: t }: { messages: Messages }) {
       <span>{t.joinCode}: </span><code className="join-code" data-testid="join-code">{details.joinCode}</code>
     </p>
     <p className="account-muted">{t.joinCodeHint}</p>
+    <p className="class-live-link"><Link to={`/teacher/classes/${details.id}/live`}>{t.openLiveClass}</Link></p>
+    <LessonAssignments client={client} classId={details.id} messages={t} />
 
     <section className="account-section" aria-labelledby="class-students-heading">
       <h2 id="class-students-heading">{t.studentsTitle(members.length)}</h2>

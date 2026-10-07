@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import { listStudentClasses } from '../classes/classService';
 import type { Messages } from '../i18n/en';
+import { listLessons, type Lesson } from '../lessons/lessonService';
 
 type ClassesState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; classes: { id: string; name: string }[] };
 
@@ -11,13 +12,18 @@ export function StudentHomePage({ messages: t }: { messages: Messages }) {
   const profile = useProfile();
   const [state, setState] = useState<ClassesState>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const [lessons, setLessons] = useState<Lesson[] | null>(null);
 
   useEffect(() => {
     let active = true;
     setState({ status: 'loading' });
-    void listStudentClasses(client).then((result) => {
-      if (active) setState(result.ok ? { status: 'ready', classes: result.value } : { status: 'error' });
-    });
+    setLessons(null);
+    void Promise.all([listStudentClasses(client), listLessons(client)]).then(([result, content]) => {
+      if (active) {
+        setState(result.ok ? { status: 'ready', classes: result.value } : { status: 'error' });
+        setLessons(content);
+      }
+    }).catch(() => { if (active) setState({ status: 'error' }); });
     return () => { active = false; };
   }, [client, attempt]);
 
@@ -37,7 +43,11 @@ export function StudentHomePage({ messages: t }: { messages: Messages }) {
         </ul>)}
     </section>
     <section className="account-section">
-      <p className="account-muted">{t.lessonsComingSoon}</p>
+      <h2>{t.yourLessons}</h2>
+      {lessons && (lessons.length ? <ul className="lesson-list">{lessons.map((lesson) => <li key={lesson.id}>
+        <h3>{lesson.title}</h3>
+        <ol>{lesson.exercises.map((exercise) => <li key={exercise.id}><Link to={`/student/exercises/${exercise.id}`}>{exercise.title}</Link></li>)}</ol>
+      </li>)}</ul> : <p className="account-muted">{t.noAssignedLessons}</p>)}
       <p><Link to="/">{t.practiceLink}</Link></p>
     </section>
   </main>;

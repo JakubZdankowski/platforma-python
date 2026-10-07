@@ -2,6 +2,13 @@
 
 This plan overrides the milestone order in [product-spec.md](product-spec.md) §35 for the MVP. The spec remains the long-term target; items listed under "Post-MVP backlog" are deferred, not dropped.
 
+## Implementation status — 2026-10-07
+
+- **Step A is complete:** lesson/exercise schema and RLS, Markdown sync, class assignments, student lesson navigation, autosave with retry and reset, and latest run results. Migration applied to local Supabase.
+- **Step B is complete:** class dashboard, timestamp-based activity, latest run, read-only CodeMirror, Postgres Changes, saved-state fallback and reconnect resync. The subscription waits for Postgres Changes readiness before reporting live; existing RLS and the step A publication are reused.
+- Verified for B: typecheck and production build; 80 Vitest tests plus 4 content-parser tests; `pnpm check:db` (24 permission tests including Realtime privacy, 10 account/lesson/live E2E scenarios); 26 playground/Turtle regression scenarios. Playwright suites share an output directory and must run sequentially.
+- Next: **Step C**. Content import instructions and privacy constraints are in [README.md](../README.md#lekcje-z-markdown).
+
 ## Context
 
 Milestones 1–3 are done (playground, Turtle, Supabase auth and classes). The spec still lists five milestones: M4 lessons, M5 persistence, M6 dashboard, M7 live watching, M8 authoring. Kuba wants a shippable MVP for a real class and wants to save time and tokens.
@@ -98,7 +105,7 @@ GitHub Pages is feasible. Required changes:
   - run the 2-minute Pyodide E2E suite once at the end of a step, not after every change.
 - **Docs:** short README and `docs/database.md` updates; stop listing every test in the README.
 - **Sessions:** one session per step with `/clear` between them, and point to the relevant spec sections (§14–17 for A, §18–19 for B) instead of re-reading the whole spec.
-- **i18n:** keep adding both pl and en strings (cheap, and the spec requires it).
+- **UI language:** Polish only, following the approved UX change. Do not restore the language selector. The legacy English dictionary remains as message type scaffolding.
 
 ## Post-MVP backlog (refine later)
 
@@ -120,4 +127,3 @@ GitHub Pages is feasible. Required changes:
   - E2E: student opens the exercise, edits, refreshes, and the code remains; reset restores the starter code.
 - B: `pnpm check:db`, plus E2E with two browsers: the student types and the teacher's read-only view updates within about 3 s.
 - C: GitHub Actions deploy is green, and the manual smoke test on the Pages URL passes.
-

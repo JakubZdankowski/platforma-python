@@ -109,14 +109,13 @@ test('input has a readable unsupported message without a browser prompt', async 
   await expect(page.getByTestId('python-error')).toContainText('input() nie jest jeszcze dostępne');
 });
 
-test('keyboard run and language switching keep the code', async ({ page }) => {
+test('keyboard run keeps the code in the Polish interface', async ({ page }) => {
   await setCode(page, 'print("skrót")');
   await page.getByRole('textbox').press('Control+Enter');
   await expect(page.getByTestId('stdout')).toHaveText('skrót\n');
-  await page.getByRole('combobox').selectOption('en');
-  await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  await expect(page.getByRole('textbox', { name: 'Python code editor' })).toHaveText('print("skrót")');
+  await expect(page.getByRole('combobox', { name: 'Język interfejsu' })).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
+  await expect(page.getByRole('textbox', { name: 'Edytor kodu Python' })).toHaveText('print("skrót")');
 });
 
 test('layout fits a classroom laptop and reflows on a small screen', async ({ page }) => {

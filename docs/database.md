@@ -1,6 +1,6 @@
-# Baza danych — Milestone 3
+# Baza danych — M3 i kroki A–B MVP
 
-PostgreSQL w Supabase. Schemat tworzą migracje w `supabase/migrations/`, a dane deweloperskie pochodzą z `supabase/seed.sql`. Tabele lekcji, ćwiczeń, `student_work` i `execution_events` powstaną w Milestone 4–6.
+PostgreSQL w Supabase. Schemat tworzą migracje w `supabase/migrations/`, a dane deweloperskie pochodzą z `supabase/seed.sql`. Treści lekcji importuje `pnpm content:sync <dir>`. MVP przechowuje ostatni wynik uruchomienia w `student_work`; historia `execution_events` pozostaje poza MVP.
 
 ## Tabele
 
@@ -11,6 +11,12 @@ erDiagram
   profiles ||--o{ classes : "teacher_id"
   classes ||--o{ class_members : "class_id"
   profiles ||--o{ class_members : "student_id"
+  profiles ||--o{ lessons : "teacher_id"
+  lessons ||--o{ exercises : "lesson_id"
+  classes ||--o{ assignments : "class_id"
+  lessons ||--o{ assignments : "lesson_id"
+  profiles ||--o{ student_work : "student_id"
+  exercises ||--o{ student_work : "exercise_id"
 ```
 
 ### `profiles`
@@ -42,6 +48,15 @@ Ograniczenia: uczeń musi mieć `username` i `created_by`, nauczyciel nie ma ża
 
 `(class_id, student_id)` jest unikalne. Wyzwalacz `class_members_check` pozwala dodać do klasy tylko ucznia utworzonego przez nauczyciela tej klasy. Bez tego nauczyciel mógłby „przejąć” dostęp do uczniów innego nauczyciela.
 
+## Treści i praca ucznia (krok A)
+
+- `lessons`: UUID, właściciel `teacher_id`, `slug`, `title`, `position`. Slug jest unikalny dla nauczyciela.
+- `exercises`: UUID, `lesson_id`, slug unikalny w lekcji, tytuł, kolejność, instrukcja Markdown, kod początkowy i runtime (`python-console` / `python-turtle`).
+- `assignments`: klucz `(class_id, lesson_id)`. Wyzwalacz wymaga tego samego nauczyciela klasy i lekcji.
+- `student_work`: klucz `(student_id, exercise_id)`, kod, status `not_started` / `in_progress`, `last_edited_at` i pola `last_run_at`, `last_run_success`, `last_error_type`, `last_error_summary`. Czas edycji ustawia serwer przy utworzeniu lub zmianie kodu; zapis wyniku nie udaje nowej edycji. Tożsamość istniejącej pracy jest niezmienna.
+
+Przeglądarka nie zapisuje treści lekcji i ćwiczeń — robi to importer z kluczem serwisowym. Nie ma kolumn ani tabel z rozwiązaniami. Import aktualizuje treści po slugach, nie nadpisuje pracy ucznia. `student_work` jest w publikacji `supabase_realtime`, przygotowanej pod krok B.
+
 ## Logowanie ucznia bez e-maila
 
 Supabase Auth wymaga adresu, więc każdy uczeń ma ukryty adres techniczny:
@@ -62,13 +77,16 @@ Hasła uczniów generuje Edge Function `teacher-students`: 8 znaków `a–z` i `
 
 ## Row Level Security
 
-RLS jest włączone na wszystkich trzech tabelach. Rola `anon` nie ma do nich żadnych uprawnień. Rola `authenticated` ma tylko wymienione niżej uprawnienia kolumnowe, a polityki zawężają je do wierszy.
+RLS jest włączone na wszystkich tabelach. Rola `anon` nie ma do nich żadnych uprawnień. Rola `authenticated` ma tylko wymienione niżej uprawnienia kolumnowe, a polityki zawężają je do wierszy.
 
 | Tabela | Uczeń | Nauczyciel |
 | --- | --- | --- |
 | `profiles` | odczyt własnego profilu | odczyt własnego profilu i profili utworzonych przez siebie uczniów; brak zapisu z przeglądarki |
 | `classes` | odczyt klas, do których należy | odczyt, tworzenie (tylko `name`) i zmiana nazwy własnych klas; właściciela i kodu nie da się wybrać ani zmienić |
 | `class_members` | odczyt własnych członkostw | odczyt, dodawanie i usuwanie członków własnych klas (wyzwalacz ogranicza, kogo) |
+| `lessons`, `exercises` | odczyt treści przypisanych do swoich klas | odczyt własnych treści; import tylko kluczem serwisowym |
+| `assignments` | odczyt przypisań swoich klas; brak zapisu | odczyt, dodawanie i usuwanie przypisań własnych klas i lekcji |
+| `student_work` | odczyt własnej pracy; tworzenie i aktualizacja tylko w aktualnie przypisanych ćwiczeniach | odczyt pracy uczniów utworzonych przez siebie; brak zapisu |
 
 Funkcje pomocnicze polityk (`private.is_teacher`, `private.owns_class`, `private.is_class_member`) są `security definer`, co zapobiega rekurencji polityk. Leżą w schemacie `private`, którego Data API nie udostępnia.
 
@@ -76,4 +94,12 @@ Konto bez roli w `app_metadata` nie dostaje profilu i nie widzi żadnych danych.
 
 Operacje wymagające klucza serwisowego (tworzenie kont, reset haseł) wykonuje tylko Edge Function `teacher-students`. Sprawdza ona token wywołującego i rolę `teacher` w bazie, a także to, czy klasa lub uczeń należą do tego nauczyciela.
 
-Testy uprawnień: `tests/db/permissions.test.ts` (`pnpm test:db`).
+Odpięcie lekcji lub usunięcie ucznia z klasy blokuje dalszy odczyt ćwiczeń i zapis pracy (jeśli nie ma innego przypisania). Zapisana praca pozostaje dostępna właścicielowi i jego nauczycielowi, a ponowne przypisanie przywraca ćwiczenie z dotychczasowym kodem.
+
+Testy uprawnień: `tests/db/permissions.test.ts` i `tests/db/lessons.test.ts` (`pnpm test:db`).
+
+## Realtime (krok B)
+
+`student_work` jest już w publikacji `supabase_realtime` z migracji kroku A. Nie ma nowych tabel ani zmian uprawnień. Nauczyciel subskrybuje Postgres Changes; RLS filtruje zdarzenia do jego uczniów. Po zdarzeniu dashboard ponownie czyta przez Data API wyłącznie pracę członków wskazanej klasy. Tabela i podgląd używają tej samej subskrypcji. Kod ucznia pozostaje tylko do odczytu; RLS nadal odrzuca zapis przez nauczyciela.
+
+Kanał czeka na potwierdzenie gotowości Postgres Changes (`postgres_changes_options.wait`). Po połączeniu lub odzyskaniu połączenia pobierany jest nowy snapshot, aby uwzględnić zdarzenia pominięte podczas przerwy. Test bazy potwierdza, że zapis trafia do nauczyciela, a nie do kolegi z klasy ani innego nauczyciela.

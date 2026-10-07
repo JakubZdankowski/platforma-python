@@ -33,7 +33,9 @@ export function TurtlePanel({ messages: t, drawing, speed, onSpeedChange, canSki
         <button type="button" className="turtle-skip" disabled={!canSkip} onClick={onSkip}>{t.skipAnimation}</button>
       </div>
       <div className="turtle-stage">
-        <TurtleCanvas drawing={drawing} label={t.turtleCanvasLabel} />
+        <div className="turtle-viewport">
+          <TurtleCanvas drawing={drawing} label={t.turtleCanvasLabel} />
+        </div>
         {drawing.truncated && <p className="output-notice">{t.turtleTruncated}</p>}
       </div>
     </section>

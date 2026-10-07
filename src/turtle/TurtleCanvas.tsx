@@ -7,7 +7,7 @@ interface Props {
   label: string;
 }
 
-/** Responsive square canvas; the logical 400 × 400 area is scaled to the available width. */
+/** Responsive square canvas; the logical 400 × 400 area fits the available width and height. */
 export function TurtleCanvas({ drawing, label }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
