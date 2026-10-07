@@ -7,6 +7,9 @@ Browser-based platform for teaching beginner Python to children.
 Full product specification:
 docs/product-spec.md
 
+MVP plan (overrides the spec's milestone order, see below):
+docs/mvp-plan.md
+
 Other docs:
 - docs/architecture.md — application architecture
 - docs/database.md — tables, student login without email, RLS
@@ -56,8 +59,28 @@ Milestone 3 — Authentication and classes:
 
 Do not rebuild Milestones 1–3.
 
-Next milestone: Milestone 4 — Lessons and exercises (do not start
-without an explicit request).
+## MVP plan
+
+The remaining spec milestones are regrouped into three steps
+(details in docs/mvp-plan.md):
+- Step A = M4 + M5: lessons, exercises, assignments, student_work with
+  autosave, save indicator, reset
+- Step B = M6 + M7: teacher dashboard + read-only live view via Postgres
+  Changes on student_work (1–3 s latency is acceptable)
+- Step C: deploy — GitHub Pages (Vite base path, 404.html SPA fallback)
+  + hosted Supabase
+
+MVP constraints:
+- Lessons are authored as Markdown files and uploaded with
+  `pnpm content:sync`; no in-app lesson editor (M8 deferred).
+- Solutions are NOT stored in the database. Course content (`course/`)
+  must never be committed to the public repo.
+- No Presence or keystroke Broadcast; activity derives from timestamps.
+- No execution_events table; latest run result lives on student_work.
+- Other deferred items: see "Post-MVP backlog" in docs/mvp-plan.md.
+
+Next: Step A — lessons, exercises and autosave (do not start without an
+explicit request).
 
 ## Testing
 
