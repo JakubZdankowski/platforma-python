@@ -48,6 +48,7 @@ export const en = {
   localNotice: 'Your code stays in this tab until you refresh or close it.',
   yourLessons: 'Your lessons',
   classLessons: 'Lessons assigned to this class',
+  confirmUnassignLesson: (title: string) => `Unassign lesson “${title}” from this class?\n\nStudents may lose access to exercises and the ability to save current changes. Previously saved work will be retained.`,
   noAssignedLessons: 'Your teacher has not assigned any lessons yet.',
   noTeacherLessons: 'No lessons yet. Import Markdown content first.',
   savingCode: 'Saving…',

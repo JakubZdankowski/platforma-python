@@ -20,6 +20,10 @@ export function LessonAssignments({ client, classId, messages: t }: { client: Ap
   }, [client, classId, attempt]);
   async function toggle(lessonId: string, checked: boolean) {
     if (pending) return;
+    if (!checked && state?.assigned.has(lessonId)) {
+      const title = state.lessons.find((lesson) => lesson.id === lessonId)?.title ?? '';
+      if (!window.confirm(t.confirmUnassignLesson(title))) return;
+    }
     setPending(lessonId);
     setError(false);
     const wasAssigned = state?.assigned.has(lessonId) ?? false;

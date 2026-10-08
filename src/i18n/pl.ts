@@ -57,6 +57,7 @@ export const pl: Messages = {
   retryingSave: 'Nie zapisano — ponawiam…',
   resetCode: 'Przywróć kod początkowy',
   confirmResetCode: 'Przywrócić kod początkowy? Twoje zmiany zostaną zastąpione.',
+  confirmUnassignLesson: (title: string) => `Czy na pewno odpiąć lekcję „${title}” od tej klasy?\n\nUczniowie mogą stracić dostęp do ćwiczeń i możliwość zapisu bieżących zmian. Dotychczas zapisane prace pozostaną zachowane.`,
   allLessons: 'Wszystkie lekcje',
   lessonExercises: 'Ćwiczenia w tej lekcji',
   savedNotice: 'Twój kod jest automatycznie zapisywany na Twoim koncie.',

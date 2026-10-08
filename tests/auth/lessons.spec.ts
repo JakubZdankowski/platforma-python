@@ -93,6 +93,7 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await expect(studentPage.getByRole('combobox', { name: 'Język interfejsu' })).toHaveCount(0);
     await expect(studentPage.locator('.save-status')).toHaveText('Zapisano');
     await expect(studentPage.locator('.cm-content')).toHaveText('print("Szybkie odświeżenie")');
+    page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('checkbox', { name: lessonTitle }).uncheck();
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeEnabled();
     await studentPage.reload();
