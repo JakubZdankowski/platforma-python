@@ -11,6 +11,22 @@ async function run(page: Page, code: string) {
 
 test.beforeEach(async ({ page }) => { await page.goto('/tests/fixtures/playground.html'); });
 
+test('the general hint opens on request and closes when changing exercises', async ({ page }) => {
+  const hint = page.locator('details.tip');
+  await expect(hint).not.toHaveAttribute('open');
+  await hint.locator('summary').click();
+  await expect(hint).toHaveAttribute('open', '');
+  await expect(hint.locator('p')).toBeVisible();
+  await hint.locator('summary').click();
+  await expect(hint.locator('p')).toBeHidden();
+  await hint.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(hint.locator('p')).toBeVisible();
+  await page.getByRole('button', { name: 'Następne zadanie' }).click();
+  await expect(hint).not.toHaveAttribute('open');
+  await expect(hint.locator('p')).toBeHidden();
+});
+
 test('sample exercise works and all runtime assets stay on the application origin', async ({ page }) => {
   const unexpectedRequests: string[] = [];
   page.on('request', (request) => {

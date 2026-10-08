@@ -79,6 +79,8 @@ Seed nie tworzy lekcji. Przykładowe treści można zaimportować z `course-exam
 
 ## Lekcje z Markdown
 
+Gotowe szablony lekcji oraz ćwiczeń konsolowych i Turtle: [course-template/README.md](course-template/README.md). Skopiuj katalog szablonu do prywatnego `course/` i uzupełnij treść.
+
 Ustaw `SUPABASE_URL`, `SUPABASE_SECRET_KEY` i `SUPABASE_TEACHER_ID` (UUID nauczyciela z `profiles`, dostępny w Supabase Studio). Klucz serwisowy pozostaje tylko w powłoce. Następnie:
 
 ```powershell

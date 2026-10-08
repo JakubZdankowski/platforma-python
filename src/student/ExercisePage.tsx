@@ -100,11 +100,11 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
           </div>
           <div id="instructions-content" className="instructions-content" hidden={instructionsCollapsed}>
             <span className="exercise-number">{t.exerciseLabel} {String(exerciseIndex + 1).padStart(2, '0')}{backLink && <> · {exercise.title}</>}</span>
-            <MarkdownInstructions markdown={exercise.instructionsMarkdown} />
-            <div className="tip">
-              <h3>{t.tipTitle}</h3>
+            <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
+            <details key={`tip-${exercise.id}`} className="tip">
+              <summary>{t.tipTitle}</summary>
               <p>{turtleEnabled ? t.turtleTip : t.tip}</p>
-            </div>
+            </details>
           </div>
         </aside>
         <section ref={editorRef} className="editor-panel" aria-labelledby="editor-title">
