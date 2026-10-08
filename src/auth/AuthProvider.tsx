@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { AppSupabaseClient } from '../database/supabase';
 import { loadProfile, signOut as signOutRequest, type Profile } from './authService';
 import { downloadCode } from '../student/downloadCode';
+import { useEditorLease, type EditorLease } from './useEditorLease';
 
 export type AuthState =
   | { status: 'loading' }
@@ -16,6 +17,7 @@ interface AuthContextValue {
   state: AuthState;
   signOut: () => Promise<void>;
   retry: () => void;
+  editorLease: EditorLease;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -27,6 +29,7 @@ export function AuthProvider({ client, children }: { client: AppSupabaseClient; 
   const [attempt, setAttempt] = useState(0);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [recoveredWork, setRecoveredWork] = useState<{ code: string; title: string } | null>(null);
+  const editorLease = useEditorLease(state.status === 'signed-in' && state.profile.role === 'student' ? state.profile.id : null);
   const ending = useRef(false);
   const signedIn = useRef(false);
   const manualSignOut = useRef(false);
@@ -121,7 +124,7 @@ export function AuthProvider({ client, children }: { client: AppSupabaseClient; 
 
   const signOut = useCallback(() => { manualSignOut.current = true; return signOutRequest(client); }, [client]);
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
-  const value = useMemo(() => ({ client, state, signOut, retry }), [client, state, signOut, retry]);
+  const value = useMemo(() => ({ client, state, signOut, retry, editorLease }), [client, state, signOut, retry, editorLease]);
   return <AuthContext.Provider value={value}>
     {sessionEnded && <section className="session-ended-notice" role="alert">
       <p>Sesja zakończona. Konto zalogowano w innej przeglądarce lub urządzeniu albo cofnięto dostęp do sesji. Zaloguj się ponownie, aby kontynuować.</p>

@@ -13,6 +13,7 @@ Kroki A, B i C MVP są zakończone. Aplikacja działa na GitHub Pages z produkcy
 - Otwarty ekran sprawdza dostęp do ćwiczenia co 5 sekund oraz po powrocie do karty i odzyskaniu sieci. Po cofnięciu dostępu zachowuje kod do skopiowania/pobrania i przełącza edytor w tryb tylko do odczytu; ponowne przypisanie przywraca edycję.
 - Komunikaty utraty sieci i błędów zapisu, ostrzeżenie przeglądarki przy zamykaniu lub odświeżaniu z niezapisanymi zmianami oraz pobieranie aktualnego kodu jako `.py`, także bez sieci.
 - Nowe logowanie przejmuje sesję konta ucznia lub nauczyciela. RLS i funkcja administracyjna odrzucają starą sesję; poprzednia przeglądarka automatycznie wylogowuje i zachowuje niezapisany kod w pamięci karty do pobrania.
+- Karty tej samej przeglądarki współdzielą sesję, dlatego osobna blokada dopuszcza tylko jeden edytor ucznia. Zamknięcie pierwszej karty pozwala otworzyć edytor w kolejnej z aktualnie zapisaną pracą.
 - RLS oraz testy uprawnień i izolacji danych, testy jednostkowe i przeglądarkowe. Wdrożenie i scenariusz odbioru na publicznym adresie przeszły; nie stanowi to pełnego audytu bezpieczeństwa ani testu obciążenia całej klasy.
 
 ## Kolejność dalszych prac

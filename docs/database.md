@@ -81,7 +81,9 @@ Po poprawnym logowaniu `public.claim_account_session()` rejestruje sesję w `pri
 
 Wszystkie siedem tabel aplikacji ma dodatkową restrykcyjną politykę RLS `private.is_current_session()`. Oprócz własności danych i przypisania lekcji wymagane jest dopasowanie JWT do aktywnej, nadal istniejącej sesji Auth. Stary token nie pozwala na odczyt ani zapis, nawet przed jego naturalnym wygaśnięciem. Edge Function `teacher-students` również sprawdza sesję przed operacjami kont uczniów.
 
-Przeglądarka sprawdza `public.is_current_session()` co 2 sekundy oraz po powrocie do okna i odzyskaniu sieci. Negatywny wynik kończy lokalną sesję i kieruje do logowania; błąd sieci sam w sobie nie wylogowuje. Niezapisany kod pozostaje w pamięci bieżącej karty do skopiowania lub pobrania. Ponowne logowanie albo zamknięcie strony usuwa tę kopię. Zasada dotyczy uczniów i nauczycieli niezależnie od IP. Karty korzystające ze wspólnej sesji tej samej przeglądarki nie są osobnymi sesjami konta.
+Przeglądarka sprawdza `public.is_current_session()` co 2 sekundy oraz po powrocie do okna i odzyskaniu sieci. Negatywny wynik kończy lokalną sesję i kieruje do logowania; błąd sieci sam w sobie nie wylogowuje. Niezapisany kod pozostaje w pamięci bieżącej karty do skopiowania lub pobrania. Ponowne logowanie albo zamknięcie strony usuwa tę kopię. Zasada dotyczy uczniów i nauczycieli niezależnie od IP.
+
+Karty tej samej przeglądarki współdzielą sesję Auth. Dodatkowa blokada Web Locks pozwala otworzyć edytor ucznia tylko w jednej karcie. Pozostałe karty pokazują komunikat; po zamknięciu pierwszej edytor otwiera się z ponownie pobraną zapisaną pracą. Blokada pozostaje podczas nawigacji między ćwiczeniami. Brak obsługi Web Locks nie zezwala na edycję i wymaga użycia aktualnej przeglądarki.
 
 Testy: `tests/db/sessions.test.ts` (stary JWT, odświeżanie, próba odzyskania konta, operacje nauczyciela) i `tests/auth/single-session.spec.ts` (dwie przeglądarki, wylogowanie, niezapisany kod).
 

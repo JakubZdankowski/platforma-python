@@ -47,3 +47,33 @@ test('a second browser logs the first out and preserves its unsaved code for dow
     await f.cleanup();
   }
 });
+
+test('tabs sharing a session have only one editor and load the latest code after the first closes', async ({ page, context }) => {
+  const f = await sessionFixture();
+  let second: typeof page | undefined;
+  try {
+    await page.goto('/join');
+    await page.getByLabel('Kod klasy').fill(f.joinCode);
+    await page.getByLabel('Nazwa użytkownika').fill(f.username);
+    await page.getByLabel('Hasło').fill(f.password);
+    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(page).toHaveURL(/\/student$/);
+    await page.goto(`/student/exercises/${f.exerciseId}`);
+    const editor = page.getByRole('textbox', { name: 'Edytor kodu Python' });
+    await expect(editor).toHaveText('print("start")');
+    await editor.fill('print("Najnowsza wersja")');
+    await expect(page.locator('.save-status')).toHaveText('Zapisano');
+    second = await context.newPage();
+    await second.goto(`/student/exercises/${f.exerciseId}`);
+    await expect(second.getByRole('alert')).toContainText('otwarte w innej karcie');
+    await expect(second.getByRole('textbox', { name: 'Edytor kodu Python' })).toHaveCount(0);
+    await expect(editor).toHaveAttribute('aria-readonly', 'false');
+    await page.close();
+    await expect(second.getByRole('textbox', { name: 'Edytor kodu Python' })).toHaveText('print("Najnowsza wersja")');
+    await second.getByRole('textbox', { name: 'Edytor kodu Python' }).fill('print("Druga karta")');
+    await expect(second.locator('.save-status')).toHaveText('Zapisano');
+  } finally {
+    await second?.close();
+    await f.cleanup();
+  }
+});

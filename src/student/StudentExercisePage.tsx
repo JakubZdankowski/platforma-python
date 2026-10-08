@@ -8,7 +8,7 @@ import { useStudentWork } from './useStudentWork';
 import type { Exercise } from '../exercises/types';
 
 export function StudentExercisePage({ messages: t, locale }: { messages: Messages; locale: Locale }) {
-  const { client } = useAuth();
+  const { client, editorLease } = useAuth();
   const { exerciseId = '' } = useParams();
   const [content, setContent] = useState<{ lessons: Lesson[] } | 'error' | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -19,6 +19,12 @@ export function StudentExercisePage({ messages: t, locale }: { messages: Message
     return () => { active = false; };
   }, [client, exerciseId, attempt]);
   const back = <p><Link to="/student">← {t.allLessons}</Link></p>;
+  if (editorLease !== 'owned') return <main className="account-page">{back}
+    {editorLease === 'checking' ? <p role="status">{t.loadingData}</p>
+      : <p role="alert">{editorLease === 'unsupported'
+        ? 'Nie można zabezpieczyć edycji w tej przeglądarce. Otwórz aplikację w aktualnej wersji Chrome, Edge, Firefox lub Safari.'
+        : 'To konto jest już otwarte w innej karcie tej przeglądarki. Zamknij tamtą kartę, aby edytować kod tutaj.'}</p>}
+  </main>;
   if (!content) return <main className="account-page">{back}<p role="status">{t.loadingData}</p></main>;
   if (content === 'error') return <main className="account-page">{back}<p role="alert">{t.dataUnavailable}</p>
     <button type="button" className="button button-secondary" onClick={() => setAttempt((a) => a + 1)}>{t.retry}</button></main>;
