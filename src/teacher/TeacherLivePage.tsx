@@ -43,38 +43,39 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
   const status = live.connection === 'live' ? t.liveConnected : live.connection === 'connecting' ? t.liveConnecting : t.liveDisconnected;
   const formatTime = (value: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(value));
   return <main className="account-page live-class-page">
-    {back}
-    <h1>{t.liveClassTitle(details.name)}</h1>
-    <div className="live-connection-line">
+    <header className="live-page-header">
+      <div className="live-page-title">{back}<h1>{t.liveClassTitle(details.name)}</h1></div>
+      <div className="live-connection-line">
       <p className={`live-connection ${live.connection}`} role="status" data-testid="live-connection">{status}</p>
       {live.connection !== 'live' && <button type="button" className="button button-secondary button-small" onClick={live.retry}>{t.retry}</button>}
-    </div>
+      </div>
+    </header>
     {live.refreshFailed && <p role="alert" className="form-error">{t.liveRefreshFailed}</p>}
-    <p className="account-muted">{t.liveActivityHint}</p>
-    <section className="account-section" aria-labelledby="live-students-heading">
+    <details className="live-help"><summary>{t.liveHelpTitle}</summary><p>{t.liveActivityHint}</p></details>
+    <div className="live-workspace">
+    <section className="live-students-panel" aria-labelledby="live-students-heading">
       <h2 id="live-students-heading">{t.studentsTitle(students.length)}</h2>
-      {students.length ? <div className="live-table-scroll"><table className="data-table live-table">
-        <thead><tr><th scope="col">{t.existingStudent}</th><th scope="col">{t.currentExercise}</th><th scope="col">{t.activity}</th><th scope="col">{t.lastRun}</th></tr></thead>
-        <tbody>{students.map((student) => {
+      {students.length ? <ul className="live-student-list">{students.map((student) => {
           const current = currentWork(work, student.id);
           const exercise = exercises.find((item) => item.id === current?.exercise_id);
           const run = latestRun(work, student.id);
           const activity = workActivity(current, now);
-          return <tr key={student.id} data-testid={`live-student-${student.id}`} className={selectedId === student.id ? 'is-selected' : undefined}>
-            <td><button type="button" className="student-watch-button" onClick={() => setSelectedId(student.id)}
+          return <li key={student.id} data-testid={`live-student-${student.id}`}>
+            <button type="button" className={`student-watch-button${selectedId === student.id ? ' is-selected' : ''}`} onClick={() => setSelectedId(student.id)}
               aria-label={t.watchStudent(student.displayName)} aria-pressed={selectedId === student.id} aria-controls="student-live-view">
-              {student.displayName}</button><span className="live-username">{student.username}</span></td>
-            <td>{current ? <><span>{exercise?.title ?? t.unavailableExercise}</span>{exercise && <span className="live-lesson-title">{exercise.lessonTitle}</span>}</> : '—'}</td>
-            <td><span className={`activity-label ${activity.kind}`}>{activityLabel(activity, t)}</span></td>
-            <td><span className={run?.last_run_success ? 'run-success' : undefined} title={run?.last_run_at ? formatTime(run.last_run_at) : undefined}>{runLabel(run, t)}</span></td>
-          </tr>;
-        })}</tbody>
-      </table></div> : <p className="account-muted">{t.noClassStudents}</p>}
+              <span className="live-student-name">{student.displayName}<span className="live-username">{student.username}</span></span>
+              <span className="live-student-exercise" title={exercise ? `${exercise.lessonTitle} — ${exercise.title}` : undefined}>{current ? exercise?.title ?? t.unavailableExercise : '—'}</span>
+              <span className="live-student-status"><span className={`activity-label ${activity.kind}`}>{activityLabel(activity, t)}</span>
+                <span className={run?.last_run_success ? 'run-success' : undefined} title={`${t.lastRun}: ${runLabel(run, t)}${run?.last_run_at ? ` · ${formatTime(run.last_run_at)}` : ''}`}>{runLabel(run, t)}</span></span>
+            </button>
+          </li>;
+        })}</ul> : <p className="account-muted live-empty">{t.noClassStudents}</p>}
     </section>
-    {selected && <section id="student-live-view" className="account-section live-viewer" aria-labelledby="student-live-title">
+    <section id="student-live-view" className="live-viewer" aria-labelledby="student-live-title">
+    {selected ? <>
       <div className="live-viewer-heading"><h2 id="student-live-title">{t.watchStudent(selected.displayName)}</h2>
+        <span className="live-readonly">{t.readOnlyCode}</span>
         <button type="button" className="button button-secondary button-small" onClick={() => setSelectedId(null)}>{t.closeLiveView}</button></div>
-      <p className="account-muted">{t.readOnlyCode}</p>
       {selectedWork ? <>
         <p className="live-exercise-title">{selectedExercise ? `${selectedExercise.lessonTitle} — ${selectedExercise.title}` : t.unavailableExercise}</p>
         <div className="live-work-details">
@@ -86,7 +87,9 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
           <CodeEditor key={`${selected.id}-${selectedWork.exercise_id}`} value={selectedWork.code} readOnly label={t.studentCodeLabel} helpId="live-editor-help" />
         </Suspense></div>
         <p id="live-editor-help" className="sr-only">{t.readOnlyHelp}</p>
-      </> : <p className="account-muted">{t.studentHasNotStarted}</p>}
-    </section>}
+      </> : <p className="account-muted live-empty">{t.studentHasNotStarted}</p>}
+    </> : <><h2 id="student-live-title" className="live-viewer-heading">{t.studentCodeLabel}</h2><p className="account-muted live-empty">{t.chooseLiveStudent}</p></>}
+    </section>
+    </div>
   </main>;
 }

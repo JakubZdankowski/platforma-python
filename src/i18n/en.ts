@@ -148,6 +148,8 @@ export const en = {
   noLastRun: 'No runs yet',
   watchStudent: (name: string) => `Watch ${name}`,
   closeLiveView: 'Close view',
+  liveHelpTitle: 'About the live view',
+  chooseLiveStudent: 'Select a student from the list to view their code.',
   readOnlyCode: 'Student code — read only',
   readOnlyHelp: 'You can select and copy the code. This view cannot edit or run it.',
   studentCodeLabel: 'Student Python code (read only)',
