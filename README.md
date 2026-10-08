@@ -2,7 +2,7 @@
 
 Proste środowisko do nauki Pythona w przeglądarce, przeznaczone docelowo do lekcji z dziećmi w wieku około 9–12 lat.
 
-Obecny zakres: M1–M3 oraz **krok A — lekcje i autosave** i **krok B — dashboard i podgląd pracy klasy** z [planu MVP](docs/mvp-plan.md). Pozostała publikacja na GitHub Pages i hostowanym Supabase (C).
+Obecny zakres: M1–M3 oraz kroki **A — lekcje i autosave**, **B — dashboard i podgląd pracy klasy**, **C — publikacja na GitHub Pages i hostowanym Supabase** z [planu MVP](docs/mvp-plan.md). Aplikacja: https://jakubzdankowski.github.io/platforma-python/.
 
 - Pod `/` działa strona startowa z wejściem dla ucznia i nauczyciela. Lekcje i ćwiczenia wymagają logowania. Python wykonuje się wyłącznie w przeglądarce, w Web Workerze.
 - Nauczyciel loguje się e-mailem pod `/login`. Tworzy klasy i zmienia ich nazwy, zakłada konta uczniów z wygenerowanym hasłem, resetuje hasła oraz dodaje uczniów do klas i usuwa z nich.
@@ -221,7 +221,7 @@ Wynik znajduje się w `dist/`. Można opublikować go na statycznym hostingu prz
 
 Adresy `/join`, `/login`, `/student` i `/teacher/...` obsługuje routing w przeglądarce. Hosting musi więc zwracać `index.html` dla ścieżek, które **nie są istniejącymi plikami** (typowa reguła „SPA fallback”). Istniejące pliki, w tym `pyodide/`, muszą być serwowane bez zmian. Zmienne `VITE_SUPABASE_*` są wbudowywane w build, więc trzeba je ustawić przed `pnpm build`.
 
-Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy aktualizacji zależności muszą być wdrażane razem i ponownie walidowane przez cache; nie należy nadawać im bezwarunkowego wieloletniego cache. Obecna konfiguracja zakłada publikację w katalogu głównym domeny. Nie wymaga nagłówków dla SharedArrayBuffer, ponieważ Stop korzysta z zakończenia workera.
+Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy aktualizacji zależności muszą być wdrażane razem i ponownie walidowane przez cache; nie należy nadawać im bezwarunkowego wieloletniego cache. `VITE_APP_BASE_PATH` ustawia katalog publikacji (lokalnie domyślnie `/`, na Pages `/platforma-python/`). Nie wymaga nagłówków dla SharedArrayBuffer, ponieważ Stop korzysta z zakończenia workera.
 
 ## Ograniczenia
 
@@ -237,4 +237,4 @@ Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy akt
 - Surowy HTML w Markdown jest pomijany; `<details>` nie jest jeszcze obsługiwane.
 - Brak instalowania dodatkowych pakietów i gwarancji pełnego offline. Niezapisany kod pozostaje w pamięci; bez kopii localStorage zamknięcie karty podczas awarii sieci może go utracić. Zapis przy opuszczaniu strony jest best effort; małe żądania używają `keepalive`, a większe niż około 60 KB wymagają pozostawienia strony otwartej do potwierdzenia zapisu.
 
-Kroki A i B są zaimplementowane. Konfigurację publikacji opisuje [docs/deployment.md](docs/deployment.md). Krok C wymaga wdrożenia produkcyjnej bazy i sprawdzenia publicznego adresu.
+Kroki A, B i C są zakończone. Aplikacja działa pod https://jakubzdankowski.github.io/platforma-python/ z produkcyjnym Supabase. Konfigurację i odbiór publikacji opisuje [docs/deployment.md](docs/deployment.md).

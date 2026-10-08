@@ -4,6 +4,13 @@
 - Aplikacja: https://jakubzdankowski.github.io/platforma-python/
 - Supabase: `vjsiqsqbecanaqhimshj`.
 
+Status 2026-10-08: frontend i backend wdrożone; scenariusz odbioru przeszedł.
+Pierwszy nauczyciel: Sky Mentor. Adres logowania i hasło są w lokalnym,
+ignorowanym pliku `.env.production.account.local`, pod `SUPABASE_TEACHER_EMAIL`
+i `SUPABASE_TEACHER_PASSWORD`.
+Zaimportowano „Pierwsza lekcja” z ćwiczeniami „Powitanie” i „Kwadrat”.
+Klasa „Test wdrożenia MVP” i „Uczeń testowy” pozostają jako dane testu publikacji.
+
 ## Frontend
 
 W GitHub Settings → Pages wybierz Source: **GitHub Actions**. Workflow
@@ -41,13 +48,21 @@ W dashboardzie produkcyjnego projektu:
 - Data API włączone, automatyczne uprawnienia nowych tabel wyłączone;
 - migracje włączają RLS i nadają wymagane uprawnienia.
 
+Zadeklarowane ustawienia Auth są również w `deploy/supabase/config.toml`.
+Można je porównać i wdrożyć bez zmieniania lokalnego środowiska:
+
+```powershell
+pnpm exec supabase config diff --workdir deploy --project-ref vjsiqsqbecanaqhimshj
+pnpm exec supabase config push --workdir deploy --project-ref vjsiqsqbecanaqhimshj
+```
+
 ## Nauczyciel i treści
 
 Ustaw `SUPABASE_URL` i `SUPABASE_SECRET_KEY` wyłącznie w lokalnym środowisku.
 Sekretów nie przesyłaj do czatu ani nie commituj. Następnie:
 
 ```powershell
-pnpm teacher:create mentor@skyblue.education "Sky Mentor"
+pnpm teacher:create "nauczyciel@example.edu" "Nazwa nauczyciela"
 ```
 
 Zachowaj wygenerowane hasło. Z profilu nauczyciela skopiuj UUID do
@@ -65,3 +80,11 @@ Krok C jest zakończony dopiero po zielonym wdrożeniu i sprawdzeniu na publiczn
 adresie: logowanie nauczyciela, utworzenie ucznia, logowanie ucznia, Python i Turtle,
 zapis po odświeżeniu oraz podgląd pracy u nauczyciela. Sprawdź też otwarcie i
 odświeżenie bezpośredniego adresu ćwiczenia.
+
+Opcjonalny powtarzalny test odbioru (wymaga Playwright Chromium i lokalnego pliku
+danych logowania; zapisuje pracę wyłącznie ucznia testowego):
+
+```powershell
+$env:PRODUCTION_SMOKE = "1"
+node scripts/smoke-production.mjs
+```

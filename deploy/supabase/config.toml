@@ -1,0 +1,12 @@
+# Only production Auth settings are declared; other remote resources are untouched.
+project_id = "platforma-python-prod"
+
+[auth]
+site_url = "https://jakubzdankowski.github.io/platforma-python/"
+additional_redirect_urls = ["https://jakubzdankowski.github.io/platforma-python/**"]
+enable_signup = false
+enable_anonymous_sign_ins = false
+minimum_password_length = 8
+
+[auth.rate_limit]
+sign_in_sign_ups = 300

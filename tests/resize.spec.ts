@@ -23,7 +23,7 @@ async function drag(page: Page, deltaX: number) {
 }
 
 test('dragging the handle trades width between the editor and the console', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/tests/fixtures/playground.html');
   await page.getByRole('textbox', { name: 'Edytor kodu Python' }).fill('print("szerzej")');
   const before = await widths(page);
 
@@ -45,7 +45,7 @@ test('dragging the handle trades width between the editor and the console', asyn
 });
 
 test('the handle works with the keyboard', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/tests/fixtures/playground.html');
   const before = await widths(page);
   const handle = page.getByRole('separator', { name: handleName });
   await handle.focus();
@@ -61,7 +61,7 @@ test('the handle works with the keyboard', async ({ page }) => {
 
 test('a wider output column enlarges the turtle drawing and the width survives switching exercises', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/');
+  await page.goto('/tests/fixtures/playground.html');
   await page.getByRole('button', { name: 'Następne zadanie' }).click();
   const canvas = page.getByTestId('turtle-canvas');
   const before = (await canvas.boundingBox())!;
@@ -85,6 +85,6 @@ test('a wider output column enlarges the turtle drawing and the width survives s
 
 test('the handle is hidden when panels are stacked', async ({ page }) => {
   await page.setViewportSize({ width: 900, height: 900 });
-  await page.goto('/');
+  await page.goto('/tests/fixtures/playground.html');
   await expect(page.getByRole('separator', { name: handleName })).toBeHidden();
 });
