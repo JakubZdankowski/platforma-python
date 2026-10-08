@@ -26,10 +26,12 @@ interface Props {
   onRunResult?: (result: ExecutionResult) => void;
   onReset?: () => void;
   backLink?: ReactNode;
+  warning?: string;
+  readOnly?: boolean;
 }
 
 export function ExercisePage({ messages: t, locale, exercise, exercises, exerciseIndex, code, onChange: setCode,
-  onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink }: Props) {
+  onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink, warning, readOnly = false }: Props) {
   const turtleEnabled = exercise.runtimeType === 'python-turtle';
   const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
   // Width of the output column chosen with the resizer; null means the default responsive width.
@@ -40,7 +42,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
   const [preparing, setPreparing] = useState(false);
   const preparingRef = useRef(false);
   const run = useCallback(() => {
-    if (preparingRef.current || runner.isBusy) return;
+    if (readOnly || preparingRef.current || runner.isBusy) return;
     preparingRef.current = true;
     setPreparing(true);
     void (async () => {
@@ -50,7 +52,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
         if (result) onRunResult?.(result);
       } finally { preparingRef.current = false; setPreparing(false); }
     })();
-  }, [runner.run, runner.isBusy, code, t.inputUnavailable, turtleEnabled, beforeRun, onRunResult]);
+  }, [readOnly, runner.run, runner.isBusy, code, t.inputUnavailable, turtleEnabled, beforeRun, onRunResult]);
   const selectExercise = useCallback((index: number) => {
     if (index < 0 || index >= exercises.length || index === exerciseIndex || preparingRef.current) return;
     void onSelect(index);
@@ -77,6 +79,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
           onSelect={selectExercise}
         />
       </header>
+      {warning && <div className="work-warning" role="alert">{warning}</div>}
       <div
         className={`exercise-layout${instructionsCollapsed ? ' instructions-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
         style={outputWidth === null ? undefined : { '--output-width': `${outputWidth}px` } as CSSProperties}
@@ -114,20 +117,28 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             <span className="language-badge">Python</span>
           </div>
           <Suspense fallback={<div className="code-editor editor-loading" role="status">{t.loadingEditor}</div>}>
-            <CodeEditor key={exercise.id} value={code} onChange={setCode} onRun={run} label={t.editorLabel} helpId="editor-help" />
+            <CodeEditor key={exercise.id} value={code} onChange={setCode} onRun={run} label={t.editorLabel} helpId="editor-help" readOnly={readOnly} />
           </Suspense>
           <p id="editor-help" className="sr-only">{t.editorHelp}</p>
           <div className="editor-toolbar">
             <div className="run-controls">
-              <button type="button" className="button button-primary" onClick={run} disabled={runner.isBusy || preparing} aria-keyshortcuts="Control+Enter Meta+Enter">
+              <button type="button" className="button button-primary" onClick={run} disabled={readOnly || runner.isBusy || preparing} aria-keyshortcuts="Control+Enter Meta+Enter">
                 <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5 13 8l-9 5.5z" fill="currentColor" /></svg>
                 {runner.status === 'error' ? t.retry : t.run}
               </button>
               {runner.isBusy
                 ? <button type="button" className="button button-stop" onClick={runner.stop}><span className="stop-symbol" aria-hidden="true" />{t.stop}</button>
                 : <span className="shortcut">{t.shortcut}</span>}
-              {onReset && <button type="button" className="button button-secondary button-small" disabled={runner.isBusy || preparing}
+              {onReset && <button type="button" className="button button-secondary button-small" disabled={readOnly || runner.isBusy || preparing}
                 onClick={() => { if (window.confirm(t.confirmResetCode)) { onReset(); runner.clear(); } }}>{t.resetCode}</button>}
+              <button type="button" className="button button-secondary button-small" onClick={() => {
+                const url = URL.createObjectURL(new Blob([code], { type: 'text/plain;charset=utf-8' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${exercise.title.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').trim() || 'cwiczenie'}.py`;
+                link.click();
+                window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+              }}>Pobierz kod .py</button>
             </div>
             <span className="runtime-status"><span className={`status-dot ${runner.isBusy ? 'is-busy' : ''}`} aria-hidden="true" />{runtimeLabel}</span>
           </div>

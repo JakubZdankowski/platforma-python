@@ -42,6 +42,12 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
   </main>;
   return <ExercisePage messages={t} locale={locale} exercise={exercise} exercises={lesson.exercises} backLink={backLink}
     exerciseIndex={index} lessonTitle={lesson.title} code={work.state.code} onChange={work.change}
+    readOnly={work.accessLost}
+    warning={work.accessLost
+      ? 'Dostęp do tej lekcji został odebrany. Twój kod pozostał na ekranie. Skopiuj go lub pobierz plik .py przed opuszczeniem strony. Zapis jest niedostępny.'
+      : work.offline
+        ? work.state.save === 'saved' ? 'Brak połączenia — dalsze zmiany nie będą zapisywane do czasu odzyskania połączenia.' : 'Brak połączenia — zmiany nie zostały zapisane. Zachowaj otwartą kartę lub pobierz kod .py.'
+        : work.state.save === 'error' ? 'Zmiany nie zostały zapisane — ponawiam zapis. Zachowaj otwartą kartę lub pobierz kod .py.' : undefined}
     saveStatus={work.state.save === 'saved' ? t.savedCode : work.state.save === 'error' ? t.retryingSave : t.savingCode}
     beforeRun={work.flush} onRunResult={work.recordRun} onReset={() => { work.change(exercise.starterCode); void work.flush(); }}
     onSelect={async (next) => { if (await work.flush()) void navigate(`/student/exercises/${lesson.exercises[next]!.id}`); }} />;

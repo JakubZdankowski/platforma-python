@@ -7,13 +7,16 @@ describe('student autosave ordering and recovery', () => {
     vi.useFakeTimers();
     const write = vi.fn(async () => {});
     const saver = new WorkAutosaver('starter', 'not_started', write, () => {});
+    expect(saver.hasUnsavedChanges).toBe(false);
     saver.change('first');
+    expect(saver.hasUnsavedChanges).toBe(true);
     await vi.advanceTimersByTimeAsync(1000);
     saver.change('second');
     await vi.advanceTimersByTimeAsync(1499);
     expect(write).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     expect(write).toHaveBeenCalledWith({ code: 'second', status: 'in_progress' });
+    expect(saver.hasUnsavedChanges).toBe(false);
     saver.dispose();
   });
   it('serializes a newer edit behind an in-flight save and never reports it saved early', async () => {

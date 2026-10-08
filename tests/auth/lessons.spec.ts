@@ -33,7 +33,8 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await studentPage.getByLabel('Nazwa użytkownika').fill('ania');
     await studentPage.getByLabel('Hasło').fill(SEED.password('ania'));
     await studentPage.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await expect(studentPage.getByText('Nauczyciel nie przypisał jeszcze żadnych lekcji.')).toBeVisible();
+    await expect(studentPage).toHaveURL(/\/student$/);
+    await expect(studentPage.getByRole('heading', { name: lessonTitle, exact: true })).toHaveCount(0);
 
     await page.goto('/login');
     await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
@@ -44,7 +45,7 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeEnabled();
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeChecked();
     await studentPage.reload();
-    await studentPage.getByRole('link', { name: 'Powitanie', exact: true }).click();
+    await studentPage.locator(`a[href="/student/exercises/${original[0]!.id}"]`).click();
     const editor = studentPage.getByRole('textbox', { name: 'Edytor kodu Python' });
     await expect(editor).toHaveText('print("Cześć!")');
     await editor.fill('print("Zapisane — ąęł")');
@@ -74,7 +75,7 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     // Navigation flushes immediately, before the debounce timer expires.
     await editor.fill('print("Nawigacja")');
     await studentPage.getByRole('button', { name: 'Następne zadanie' }).click();
-    await expect(studentPage.getByRole('heading', { name: 'Kwadrat', exact: true })).toBeVisible();
+    await expect(studentPage.locator('.exercise-number')).toContainText('Kwadrat');
     await studentPage.getByRole('button', { name: 'Poprzednie zadanie' }).click();
     await expect(editor).toHaveText('print("Nawigacja")');
     studentPage.once('dialog', (dialog) => void dialog.dismiss());
@@ -88,6 +89,7 @@ test('teacher assigns imported content; student code survives refresh, retries, 
 
     // A real pagehide flushes edits made immediately before refresh.
     await editor.fill('print("Szybkie odświeżenie")');
+    studentPage.once('dialog', (dialog) => void dialog.accept());
     await studentPage.reload();
     await expect(editor).toHaveText('print("Szybkie odświeżenie")');
     await expect(studentPage.getByRole('combobox', { name: 'Język interfejsu' })).toHaveCount(0);

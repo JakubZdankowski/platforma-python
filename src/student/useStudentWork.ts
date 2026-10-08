@@ -11,6 +11,41 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
   const [state, setState] = useState<State>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const saver = useRef<WorkAutosaver | null>(null);
+  const [accessLost, setAccessLost] = useState(false);
+  const [offline, setOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    let active = true;
+    let checking = false;
+    const check = async () => {
+      if (checking || !navigator.onLine) return;
+      checking = true;
+      try {
+        const result = await client.from('exercises').select('id').eq('id', exercise.id).maybeSingle();
+        // A network/server error must never be treated as revoked access.
+        if (active && !result.error) setAccessLost(!result.data);
+      } catch { /* Keep the last confirmed access state while the request fails. */ }
+      finally { checking = false; }
+    };
+    const online = () => { setOffline(false); void check(); };
+    const offline = () => setOffline(true);
+    const focus = () => { void check(); };
+    const visible = () => { if (document.visibilityState === 'visible') void check(); };
+    void check();
+    const timer = window.setInterval(() => { void check(); }, 5000);
+    window.addEventListener('online', online);
+    window.addEventListener('offline', offline);
+    window.addEventListener('focus', focus);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      active = false;
+      clearInterval(timer);
+      window.removeEventListener('online', online);
+      window.removeEventListener('offline', offline);
+      window.removeEventListener('focus', focus);
+      document.removeEventListener('visibilitychange', visible);
+    };
+  }, [client, exercise.id]);
 
   useEffect(() => {
     let active = true;
@@ -20,6 +55,12 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
     setState({ status: 'loading' });
     const flush = () => { void writer?.flush(); };
     const visibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (!writer?.hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', beforeUnload);
     window.addEventListener('pagehide', flush);
     window.addEventListener('online', flush);
     document.addEventListener('visibilitychange', visibility);
@@ -63,6 +104,7 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
       saver.current = null;
       auth.subscription.unsubscribe();
       window.removeEventListener('pagehide', flush);
+      window.removeEventListener('beforeunload', beforeUnload);
       window.removeEventListener('online', flush);
       document.removeEventListener('visibilitychange', visibility);
     };
@@ -74,5 +116,5 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
   }, []);
   const flush = useCallback(() => saver.current?.flush() ?? Promise.resolve(false), []);
   const recordRun = useCallback((result: ExecutionResult) => saver.current?.recordRun(result), []);
-  return { state, change, flush, recordRun, retry: () => setAttempt((value) => value + 1) };
+  return { state, change, flush, recordRun, accessLost, offline, retry: () => setAttempt((value) => value + 1) };
 }
