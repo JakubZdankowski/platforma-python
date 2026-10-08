@@ -25,9 +25,9 @@ test.afterAll(async () => {
   for (const row of data ?? []) await admin.auth.admin.deleteUser(row.id);
 });
 
-test('the playground links to student sign-in', async ({ page }) => {
+test('the home page links to student sign-in', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Zaloguj się' }).click();
+  await page.getByRole('link', { name: 'Zaloguj się', exact: true }).click();
   await expect(page).toHaveURL(/\/join$/);
   await expect(page.getByRole('heading', { name: 'Zaloguj się' })).toBeVisible();
 });

@@ -162,6 +162,8 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
+            "claim_account_session": { Args: Record<PropertyKey, never>; Returns: boolean },
+            "is_current_session": { Args: Record<PropertyKey, never>; Returns: boolean },
             "revoke_user_sessions":
 { Args: { "p_user_id": string }; Returns: undefined
                            },

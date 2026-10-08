@@ -7,6 +7,7 @@ import { usePythonRunner } from '../runtime/usePythonRunner';
 import { TurtlePanel } from '../turtle/TurtlePanel';
 import { PanelResizer } from './PanelResizer';
 import { SampleExercisePicker } from './SampleExercisePicker';
+import { downloadCode } from './downloadCode';
 import type { Messages, Locale } from '../i18n/en';
 
 const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })));
@@ -131,14 +132,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
                 : <span className="shortcut">{t.shortcut}</span>}
               {onReset && <button type="button" className="button button-secondary button-small" disabled={readOnly || runner.isBusy || preparing}
                 onClick={() => { if (window.confirm(t.confirmResetCode)) { onReset(); runner.clear(); } }}>{t.resetCode}</button>}
-              <button type="button" className="button button-secondary button-small" onClick={() => {
-                const url = URL.createObjectURL(new Blob([code], { type: 'text/plain;charset=utf-8' }));
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${exercise.title.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').trim() || 'cwiczenie'}.py`;
-                link.click();
-                window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-              }}>Pobierz kod .py</button>
+              <button type="button" className="button button-secondary button-small" onClick={() => downloadCode(code, exercise.title)}>Pobierz kod .py</button>
             </div>
             <span className="runtime-status"><span className={`status-dot ${runner.isBusy ? 'is-busy' : ''}`} aria-hidden="true" />{runtimeLabel}</span>
           </div>

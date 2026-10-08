@@ -73,7 +73,17 @@ Przebieg na `/join`:
 2. `signInWithPassword(adres, hasło)` w Supabase Auth sprawdza hasło (bcrypt) i stosuje limit prób.
 3. Uczeń nigdy nie widzi adresu technicznego.
 
-Hasła uczniów generuje Edge Function `teacher-students`: 8 znaków `a–z` i `2–9` bez łatwych do pomylenia (około 40 bitów), losowanych przez `crypto.getRandomValues`. Hasło jest pokazywane nauczycielowi raz i nie jest nigdzie zapisywane jawnie. Reset ustawia nowe hasło i wywołuje `public.revoke_user_sessions()`, dostępne tylko dla `service_role`. Funkcja usuwa sesje ucznia razem z tokenami odświeżania. Wydany już token dostępu wygasa po `jwt_expiry` (1 h).
+Hasła uczniów generuje Edge Function `teacher-students`: 8 znaków `a–z` i `2–9` bez łatwych do pomylenia (około 40 bitów), losowanych przez `crypto.getRandomValues`. Hasło jest pokazywane nauczycielowi raz i nie jest nigdzie zapisywane jawnie. Reset ustawia nowe hasło i wywołuje `public.revoke_user_sessions()`, dostępne tylko dla `service_role`. Funkcja usuwa sesje ucznia razem z tokenami odświeżania. Wydany token JWT może być jeszcze kryptograficznie ważny, ale kontrola sesji w RLS odbiera mu dostęp do danych aplikacji.
+
+## Jedna sesja konta
+
+Po poprawnym logowaniu `public.claim_account_session()` rejestruje sesję w `private.active_sessions` i usuwa wcześniejsze sesje Auth wraz z tokenami odświeżania. Funkcja korzysta wyłącznie z `auth.uid()` i podpisanego `session_id` JWT; nie przyjmuje identyfikatora innego użytkownika. Sprawdza istnienie sesji i kolejność ich utworzenia. Blokada transakcyjna serializuje przejęcia konta. Zapisany identyfikator i czas pozostają po wylogowaniu, aby stara sesja nie mogła odzyskać dostępu po zamknięciu nowszej.
+
+Wszystkie siedem tabel aplikacji ma dodatkową restrykcyjną politykę RLS `private.is_current_session()`. Oprócz własności danych i przypisania lekcji wymagane jest dopasowanie JWT do aktywnej, nadal istniejącej sesji Auth. Stary token nie pozwala na odczyt ani zapis, nawet przed jego naturalnym wygaśnięciem. Edge Function `teacher-students` również sprawdza sesję przed operacjami kont uczniów.
+
+Przeglądarka sprawdza `public.is_current_session()` co 2 sekundy oraz po powrocie do okna i odzyskaniu sieci. Negatywny wynik kończy lokalną sesję i kieruje do logowania; błąd sieci sam w sobie nie wylogowuje. Niezapisany kod pozostaje w pamięci bieżącej karty do skopiowania lub pobrania. Ponowne logowanie albo zamknięcie strony usuwa tę kopię. Zasada dotyczy uczniów i nauczycieli niezależnie od IP. Karty korzystające ze wspólnej sesji tej samej przeglądarki nie są osobnymi sesjami konta.
+
+Testy: `tests/db/sessions.test.ts` (stary JWT, odświeżanie, próba odzyskania konta, operacje nauczyciela) i `tests/auth/single-session.spec.ts` (dwie przeglądarki, wylogowanie, niezapisany kod).
 
 ## Row Level Security
 

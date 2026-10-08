@@ -60,6 +60,12 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
       event.preventDefault();
       event.returnValue = '';
     };
+    const retainCode = (event: Event) => {
+      if (writer?.hasUnsavedChanges) {
+        (event as CustomEvent<{ retainCode: (code: string, title: string) => void }>).detail.retainCode(writer.currentCode, exercise.title);
+      }
+    };
+    window.addEventListener('app-session-ended', retainCode);
     window.addEventListener('beforeunload', beforeUnload);
     window.addEventListener('pagehide', flush);
     window.addEventListener('online', flush);
@@ -105,6 +111,7 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
       auth.subscription.unsubscribe();
       window.removeEventListener('pagehide', flush);
       window.removeEventListener('beforeunload', beforeUnload);
+      window.removeEventListener('app-session-ended', retainCode);
       window.removeEventListener('online', flush);
       document.removeEventListener('visibilitychange', visibility);
     };

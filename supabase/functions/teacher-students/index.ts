@@ -20,6 +20,12 @@ const admin: StudentAdmin = {
   async teacherIdFromToken(accessToken) {
     const { data, error } = await supabase.auth.getUser(accessToken);
     if (error || !data.user) return null;
+    const caller = createClient(supabaseUrl!, serviceRoleKey!, {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    });
+    const current = await caller.rpc('is_current_session');
+    if (current.error || current.data !== true) return null;
     const profile = check(
       await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle(),
     );

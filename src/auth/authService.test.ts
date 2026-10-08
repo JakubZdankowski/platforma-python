@@ -3,13 +3,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AppSupabaseClient } from '../database/supabase';
 import { signInStudent, signInTeacher } from './authService';
 
-function fakeClient(options: { rpcError?: boolean; signInError?: AuthApiError } = {}) {
-  const rpc = vi.fn(async () => (options.rpcError
+function fakeClient(options: { rpcError?: boolean; signInError?: AuthApiError; claimRejected?: boolean } = {}) {
+  const rpc = vi.fn(async (name: string) => (options.rpcError
     ? { data: null, error: { message: 'boom' } }
-    : { data: 'internal@students.invalid', error: null }));
+    : { data: name === 'student_login_email' ? 'internal@students.invalid' : !options.claimRejected, error: null }));
   const signInWithPassword = vi.fn(async () => ({ data: {}, error: options.signInError ?? null }));
-  const client = { rpc, auth: { signInWithPassword } } as unknown as AppSupabaseClient;
-  return { client, rpc, signInWithPassword };
+  const signOut = vi.fn(async () => ({ error: null }));
+  const client = { rpc, auth: { signInWithPassword, signOut } } as unknown as AppSupabaseClient;
+  return { client, rpc, signInWithPassword, signOut };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -20,6 +21,7 @@ describe('signInStudent', () => {
     expect(await signInStudent(client, ' python25 ', ' Kuba ', 'secret-pass')).toBeNull();
     expect(rpc).toHaveBeenCalledWith('student_login_email', { p_join_code: 'PYTHON25', p_username: 'kuba' });
     expect(signInWithPassword).toHaveBeenCalledWith({ email: 'internal@students.invalid', password: 'secret-pass' });
+    expect(rpc).toHaveBeenCalledWith('claim_account_session');
   });
 
   it('does not call the server for empty fields', async () => {
@@ -48,6 +50,11 @@ describe('signInStudent', () => {
 });
 
 describe('signInTeacher', () => {
+  it('ends a login that cannot claim the current session', async () => {
+    const { client, signOut } = fakeClient({ claimRejected: true });
+    expect(await signInTeacher(client, 'teacher@example.test', 'pw')).toBe('unavailable');
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
   it('signs in with a trimmed email address', async () => {
     const { client, signInWithPassword } = fakeClient();
     expect(await signInTeacher(client, ' teacher@example.test ', 'pw')).toBeNull();

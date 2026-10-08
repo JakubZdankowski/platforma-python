@@ -51,7 +51,12 @@ export async function signInTeacher(client: AppSupabaseClient, email: string, pa
 
 async function signInWithEmail(client: AppSupabaseClient, email: string, password: string): Promise<SignInError | null> {
   const { error } = await client.auth.signInWithPassword({ email, password });
-  if (!error) return null;
+  if (!error) {
+    const claimed = await client.rpc('claim_account_session');
+    if (!claimed.error && claimed.data === true) return null;
+    await signOut(client);
+    return 'unavailable';
+  }
   const result = signInErrorFrom(error);
   if (result === 'unavailable') console.error('Sign-in failed', error.status, error.code);
   return result;

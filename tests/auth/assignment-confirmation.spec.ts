@@ -31,7 +31,8 @@ test('cancel keeps a lesson assigned; confirmation removes it', async ({ page })
     });
     await checkbox.click();
     await expect(checkbox).toBeChecked();
-    const read = () => teacher.from('assignments').select('lesson_id').eq('class_id', classId).eq('lesson_id', lessonId!);
+    // Browser login replaces the setup client's session; verification uses admin.
+    const read = () => admin.from('assignments').select('lesson_id').eq('class_id', classId).eq('lesson_id', lessonId!);
     expect((await read()).data).toHaveLength(1);
     page.once('dialog', dialog => void dialog.accept());
     await checkbox.click();

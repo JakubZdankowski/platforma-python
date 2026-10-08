@@ -5,6 +5,9 @@
 - Supabase: `vjsiqsqbecanaqhimshj`.
 
 Status 2026-10-08: frontend i backend wdrożone; scenariusz odbioru przeszedł.
+Kontrola jednej sesji konta wymaga migracji `20261008100000_single_account_session.sql`,
+aktualnej funkcji `teacher-students` i frontendu. Nowe logowanie kończy wcześniejszą
+sesję tego samego konta; ograniczenie działa niezależnie od adresu IP.
 Pierwszy nauczyciel: Sky Mentor. Adres logowania i hasło są w lokalnym,
 ignorowanym pliku `.env.production.account.local`, pod `SUPABASE_TEACHER_EMAIL`
 i `SUPABASE_TEACHER_PASSWORD`.

@@ -19,6 +19,7 @@ export class WorkAutosaver {
   private patch: WorkPatch;
 
   get hasUnsavedChanges() { return this.savedRevision !== this.revision; }
+  get currentCode() { return this.patch.code; }
 
   constructor(code: string, status: WorkPatch['status'],
     private readonly write: (patch: WorkPatch) => Promise<void>,
