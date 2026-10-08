@@ -210,9 +210,6 @@ a.brand { color: inherit; text-decoration: none; }
 .live-connection-line, .live-viewer-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .live-connection { font-size: 14px; color: #e4c19a; }
 .live-connection.live, .run-success { color: #abd2b2; }
-.live-help { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
-.live-help summary { cursor: pointer; width: fit-content; }
-.live-help p { padding-top: 6px; }
 .live-workspace { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; flex: 1; min-height: 0; }
 .live-students-panel, .live-viewer { min-width: 0; min-height: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
 .live-students-panel > h2 { margin: 0; padding: 12px; font-size: 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -223,7 +220,6 @@ a.brand { color: inherit; text-decoration: none; }
 .student-watch-button.is-selected { background: #1a2c46; border-color: var(--accent); }
 .student-watch-button:focus-visible { outline-offset: -3px; }
 .live-student-name { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; width: 100%; font-weight: 650; font-size: 14px; overflow-wrap: anywhere; }
-.live-username { color: var(--text-muted); font-size: 11px; font-weight: 400; overflow-wrap: anywhere; }
 .live-student-exercise { font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere; }
 .live-student-status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; overflow-wrap: anywhere; }
 .activity-label { color: var(--text-muted); }

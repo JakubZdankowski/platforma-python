@@ -51,7 +51,6 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
       </div>
     </header>
     {live.refreshFailed && <p role="alert" className="form-error">{t.liveRefreshFailed}</p>}
-    <details className="live-help"><summary>{t.liveHelpTitle}</summary><p>{t.liveActivityHint}</p></details>
     <div className="live-workspace">
     <section className="live-students-panel" aria-labelledby="live-students-heading">
       <h2 id="live-students-heading">{t.studentsTitle(students.length)}</h2>
@@ -63,7 +62,7 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
           return <li key={student.id} data-testid={`live-student-${student.id}`}>
             <button type="button" className={`student-watch-button${selectedId === student.id ? ' is-selected' : ''}`} onClick={() => setSelectedId(student.id)}
               aria-label={t.watchStudent(student.displayName)} aria-pressed={selectedId === student.id} aria-controls="student-live-view">
-              <span className="live-student-name">{student.displayName}<span className="live-username">{student.username}</span></span>
+              <span className="live-student-name">{student.displayName}</span>
               <span className="live-student-exercise" title={exercise ? `${exercise.lessonTitle} — ${exercise.title}` : undefined}>{current ? exercise?.title ?? t.unavailableExercise : '—'}</span>
               <span className="live-student-status"><span className={`activity-label ${activity.kind}`}>{activityLabel(activity, t)}</span>
                 <span className={run?.last_run_success ? 'run-success' : undefined} title={`${t.lastRun}: ${runLabel(run, t)}${run?.last_run_at ? ` · ${formatTime(run.last_run_at)}` : ''}`}>{runLabel(run, t)}</span></span>

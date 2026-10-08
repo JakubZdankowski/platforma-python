@@ -150,7 +150,6 @@ export const pl: Messages = {
   noLastRun: 'Jeszcze nie uruchamiał',
   watchStudent: (name: string) => `Podgląd: ${name}`,
   closeLiveView: 'Zamknij podgląd',
-  liveHelpTitle: 'O podglądzie',
   chooseLiveStudent: 'Wybierz ucznia z listy, aby zobaczyć jego kod.',
   readOnlyCode: 'Kod ucznia — tylko do odczytu',
   readOnlyHelp: 'Możesz zaznaczać i kopiować kod. Ten podgląd nie pozwala go edytować ani uruchamiać.',
