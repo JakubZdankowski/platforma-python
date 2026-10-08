@@ -52,7 +52,7 @@ export function StudentLoginPage({ messages: t }: { messages: Messages }) {
     </form>
     <p className="account-links">
       <Link to="/login">{t.teacherLoginLink}</Link>
-      <Link to="/">{t.practiceLink}</Link>
+      <Link to="/">{t.homeLink}</Link>
     </p>
   </main>;
 }

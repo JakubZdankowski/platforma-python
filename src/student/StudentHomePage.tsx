@@ -48,7 +48,7 @@ export function StudentHomePage({ messages: t }: { messages: Messages }) {
         <h3>{lesson.title}</h3>
         <ol>{lesson.exercises.map((exercise) => <li key={exercise.id}><Link to={`/student/exercises/${exercise.id}`}>{exercise.title}</Link></li>)}</ol>
       </li>)}</ul> : <p className="account-muted">{t.noAssignedLessons}</p>)}
-      <p><Link to="/">{t.practiceLink}</Link></p>
+      <p><Link to="/">{t.homeLink}</Link></p>
     </section>
   </main>;
 }

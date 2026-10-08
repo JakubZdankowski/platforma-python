@@ -22,13 +22,13 @@ flowchart LR
   Assets[Pliki statyczne tej samej aplikacji] --> Pyodide
 ```
 
-Serwer aplikacji dostarcza pliki statyczne. Python wykonuje się w przeglądarce. Kod przypisanych ćwiczeń i ostatni wynik uruchomienia są zapisywane w Supabase; kod publicznego playgroundu pozostaje w pamięci karty.
+Serwer aplikacji dostarcza pliki statyczne. Python wykonuje się w przeglądarce. Kod przypisanych ćwiczeń i ostatni wynik uruchomienia są zapisywane w Supabase. Ćwiczenia wymagają logowania.
 
 ## Konta i klasy (Milestone 3)
 
 ```mermaid
 flowchart LR
-  Router[App / React Router] -->|/| Playground[PlaygroundPage / ExercisePage]
+  Router[App / React Router] -->|/| Home[HomePage / strona startowa]
   Router -->|/join /login /student /teacher| Account[AccountApp, ładowany leniwie]
   Account --> Auth[AuthProvider + RequireRole]
   Account --> Services[authService / classService]
@@ -39,7 +39,7 @@ flowchart LR
   Fn --> PostgREST
 ```
 
-- `/` to dotychczasowy playground bez logowania. Pozostałe ścieżki obsługuje `AccountApp`, osobny moduł ładowany leniwie, więc playground nie pobiera klienta Supabase.
+- `/` to strona startowa z wyborem logowania ucznia lub nauczyciela. Pozostałe ścieżki obsługuje `AccountApp`, ładowany leniwie. Publiczny playground został usunięty z aplikacji; izolowany ekran testowy w `tests/fixtures/` nie trafia do buildu produkcyjnego.
 - `/join` to logowanie ucznia (kod klasy, nazwa użytkownika, hasło), `/login` — nauczyciela (e-mail i hasło), `/student` — klasy i przypisane lekcje, `/student/exercises/:id` — ćwiczenie z autosave, `/teacher` i `/teacher/classes/:id` — klasy nauczyciela, uczniowie, przypisania, tworzenie kont i reset haseł.
 - `AuthProvider` śledzi sesję Supabase i wczytuje profil z bazy. Rola z profilu służy tylko nawigacji (`RequireRole`). O dostępie decydują RLS, uprawnienia kolumnowe i Edge Function.
 - Zapytania kont i klas są w `authService` i `classService`; treści w `lessonService`, przypisania w `LessonAssignments`, praca ucznia w `useStudentWork`. Uprawnienia wszystkich żądań egzekwuje RLS.

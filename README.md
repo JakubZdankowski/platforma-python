@@ -4,7 +4,7 @@ Proste środowisko do nauki Pythona w przeglądarce, przeznaczone docelowo do le
 
 Obecny zakres: M1–M3 oraz **krok A — lekcje i autosave** i **krok B — dashboard i podgląd pracy klasy** z [planu MVP](docs/mvp-plan.md). Pozostała publikacja na GitHub Pages i hostowanym Supabase (C).
 
-- Pod `/` działa playground bez logowania z dwoma przykładowymi ćwiczeniami: „Pierwszy program” (konsola) i „Narysuj kwadrat” (Turtle). Ma instrukcję Markdown, edytor CodeMirror, Uruchom/Zatrzymaj, stdout, stderr, błędy Pythona i rysunek żółwia. Kod wykonuje się wyłącznie w przeglądarce, w Web Workerze.
+- Pod `/` działa strona startowa z wejściem dla ucznia i nauczyciela. Lekcje i ćwiczenia wymagają logowania. Python wykonuje się wyłącznie w przeglądarce, w Web Workerze.
 - Nauczyciel loguje się e-mailem pod `/login`. Tworzy klasy i zmienia ich nazwy, zakłada konta uczniów z wygenerowanym hasłem, resetuje hasła oraz dodaje uczniów do klas i usuwa z nich.
 - Ze strony klasy nauczyciel otwiera „Podgląd pracy klasy” (`/teacher/classes/:id/live`): bieżące ćwiczenie każdego ucznia, szacowaną aktywność, ostatni wynik i kod tylko do odczytu. Zmiany docierają przez Supabase Realtime po autosave.
 - Uczeń loguje się pod `/join` kodem klasy, nazwą użytkownika i hasłem, bez adresu e-mail. Widzi swoje klasy i przypisane lekcje. Ćwiczenia pod `/student/exercises/:id` zapisują kod i ostatni wynik uruchomienia na jego koncie.
@@ -31,7 +31,7 @@ Otwórz adres wypisany przez Vite, domyślnie `http://127.0.0.1:5173`.
 
 `dev` i `build` automatycznie kopiują pliki Pyodide z zainstalowanego pakietu do `public/pyodide/`. Instalacja zależności wymaga internetu. Podczas używania aplikacji interpreter i biblioteka standardowa są pobierane z tego samego serwera co aplikacja, bez zewnętrznego CDN. Wygenerowane pliki runtime’u nie są commitowane.
 
-Bez Supabase działa tylko playground pod `/`. Strony logowania pokazują wtedy, że backend nie jest skonfigurowany.
+Bez Supabase dostępna jest tylko strona startowa pod `/`. Strony logowania pokazują wtedy, że backend nie jest skonfigurowany.
 
 ## Supabase lokalnie
 
@@ -97,7 +97,7 @@ Własny `course/` jest ignorowany przez Git. Przy publicznym repozytorium rzeczy
 
 Zmienne środowiskowe opisuje `.env.example`: tylko URL projektu i klucz publishable, bezpieczne dla przeglądarki. Klucza secret / service_role nie wolno umieszczać w zmiennych `VITE_*` ani commitować.
 
-Treść przykładowych ćwiczeń playgroundu i kod początkowy znajdują się w `src/exercises/sampleExercise.ts`. Pole `runtimeType` (`python-console` lub `python-turtle`) decyduje, czy ćwiczenie ma panel rysunku. Lekcje i ćwiczenia w bazie importuje skrypt `content:sync`.
+Treść przykładowych ćwiczeń testowych i kod początkowy znajdują się w `src/exercises/sampleExercise.ts`. Izolowany ekran w `tests/fixtures/` służy testom runtime’u i nie trafia do buildu produkcyjnego. Pole `runtimeType` (`python-console` lub `python-turtle`) decyduje, czy ćwiczenie ma panel rysunku. Lekcje i ćwiczenia w bazie importuje skrypt `content:sync`.
 
 Interfejs i treść ćwiczeń są po polsku. Przełącznik języka został usunięty.
 
@@ -111,7 +111,7 @@ Interfejs i treść ćwiczeń są po polsku. Przełącznik języka został usuni
 - Tab wcina kod. Escape, a następnie Tab pozwala opuścić edytor klawiaturą.
 - Strzałki „Poprzednie zadanie” / „Następne zadanie” nad panelami przełączają przykładowe ćwiczenia, a przycisk między nimi pokazuje nazwę bieżącego. Każde ćwiczenie zachowuje własny kod. W trakcie wykonania przełączanie jest zablokowane.
 - W ćwiczeniu Turtle funkcje takie jak `forward(100)` i `left(90)` działają bez importu. Żółw rysuje stopniowo w panelu „Rysunek” nad konsolą. Suwak „Tempo” zmienia szybkość, „Pomiń animację” od razu pokazuje gotowy rysunek, a „Zatrzymaj” przerywa program i czyści ekran żółwia. Konsola pokazuje tekst dopiero wtedy, gdy żółw dojdzie do miejsca, w którym go wypisano. Lista poleceń, układ współrzędnych i ograniczenia: [docs/turtle.md](docs/turtle.md).
-- W playgroundzie kod pozostaje w pamięci karty. W przypisanych ćwiczeniach zapisuje się 1,5 s po zakończeniu pisania, przed uruchomieniem i zmianą ćwiczenia oraz przy ukryciu lub opuszczaniu strony. Wskaźnik pokazuje zapis lub ponawianie po błędzie. Przycisk resetu wymaga potwierdzenia i przywraca kod początkowy.
+- W przypisanych ćwiczeniach kod zapisuje się 1,5 s po zakończeniu pisania, przed uruchomieniem i zmianą ćwiczenia oraz przy ukryciu lub opuszczaniu strony. Wskaźnik pokazuje zapis lub ponawianie po błędzie. Przycisk resetu wymaga potwierdzenia i przywraca kod początkowy.
 
 Konta:
 
@@ -237,4 +237,4 @@ Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy akt
 - Surowy HTML w Markdown jest pomijany; `<details>` nie jest jeszcze obsługiwane.
 - Brak instalowania dodatkowych pakietów i gwarancji pełnego offline. Niezapisany kod pozostaje w pamięci; bez kopii localStorage zamknięcie karty podczas awarii sieci może go utracić. Zapis przy opuszczaniu strony jest best effort; małe żądania używają `keepalive`, a większe niż około 60 KB wymagają pozostawienia strony otwartej do potwierdzenia zapisu.
 
-Kroki A i B są zaimplementowane. Publikacja na GitHub Pages pozostaje do realizacji.
+Kroki A i B są zaimplementowane. Konfigurację publikacji opisuje [docs/deployment.md](docs/deployment.md). Krok C wymaga wdrożenia produkcyjnej bazy i sprawdzenia publicznego adresu.

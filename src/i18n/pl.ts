@@ -61,7 +61,7 @@ export const pl: Messages = {
   lessonExercises: 'Ćwiczenia w tej lekcji',
   savedNotice: 'Twój kod jest automatycznie zapisywany na Twoim koncie.',
   exerciseNotFound: 'To ćwiczenie nie jest dostępne. Poproś nauczyciela o przypisanie lekcji.',
-  inputUnavailable: 'input() nie jest jeszcze dostępne w tym playgroundzie. Przypisz wartość bezpośrednio do zmiennej.',
+  inputUnavailable: 'input() nie jest jeszcze dostępne w tym edytorze. Przypisz wartość bezpośrednio do zmiennej.',
 
   // Konta (Milestone 3)
   signIn: 'Zaloguj się',
@@ -82,7 +82,7 @@ export const pl: Messages = {
   email: 'Adres e-mail',
   teacherLoginLink: 'Jestem nauczycielem',
   studentLoginLink: 'Logowanie ucznia',
-  practiceLink: 'Ćwiczenia próbne bez logowania',
+  homeLink: 'Strona startowa',
   studentSignInFailed: 'Nie udało się zalogować. Sprawdź kod klasy, nazwę użytkownika i hasło.',
   teacherSignInFailed: 'Nieprawidłowy adres e-mail lub hasło.',
   signInRateLimited: 'Za dużo prób logowania. Poczekaj chwilę i spróbuj ponownie.',

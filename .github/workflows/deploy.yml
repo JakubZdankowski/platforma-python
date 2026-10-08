@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Build
+        run: pnpm build
+        env:
+          VITE_APP_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          # Browser-safe public project configuration. Never put a secret key here.
+          VITE_SUPABASE_URL: https://vjsiqsqbecanaqhimshj.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_gsArEl0KtYFdJtvBu4IjKg_BwO2Xi0b
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

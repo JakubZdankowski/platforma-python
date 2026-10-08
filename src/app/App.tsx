@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router';
 import { pl } from '../i18n/pl';
-import { PlaygroundPage } from '../student/PlaygroundPage';
+import { HomePage } from './HomePage';
 import blueLogo from '../assets/blue-logo.png';
 
 const AccountApp = lazy(() => import('./AccountApp'));
@@ -11,7 +11,7 @@ export function App() {
   const messages = pl;
   useEffect(() => { document.documentElement.lang = 'pl'; document.title = messages.appName; }, [messages.appName]);
 
-  return <BrowserRouter>
+  return <BrowserRouter basename={import.meta.env.BASE_URL}>
     <header className="site-header">
       <div className="site-header-inner">
         <Link to="/" className="brand">
@@ -25,13 +25,13 @@ export function App() {
       </div>
     </header>
     <Routes>
-      <Route index element={<PlaygroundPage messages={messages} locale="pl" />} />
+      <Route index element={<HomePage />} />
       <Route path="*" element={<Suspense fallback={<main className="account-page" />}><AccountApp messages={messages} locale="pl" headerTarget={headerTarget} /></Suspense>} />
     </Routes>
   </BrowserRouter>;
 }
 
-/** Only on the public playground; the account area has its own sign-in/sign-out controls. */
+/** Login entry on the start page. */
 function SignInLink({ label }: { label: string }) {
   const { pathname } = useLocation();
   return pathname === '/' ? <Link to="/join" className="header-link">{label}</Link> : null;

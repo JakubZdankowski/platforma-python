@@ -9,7 +9,7 @@ async function run(page: Page, code: string) {
   await page.getByRole('button', { name: 'Uruchom', exact: true }).click();
 }
 
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/tests/fixtures/playground.html'); });
 
 test('sample exercise works and all runtime assets stay on the application origin', async ({ page }) => {
   const unexpectedRequests: string[] = [];

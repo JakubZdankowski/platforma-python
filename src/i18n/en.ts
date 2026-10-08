@@ -80,7 +80,7 @@ export const en = {
   email: 'Email address',
   teacherLoginLink: 'I am a teacher',
   studentLoginLink: 'Student sign-in',
-  practiceLink: 'Practice exercises without signing in',
+  homeLink: 'Home',
   studentSignInFailed: 'We could not sign you in. Check the class code, username and password.',
   teacherSignInFailed: 'Wrong email address or password.',
   signInRateLimited: 'Too many sign-in attempts. Wait a moment and try again.',

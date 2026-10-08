@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function openTurtleExercise(page: Page) {
-  await page.goto('/');
+  await page.goto('/tests/fixtures/playground.html');
   await expect(page.getByRole('button', { name: 'Poprzednie zadanie' })).toBeDisabled();
   await page.getByRole('button', { name: 'Następne zadanie' }).click();
   await expect(page.getByRole('heading', { name: 'Narysuj kwadrat', level: 1 })).toBeVisible();

@@ -12,13 +12,13 @@ import { ClassPage } from '../teacher/ClassPage';
 import { TeacherClassesPage } from '../teacher/TeacherClassesPage';
 import { TeacherLivePage } from '../teacher/TeacherLivePage';
 
-/** Signed-in part of the app. Loaded lazily so the local playground does not download the Supabase client. */
+/** Account area, loaded lazily from the start page. */
 export default function AccountApp({ messages: t, locale, headerTarget }: { messages: Messages; locale: Locale; headerTarget: HTMLElement | null }) {
   const client = getSupabase();
   if (!client) {
     return <main className="account-page account-narrow">
       <p className="form-error" role="alert">{t.backendNotConfigured}</p>
-      <p><Link to="/">{t.practiceLink}</Link></p>
+      <p><Link to="/">{t.homeLink}</Link></p>
     </main>;
   }
 
@@ -40,6 +40,6 @@ export default function AccountApp({ messages: t, locale, headerTarget }: { mess
 function NotFound({ messages: t }: { messages: Messages }) {
   return <main className="account-page account-narrow">
     <h1>{t.notFoundTitle}</h1>
-    <p className="account-links"><Link to="/join">{t.studentLoginLink}</Link><Link to="/">{t.practiceLink}</Link></p>
+    <p className="account-links"><Link to="/join">{t.studentLoginLink}</Link><Link to="/">{t.homeLink}</Link></p>
   </main>;
 }

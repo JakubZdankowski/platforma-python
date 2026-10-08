@@ -8,6 +8,8 @@ This plan overrides the milestone order in [product-spec.md](product-spec.md) §
 - **Step B is complete:** class dashboard, timestamp-based activity, latest run, read-only CodeMirror, Postgres Changes, saved-state fallback and reconnect resync. The subscription waits for Postgres Changes readiness before reporting live; existing RLS and the step A publication are reused.
 - Verified for B: typecheck and production build; 80 Vitest tests plus 4 content-parser tests; `pnpm check:db` (24 permission tests including Realtime privacy, 10 account/lesson/live E2E scenarios); 26 playground/Turtle regression scenarios. Playwright suites share an output directory and must run sequentially.
 - Next: **Step C**. Content import instructions and privacy constraints are in [README.md](../README.md#lekcje-z-markdown).
+- Before C: the start page now offers student and teacher login. Anonymous practice has been removed from the app; all lesson exercises require a student session. Runtime regression tests use an isolated development-only fixture excluded from production builds.
+- Step C in progress (2026-10-08): repository base path, BrowserRouter basename, Pages fallback, deployment workflow and public production configuration prepared. Target and operational instructions: [deployment.md](deployment.md). Hosted backend and real-URL acceptance still required.
 
 ## Context
 
