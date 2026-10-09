@@ -93,6 +93,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"group_module_assignments": {
+                  Row: {
+                    "class_id": string,"module_id": string
+                  }
+                  Insert: {
+                    "class_id": string,"module_id": string
+                  }
+                  Update: {
+                    "class_id"?: string,"module_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "group_module_assignments_class_id_fkey"
+      columns: ["class_id"]
+isOneToOne: false
+      referencedRelation: "classes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_module_assignments_module_id_fkey"
+      columns: ["module_id"]
+isOneToOne: false
+      referencedRelation: "modules"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"lessons": {
                   Row: {
                     "id": string,"position": number,"slug": string,"teacher_id": string,"title": string
@@ -106,6 +131,56 @@ isOneToOne: false
                   Relationships: [
                     {
       foreignKeyName: "lessons_teacher_id_fkey"
+      columns: ["teacher_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"module_lessons": {
+                  Row: {
+                    "lesson_id": string,"module_id": string,"position": number
+                  }
+                  Insert: {
+                    "lesson_id": string,"module_id": string,"position"?: number
+                  }
+                  Update: {
+                    "lesson_id"?: string,"module_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "module_lessons_lesson_id_fkey"
+      columns: ["lesson_id"]
+isOneToOne: false
+      referencedRelation: "lessons"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "module_lessons_module_id_fkey"
+      columns: ["module_id"]
+isOneToOne: false
+      referencedRelation: "modules"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"modules": {
+                  Row: {
+                    "id": string,"legacy_class_id": string | null,"position": number,"teacher_id": string,"title": string
+                  }
+                  Insert: {
+                    "id"?: string,"legacy_class_id"?: string | null,"position"?: number,"teacher_id"?: string,"title": string
+                  }
+                  Update: {
+                    "id"?: string,"legacy_class_id"?: string | null,"position"?: number,"teacher_id"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "modules_legacy_class_id_fkey"
+      columns: ["legacy_class_id"]
+isOneToOne: true
+      referencedRelation: "classes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "modules_teacher_id_fkey"
       columns: ["teacher_id"]
 isOneToOne: false
       referencedRelation: "profiles"
@@ -126,6 +201,31 @@ isOneToOne: false
                     {
       foreignKeyName: "profiles_created_by_fkey"
       columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"student_module_assignments": {
+                  Row: {
+                    "module_id": string,"student_id": string
+                  }
+                  Insert: {
+                    "module_id": string,"student_id": string
+                  }
+                  Update: {
+                    "module_id"?: string,"student_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "student_module_assignments_module_id_fkey"
+      columns: ["module_id"]
+isOneToOne: false
+      referencedRelation: "modules"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "student_module_assignments_student_id_fkey"
+      columns: ["student_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -162,10 +262,17 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "claim_account_session": { Args: Record<PropertyKey, never>; Returns: boolean },
-            "is_current_session": { Args: Record<PropertyKey, never>; Returns: boolean },
-            "revoke_user_sessions":
+            "claim_account_session":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_current_session":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"revoke_user_sessions":
 { Args: { "p_user_id": string }; Returns: undefined
+                           },
+"student_login_address":
+{ Args: { "p_username": string }; Returns: string
                            },
 "student_login_email":
 { Args: { "p_join_code": string,"p_username": string }; Returns: string

@@ -37,6 +37,14 @@ function post(body: unknown, token: string | null = 'teacher-token'): Request {
 const create = { action: 'create', classId: CLASS, username: 'Ania ', displayName: '  Ania   Nowak ' };
 
 describe('teacher-students handler', () => {
+  it('creates an independent account without a class', async () => {
+    const admin = fakeAdmin();
+    const response = await handleRequest(post({ action: 'create', username: 'independent', displayName: 'Independent' }), admin);
+    expect(response.status).toBe(200);
+    expect(admin.ownsClass).not.toHaveBeenCalled();
+    expect(admin.addClassMember).not.toHaveBeenCalled();
+    expect(admin.createStudentUser).toHaveBeenCalled();
+  });
   it('answers CORS preflight', async () => {
     const response = await handleRequest(new Request('http://localhost', { method: 'OPTIONS' }), fakeAdmin());
     expect(response.status).toBe(204);

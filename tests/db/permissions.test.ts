@@ -224,9 +224,9 @@ describe('teachers', () => {
     expect((await anonClient().rpc('revoke_user_sessions', { p_user_id: kuba.id })).error).not.toBeNull();
   });
 
-  it('allow the same username for students of different teachers', async () => {
+  it('reject the same username for students of different teachers', async () => {
     const created = await createStudent(other.client, otherClassId, 'kuba', 'Kuba z innej klasy');
-    expect(created.ok).toBe(true);
+    expect(created).toEqual({ ok: false, error: 'username-taken' });
     // The seed teacher's kuba still signs in with the seed password.
     expect((await studentClient('kuba')).error).toBeNull();
   });

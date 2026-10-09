@@ -19,7 +19,7 @@ export type ErrorCode =
   | 'server-error';
 
 export type StudentAction =
-  | { action: 'create'; classId: string; username: string; displayName: string }
+  | { action: 'create'; classId?: string; username: string; displayName: string }
   | { action: 'reset-password'; studentId: string };
 
 export interface StudentAdmin {
@@ -77,7 +77,7 @@ export function parseAction(body: unknown): StudentAction | null {
   const value = body as Record<string, unknown>;
   if (value.action === 'create') {
     const { classId, username, displayName } = value;
-    if (typeof classId !== 'string' || !UUID_PATTERN.test(classId)) return null;
+    if (classId !== undefined && (typeof classId !== 'string' || !UUID_PATTERN.test(classId))) return null;
     if (typeof username !== 'string' || typeof displayName !== 'string') return null;
     const normalizedUsername = username.trim().toLowerCase();
     const normalizedName = displayName.trim().replace(/\s+/g, ' ');
@@ -130,7 +130,7 @@ export async function handleRequest(
     if (!action) return fail(400, 'invalid-input');
 
     if (action.action === 'create') {
-      if (!(await admin.ownsClass(teacherId, action.classId))) return fail(404, 'not-found');
+      if (action.classId && !(await admin.ownsClass(teacherId, action.classId))) return fail(404, 'not-found');
       if (await admin.usernameTaken(teacherId, action.username)) return fail(409, 'username-taken');
       const password = makePassword();
       const studentId = await admin.createStudentUser({
@@ -141,7 +141,7 @@ export async function handleRequest(
         teacherId,
       });
       try {
-        await admin.addClassMember(action.classId, studentId);
+        if (action.classId) await admin.addClassMember(action.classId, studentId);
       } catch (error) {
         await admin.deleteUser(studentId);
         throw error;

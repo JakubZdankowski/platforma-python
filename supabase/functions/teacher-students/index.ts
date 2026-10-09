@@ -39,9 +39,9 @@ const admin: StudentAdmin = {
     return row !== null;
   },
 
-  async usernameTaken(teacherId, username) {
+  async usernameTaken(_teacherId, username) {
     const row = check(
-      await supabase.from('profiles').select('id').eq('created_by', teacherId).eq('username', username).maybeSingle(),
+      await supabase.from('profiles').select('id').eq('role', 'student').eq('username', username).maybeSingle(),
     );
     return row !== null;
   },
