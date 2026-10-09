@@ -80,10 +80,10 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await studentPage.getByRole('button', { name: 'Poprzednie zadanie' }).click();
     await expect(editor).toHaveText('print("Nawigacja")');
     await editor.fill('print("Lista ćwiczeń")');
-    await studentPage.getByRole('button', { name: /Ćwiczenia ·/ }).click();
+    await studentPage.getByRole('button', { name: lessonTitle, exact: true }).click();
     await studentPage.locator('.exercise-picker-list').getByRole('button', { name: /Kwadrat/ }).click();
     await expect(studentPage.locator('.exercise-number')).toContainText('Kwadrat');
-    await studentPage.getByRole('button', { name: /Ćwiczenia ·/ }).click();
+    await studentPage.getByRole('button', { name: lessonTitle, exact: true }).click();
     await studentPage.locator('.exercise-picker-list').getByRole('button').first().click();
     await expect(editor).toHaveText('print("Lista ćwiczeń")');
     await editor.fill('print("Nawigacja")');

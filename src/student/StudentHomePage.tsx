@@ -74,7 +74,7 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
 
 export function StudentHelpPage() {
   return <main className="account-page"><h1>Pomoc</h1><p className="account-lead">Najważniejsze wskazówki do pracy z platformą.</p>
-    <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Przejdź do Materiałów, rozwiń moduł i wybierz lekcję. W edytorze użyj przycisku „Ćwiczenia”, aby przejść do dowolnego zadania z lekcji.</p></section>
+    <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Przejdź do Materiałów, rozwiń moduł i wybierz lekcję. W edytorze kliknij nazwę lekcji w lewym panelu, aby przejść do dowolnego zadania z lekcji.</p></section>
     <section className="help-section"><h2>Gdzie jest mój kod?</h2><p>Kod zapisuje się automatycznie na Twoim koncie. Stan zapisu zobaczysz nad edytorem. Możesz też pobrać plik .py.</p></section>
     <section className="help-section"><h2>Jak uruchomić program?</h2><p>Naciśnij „Uruchom” lub Ctrl + Enter. Jeśli program działa zbyt długo, użyj przycisku „Zatrzymaj”.</p></section>
     <section className="help-section"><h2>Nie widzę materiałów</h2><p>Poproś nauczyciela o udostępnienie modułu. Do logowania potrzebujesz tylko nazwy użytkownika i hasła.</p></section>

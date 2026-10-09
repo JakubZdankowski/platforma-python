@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('exercise list supports direct selection, keyboard dismissal and mobile layout', async ({ page }) => {
   await page.goto('/tests/fixtures/playground.html');
-  const trigger = page.getByRole('button', { name: /Ćwiczenia ·/ });
+  const trigger = page.locator('.instructions-heading .exercise-picker-current');
   const list = page.locator('.exercise-picker-list');
   await expect(list).toBeHidden();
   await trigger.click();

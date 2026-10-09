@@ -87,7 +87,16 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
       >
         <aside className="instructions-panel" aria-labelledby="instructions-title">
           <div className="panel-heading instructions-heading">
-            {backLink ? <h1 id="instructions-title">{lessonTitle ?? t.lessonLabel}</h1> : <h2 id="instructions-title">{t.instructions}</h2>}
+            {backLink ? <h1 id="instructions-title" className={instructionsCollapsed ? undefined : 'sr-only'}>{lessonTitle ?? t.lessonLabel}</h1> : <h2 id="instructions-title" className={instructionsCollapsed ? undefined : 'sr-only'}>{t.instructions}</h2>}
+            {!instructionsCollapsed && <ExerciseListPicker
+              title={lessonTitle ?? t.lessonLabel}
+              exercises={exercises}
+              selectedIndex={exerciseIndex}
+              disabled={runner.isBusy || preparing}
+              labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise, exercises: t.exercises }}
+              onSelect={selectExercise}
+            />}
+
             <button
               type="button"
               className="instructions-toggle"
@@ -103,13 +112,6 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             </button>
           </div>
           <div id="instructions-content" className="instructions-content" hidden={instructionsCollapsed}>
-            <ExerciseListPicker
-              exercises={exercises}
-              selectedIndex={exerciseIndex}
-              disabled={runner.isBusy || preparing}
-              labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise, exercises: t.exercises }}
-              onSelect={selectExercise}
-            />
             <span className="exercise-number">{t.exerciseLabel} {String(exerciseIndex + 1).padStart(2, '0')}{backLink && <> · {exercise.title}</>}</span>
             <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
             <details key={`tip-${exercise.id}`} className="tip">

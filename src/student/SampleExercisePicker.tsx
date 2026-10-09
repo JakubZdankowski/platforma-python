@@ -29,7 +29,7 @@ export function SampleExercisePicker({ exercises, selectedIndex, disabled, label
   );
 }
 
-export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels, onSelect }: Props) {
+export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels, onSelect, title }: Props & { title: string }) {
   const current = exercises[selectedIndex];
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels,
           if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); trigger.current?.focus(); }
         }}>
           <button ref={trigger} type="button" className="exercise-picker-button exercise-picker-current" aria-expanded={open} aria-controls={listId} disabled={disabled} onClick={() => setOpen(!open)}>
-            {labels.exercises} · {selectedIndex + 1}/{exercises.length}<span aria-hidden="true">⌄</span>
+            <span>{title}</span><span aria-hidden="true">⌄</span>
           </button>
           <ol id={listId} className="exercise-picker-list" hidden={!open} aria-label={labels.navigation}>
             {exercises.map((exercise, index) => <li key={exercise.id}>

@@ -427,6 +427,9 @@ a.brand { color: inherit; text-decoration: none; }
 .exercise-picker-list button[aria-current=step] { color: var(--accent); }
 @media(max-width: 720px) { .exercise-picker-dropdown { flex: 1; min-width: 0; } .exercise-picker-current { width: 100%; } .exercise-picker-list { right: 50%; transform: translateX(50%); } }
 
-.instructions-content .exercise-picker-dropdown { margin-bottom: 18px; }
-.instructions-content .exercise-picker-current { width: 100%; justify-content: space-between; }
-.instructions-content .exercise-picker-list { position: static; width: 100%; max-width: 100%; margin-top: 8px; transform: none; box-shadow: none; }
+ .instructions-heading .exercise-picker-dropdown { flex: 1; min-width: 0; padding: 8px 0; }
+.instructions-heading .exercise-picker-current { width: 100%; justify-content: space-between; text-align: left; border: 0; background: transparent; padding: 8px 0; white-space: normal; overflow-wrap: anywhere; }
+.instructions-heading .exercise-picker-current > span:first-child { min-width: 0; }
+.instructions-heading .exercise-picker-list { position: static; width: 100%; max-width: 100%; margin-top: 8px; transform: none; box-shadow: none; }
+.instructions-heading { align-items: flex-start; }
+.instructions-heading .instructions-toggle { margin-top: 11px; }
