@@ -1,0 +1,30 @@
+import { expect, test } from '@playwright/test';
+
+test('exercise list supports direct selection, keyboard dismissal and mobile layout', async ({ page }) => {
+  await page.goto('/tests/fixtures/playground.html');
+  const trigger = page.getByRole('button', { name: /Ćwiczenia ·/ });
+  const list = page.locator('.exercise-picker-list');
+  await expect(list).toBeHidden();
+  await trigger.click();
+  await expect(list).toBeVisible();
+  await expect(list.locator('[aria-current=step]')).toHaveCount(1);
+  const last = list.getByRole('button').last();
+  const title = await last.locator('span').nth(1).textContent();
+  await last.click();
+  await expect(list).toBeHidden();
+  await expect(page.getByRole('heading', { name: title!, exact: true })).toBeVisible();
+  await trigger.click();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Escape');
+  await expect(list).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await page.getByRole('heading', { name: title!, exact: true }).click();
+  await expect(list).toBeHidden();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await trigger.click();
+  const bounds = await list.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: 'test-results/exercise-picker-mobile.png', fullPage: true });
+});

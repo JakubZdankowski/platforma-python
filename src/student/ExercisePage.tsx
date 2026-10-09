@@ -76,7 +76,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
           exercises={exercises}
           selectedIndex={exerciseIndex}
           disabled={runner.isBusy || preparing}
-          labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise }}
+          labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise, exercises: t.exercises }}
           onSelect={selectExercise}
         />
       </header>

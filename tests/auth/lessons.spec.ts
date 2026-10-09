@@ -79,6 +79,14 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await expect(studentPage.locator('.exercise-number')).toContainText('Kwadrat');
     await studentPage.getByRole('button', { name: 'Poprzednie zadanie' }).click();
     await expect(editor).toHaveText('print("Nawigacja")');
+    await editor.fill('print("Lista ćwiczeń")');
+    await studentPage.getByRole('button', { name: /Ćwiczenia ·/ }).click();
+    await studentPage.locator('.exercise-picker-list').getByRole('button', { name: /Kwadrat/ }).click();
+    await expect(studentPage.locator('.exercise-number')).toContainText('Kwadrat');
+    await studentPage.getByRole('button', { name: /Ćwiczenia ·/ }).click();
+    await studentPage.locator('.exercise-picker-list').getByRole('button').first().click();
+    await expect(editor).toHaveText('print("Lista ćwiczeń")');
+    await editor.fill('print("Nawigacja")');
     studentPage.once('dialog', (dialog) => void dialog.dismiss());
     await studentPage.getByRole('button', { name: 'Przywróć kod początkowy' }).click();
     await expect(editor).toHaveText('print("Nawigacja")');

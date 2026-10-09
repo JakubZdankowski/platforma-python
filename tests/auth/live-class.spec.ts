@@ -57,7 +57,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await studentPage.getByLabel('Hasło').fill(student.value.password);
     await studentPage.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
     await studentPage.getByRole('button', { name: className, exact: true }).click();
-    await studentPage.getByRole('link', { name: /Pierwsze ćwiczenie/ }).click();
+    await studentPage.getByRole('link', { name: /Lekcja podglądu/ }).click();
     const editor = studentPage.getByRole('textbox', { name: 'Edytor kodu Python' });
     await expect(editor).toHaveText('print("start")');
     const watched = page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' });

@@ -63,6 +63,7 @@ export const en = {
   resetCode: 'Reset code',
   confirmResetCode: 'Restore the starter code? Your changes will be replaced.',
   allLessons: 'All lessons',
+  exercises: 'Exercises',
   lessonExercises: 'Exercises in this lesson',
   savedNotice: 'Your code is saved automatically to your account.',
   exerciseNotFound: 'This exercise is not available. Ask your teacher to assign the lesson.',

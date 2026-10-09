@@ -63,17 +63,18 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
       : !data ? <p role="status">{t.loadingData}</p>
       : !data.lessons.length ? <p className="account-muted">W tym module nie ma jeszcze dostępnych lekcji.</p>
       : <ol className="module-lesson-list">{data.lessons.map((lesson, index) => <li key={lesson.id}>
-        <h3><span className="module-lesson-index">{String(index + 1).padStart(2, '0')}</span>{lesson.title}</h3>
-        {lesson.exercises.length ? <ul className="module-exercises">{lesson.exercises.map((exercise) => <li key={exercise.id}>
-          <Link to={`/student/exercises/${exercise.id}`} state={{ moduleId }}><span>{exercise.title}<small>{data.started.has(exercise.id) ? 'W trakcie' : 'Jeszcze nierozpoczęte'}</small></span><span aria-hidden="true">→</span></Link>
-        </li>)}</ul> : <p className="account-muted">{t.noClassExercises}</p>}
+        {lesson.exercises.length ? <Link className="module-lesson-link" to={`/student/exercises/${lesson.exercises[0]!.id}`} state={{ moduleId }}>
+          <span className="module-lesson-index">{String(index + 1).padStart(2, '0')}</span>
+          <span className="module-lesson-title">{lesson.title}<small>{lesson.exercises.some((exercise) => data.started.has(exercise.id)) ? 'W trakcie' : 'Jeszcze nierozpoczęte'}</small></span>
+          <span aria-hidden="true">→</span>
+        </Link> : <><h3>{lesson.title}</h3><p className="account-muted">{t.noClassExercises}</p></>}
       </li>)}</ol>}
   </div>;
 }
 
 export function StudentHelpPage() {
   return <main className="account-page"><h1>Pomoc</h1><p className="account-lead">Najważniejsze wskazówki do pracy z platformą.</p>
-    <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Przejdź do Materiałów, rozwiń moduł i wybierz ćwiczenie w lekcji.</p></section>
+    <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Przejdź do Materiałów, rozwiń moduł i wybierz lekcję. W edytorze użyj przycisku „Ćwiczenia”, aby przejść do dowolnego zadania z lekcji.</p></section>
     <section className="help-section"><h2>Gdzie jest mój kod?</h2><p>Kod zapisuje się automatycznie na Twoim koncie. Stan zapisu zobaczysz nad edytorem. Możesz też pobrać plik .py.</p></section>
     <section className="help-section"><h2>Jak uruchomić program?</h2><p>Naciśnij „Uruchom” lub Ctrl + Enter. Jeśli program działa zbyt długo, użyj przycisku „Zatrzymaj”.</p></section>
     <section className="help-section"><h2>Nie widzę materiałów</h2><p>Poproś nauczyciela o udostępnienie modułu. Do logowania potrzebujesz tylko nazwy użytkownika i hasła.</p></section>

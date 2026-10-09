@@ -57,7 +57,7 @@ test('teacher creates an independent student and assigns a module; student keeps
     await expect(moduleButton).toHaveAttribute('aria-expanded', 'false');
     await expect(studentPage.getByRole('link', { name: /Powitanie/ })).toHaveCount(0);
     await moduleButton.click();
-    await studentPage.getByRole('link', { name: /Powitanie/ }).click();
+    await studentPage.getByRole('link', { name: `Pierwsza lekcja ${suffix}`, exact: false }).click();
     const editor = studentPage.getByRole('textbox', { name: 'Edytor kodu Python' });
     await expect(editor).toContainText('print("Cześć")');
     await editor.fill('print("Zachowana praca")');

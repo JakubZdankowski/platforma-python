@@ -22,12 +22,12 @@ try {
   const module = page.locator('.material-toggle').first();
   await module.waitFor();
   assert.equal(await module.getAttribute('aria-expanded'), 'false');
-  assert.equal(await page.locator('.module-exercises a').count(), 0);
+  assert.equal(await page.locator('.module-lesson-link').count(), 0);
   await page.screenshot({ path: 'test-results/production-materials-collapsed.png', fullPage: true });
   await module.click();
-  await page.locator('.module-exercises a').first().waitFor();
+  await page.locator('.module-lesson-link').first().waitFor();
   await page.reload();
-  await page.locator('.module-exercises a').first().waitFor();
+  await page.locator('.module-lesson-link').first().waitFor();
   assert.equal(await page.locator('.material-toggle').first().getAttribute('aria-expanded'), 'true');
   await page.screenshot({ path: 'test-results/production-materials-expanded.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });

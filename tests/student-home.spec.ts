@@ -11,9 +11,10 @@ test('student sidebar and full-width modules reveal lessons only after expansion
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await page.screenshot({ path: 'test-results/student-materials-desktop.png', fullPage: true });
   await toggle.click();
-  await expect(page.getByRole('heading', { name: /Pierwsze kroki w Pythonie/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Pierwsze kroki w Pythonie/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Inna klasa' })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /Powitanie/ })).toHaveAttribute('href', '/student/exercises/hello');
+  await expect(page.getByRole('link', { name: /Pierwsze kroki w Pythonie/ })).toHaveAttribute('href', '/student/exercises/hello');
+  await expect(page.getByText('Powitanie', { exact: true })).toHaveCount(0);
   await toggle.click();
   await expect(page.locator('.module-lesson-list')).toHaveCount(0);
   await page.getByRole('button', { name: '2. Programowanie obiektowe', exact: true }).click();
@@ -32,5 +33,5 @@ test('empty materials and failed lessons have useful states', async ({ page }) =
   await page.getByRole('button', { name: '1. Podstawy Pythona' }).click();
   await expect(page.getByRole('alert')).toBeVisible();
   await page.getByRole('button', { name: 'Spróbuj ponownie' }).click();
-  await expect(page.getByRole('heading', { name: /Pierwsze kroki w Pythonie/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Pierwsze kroki w Pythonie/ })).toBeVisible();
 });
