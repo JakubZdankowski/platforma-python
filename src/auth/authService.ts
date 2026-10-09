@@ -43,6 +43,17 @@ export async function signInStudent(
   return signInWithEmail(client, email, password);
 }
 
+/** Login independent of group membership; the old helper remains for compatibility tests. */
+export async function signInStudentAccount(client: AppSupabaseClient, username: string, password: string): Promise<SignInError | null> {
+  const name = normalizeUsername(username);
+  if (!name || !password) return 'invalid-credentials';
+  try {
+    const { data: email, error } = await client.rpc('student_login_address', { p_username: name });
+    if (error || !email) return 'unavailable';
+    return await signInWithEmail(client, email, password);
+  } catch { return 'unavailable'; }
+}
+
 export async function signInTeacher(client: AppSupabaseClient, email: string, password: string): Promise<SignInError | null> {
   const address = email.trim();
   if (!address || !password) return 'invalid-credentials';

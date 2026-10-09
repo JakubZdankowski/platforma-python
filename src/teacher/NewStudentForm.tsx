@@ -6,7 +6,7 @@ import type { Messages } from '../i18n/en';
 
 export function NewStudentForm({ client, classId, messages: t, onCreated }: {
   client: AppSupabaseClient;
-  classId: string;
+  classId?: string;
   messages: Messages;
   onCreated: (credentials: NewStudentCredentials, displayName: string) => void;
 }) {

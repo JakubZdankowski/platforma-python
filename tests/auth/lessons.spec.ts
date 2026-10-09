@@ -29,7 +29,6 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     expect((await admin.from('exercises').select('id').eq('lesson_id', lessonId).order('position')).data).toEqual(original);
     const studentPage = await studentContext.newPage();
     await studentPage.goto('/join');
-    await studentPage.getByLabel('Kod klasy').fill(SEED.joinCode);
     await studentPage.getByLabel('Nazwa użytkownika').fill('ania');
     await studentPage.getByLabel('Hasło').fill(SEED.password('ania'));
     await studentPage.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
@@ -40,12 +39,13 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
     await page.getByLabel('Hasło').fill(SEED.teacher.password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await page.getByRole('link', { name: SEED.className, exact: true }).click();
+    await page.getByRole('link', { name: 'Materiały', exact: true }).click();
+    await page.getByRole('link', { name: new RegExp(SEED.className) }).click();
     await page.getByRole('checkbox', { name: lessonTitle }).check();
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeEnabled();
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeChecked();
     await studentPage.reload();
-    await studentPage.getByRole('link').filter({ has: studentPage.getByRole('heading', { name: SEED.className, exact: true }) }).click();
+    await studentPage.getByRole('button', { name: SEED.className, exact: true }).click();
     await studentPage.locator(`a[href="/student/exercises/${original[0]!.id}"]`).click();
     const editor = studentPage.getByRole('textbox', { name: 'Edytor kodu Python' });
     await expect(editor).toHaveText('print("Cześć!")');

@@ -53,11 +53,10 @@ export function TeacherClassesPage({ messages: t }: { messages: Messages }) {
       {state.status === 'ready' && (state.classes.length === 0
         ? <p className="account-muted">{t.noTeacherClasses}</p>
         : <table className="data-table">
-          <thead><tr><th scope="col">{t.className}</th><th scope="col">{t.joinCode}</th><th scope="col">{t.studentCount}</th></tr></thead>
+          <thead><tr><th scope="col">{t.className}</th><th scope="col">{t.studentCount}</th></tr></thead>
           <tbody>
             {state.classes.map((item) => <tr key={item.id}>
               <td><Link to={`/teacher/classes/${item.id}`}>{item.name}</Link></td>
-              <td><code className="join-code">{item.joinCode}</code></td>
               <td>{item.studentCount}</td>
             </tr>)}
           </tbody>

@@ -11,8 +11,8 @@ export function StudentExercisePage({ messages: t, locale }: { messages: Message
   const { client, editorLease } = useAuth();
   const { exerciseId = '' } = useParams();
   const location = useLocation();
-  const classId = typeof location.state?.classId === 'string' ? location.state.classId as string : undefined;
-  const home = classId ? `/student?class=${encodeURIComponent(classId)}` : '/student';
+  const moduleId = typeof location.state?.moduleId === 'string' ? location.state.moduleId as string : undefined;
+  const home = moduleId ? `/student/materials?module=${encodeURIComponent(moduleId)}` : '/student/materials';
   const [content, setContent] = useState<{ lessons: Lesson[] } | 'error' | null>(null);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -43,8 +43,8 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
   const profile = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
-  const classId = typeof location.state?.classId === 'string' ? location.state.classId as string : undefined;
-  const home = classId ? `/student?class=${encodeURIComponent(classId)}` : '/student';
+  const moduleId = typeof location.state?.moduleId === 'string' ? location.state.moduleId as string : undefined;
+  const home = moduleId ? `/student/materials?module=${encodeURIComponent(moduleId)}` : '/student/materials';
   const work = useStudentWork(client, profile.id, exercise);
   const backLink = <Link to={home} onClick={(event) => { event.preventDefault(); void work.flush().then((ok) => { if (ok || work.state.status !== 'ready') void navigate(home); }); }}>← {t.allLessons}</Link>;
   const back = <p>{backLink}</p>;
@@ -62,5 +62,5 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
         : work.state.save === 'error' ? 'Zmiany nie zostały zapisane — ponawiam zapis. Zachowaj otwartą kartę lub pobierz kod .py.' : undefined}
     saveStatus={work.state.save === 'saved' ? t.savedCode : work.state.save === 'error' ? t.retryingSave : t.savingCode}
     beforeRun={work.flush} onRunResult={work.recordRun} onReset={() => { work.change(exercise.starterCode); void work.flush(); }}
-    onSelect={async (next) => { if (await work.flush()) void navigate(`/student/exercises/${lesson.exercises[next]!.id}`, { state: { classId } }); }} />;
+    onSelect={async (next) => { if (await work.flush()) void navigate(`/student/exercises/${lesson.exercises[next]!.id}`, { state: { moduleId } }); }} />;
 }

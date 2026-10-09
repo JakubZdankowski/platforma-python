@@ -1,12 +1,12 @@
 import { AuthApiError } from '@supabase/supabase-js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AppSupabaseClient } from '../database/supabase';
-import { signInStudent, signInTeacher } from './authService';
+import { signInStudent, signInStudentAccount, signInTeacher } from './authService';
 
 function fakeClient(options: { rpcError?: boolean; signInError?: AuthApiError; claimRejected?: boolean } = {}) {
   const rpc = vi.fn(async (name: string) => (options.rpcError
     ? { data: null, error: { message: 'boom' } }
-    : { data: name === 'student_login_email' ? 'internal@students.invalid' : !options.claimRejected, error: null }));
+    : { data: name === 'student_login_email' || name === 'student_login_address' ? 'internal@students.invalid' : !options.claimRejected, error: null }));
   const signInWithPassword = vi.fn(async () => ({ data: {}, error: options.signInError ?? null }));
   const signOut = vi.fn(async () => ({ error: null }));
   const client = { rpc, auth: { signInWithPassword, signOut } } as unknown as AppSupabaseClient;
@@ -14,6 +14,22 @@ function fakeClient(options: { rpcError?: boolean; signInError?: AuthApiError; c
 }
 
 afterEach(() => vi.restoreAllMocks());
+
+describe('independent student login', () => {
+  it('normalizes the login without asking for a group and claims the session', async () => {
+    const { client, rpc, signInWithPassword } = fakeClient();
+    expect(await signInStudentAccount(client, ' Ania ', 'password')).toBeNull();
+    expect(rpc).toHaveBeenCalledWith('student_login_address', { p_username: 'ania' });
+    expect(signInWithPassword).toHaveBeenCalledWith({ email: 'internal@students.invalid', password: 'password' });
+    expect(rpc).toHaveBeenCalledWith('claim_account_session');
+  });
+  it('handles empty credentials and unavailable lookup', async () => {
+    const { client, rpc } = fakeClient();
+    expect(await signInStudentAccount(client, '', 'password')).toBe('invalid-credentials');
+    expect(rpc).not.toHaveBeenCalled();
+    expect(await signInStudentAccount(fakeClient({ rpcError: true }).client, 'ania', 'password')).toBe('unavailable');
+  });
+});
 
 describe('signInStudent', () => {
   it('resolves the internal address from the class code and username, then checks the password', async () => {

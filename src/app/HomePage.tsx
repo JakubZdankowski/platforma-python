@@ -12,15 +12,15 @@ export function HomePage({ profile }: { profile?: Profile }) {
     {profile ? <section className="home-card" aria-labelledby="continue-title">
       <span className="home-role">{profile.role === 'student' ? 'STREFA UCZNIA' : 'STREFA NAUCZYCIELA'}</span>
       <h2 id="continue-title">Cześć, {profile.displayName}!</h2>
-      <p>{profile.role === 'student' ? 'Wróć do swoich klas i kontynuuj naukę Pythona.' : 'Wróć do swoich klas, lekcji i pracy uczniów.'}</p>
-      <Link className="button button-primary" to={homePath(profile.role)}>{profile.role === 'student' ? 'Przejdź do moich klas →' : 'Przejdź do panelu nauczyciela →'}</Link>
+      <p>{profile.role === 'student' ? 'Wróć do swoich materiałów i kontynuuj naukę Pythona.' : 'Wróć do swoich klas, lekcji i pracy uczniów.'}</p>
+      <Link className="button button-primary" to={homePath(profile.role)}>{profile.role === 'student' ? 'Przejdź do pulpitu →' : 'Przejdź do panelu nauczyciela →'}</Link>
     </section> : <><div className="home-entries">
       <section className="home-card" aria-labelledby="student-entry">
         <span className="home-role" aria-hidden="true">01 / UCZEŃ</span>
         <h2 id="student-entry">Jestem uczniem</h2>
         <p>Otwórz lekcje od nauczyciela i kontynuuj swoje zadania. Twój kod zapisuje się automatycznie.</p>
         <Link className="button button-primary" to="/join">Zaloguj się jako uczeń →</Link>
-        <small>Przygotuj kod klasy, nazwę użytkownika i hasło od nauczyciela.</small>
+        <small>Przygotuj nazwę użytkownika i hasło od nauczyciela.</small>
       </section>
       <section className="home-card" aria-labelledby="teacher-entry">
         <span className="home-role" aria-hidden="true">02 / NAUCZYCIEL</span>

@@ -7,7 +7,7 @@ Obecny zakres: M1–M3 oraz kroki **A — lekcje i autosave**, **B — dashboard
 - Pod `/` działa strona startowa z wejściem dla ucznia i nauczyciela. Lekcje i ćwiczenia wymagają logowania. Python wykonuje się wyłącznie w przeglądarce, w Web Workerze.
 - Nauczyciel loguje się e-mailem pod `/login`. Tworzy klasy i zmienia ich nazwy, zakłada konta uczniów z wygenerowanym hasłem, resetuje hasła oraz dodaje uczniów do klas i usuwa z nich.
 - Ze strony klasy nauczyciel otwiera „Podgląd pracy klasy” (`/teacher/classes/:id/live`): bieżące ćwiczenie każdego ucznia, szacowaną aktywność, ostatni wynik i kod tylko do odczytu. Zmiany docierają przez Supabase Realtime po autosave.
-- Uczeń loguje się pod `/join` kodem klasy, nazwą użytkownika i hasłem, bez adresu e-mail. Widzi swoje klasy i przypisane lekcje. Ćwiczenia pod `/student/exercises/:id` zapisują kod i ostatni wynik uruchomienia na jego koncie.
+- Uczeń loguje się pod `/join` nazwą użytkownika i hasłem, bez kodu grupy i adresu e-mail. W Materiałach rozwija udostępnione moduły i ich lekcje. Ćwiczenia pod `/student/exercises/:id` zapisują kod i ostatni wynik uruchomienia na jego koncie.
 - Backend to Supabase: Postgres z RLS, Auth i jedna Edge Function.
 
 ## Uruchomienie lokalne
@@ -57,7 +57,7 @@ Wyłącznie do lokalnego developmentu:
 | Konto | Logowanie |
 | --- | --- |
 | Nauczyciel | `/login`: `teacher@example.test` / `teacher-dev-password` |
-| Uczniowie klasy „Python 101” | `/join`: kod `PYTHON25`, użytkownik `ania`, `kuba` lub `ola`, hasło `<użytkownik>-dev-pass` (np. `ania-dev-pass`) |
+| Uczniowie klasy „Python 101” | `/join`: użytkownik `ania`, `kuba` lub `ola`, hasło `<użytkownik>-dev-pass` (np. `ania-dev-pass`) |
 
 Seed nie tworzy lekcji. Przykładowe treści można zaimportować z `course-example/` (instrukcja poniżej).
 
@@ -93,7 +93,7 @@ Katalog kursu zawiera podkatalogi lekcji, np. `01-pierwsza-lekcja/`. Każdy ma `
 
 Slug lekcji pochodzi z nazwy katalogu, slug ćwiczenia z nazwy pliku. Kolejność lekcji wynika z nazw katalogów, ćwiczeń z numerów plików. Ponowny import aktualizuje te same rekordy i zachowuje kod uczniów; zmiana slugu tworzy nowy rekord. Import nie usuwa treści, które zniknęły z plików, i nie jest transakcją całego kursu — po błędzie można go ponowić.
 
-Własny `course/` jest ignorowany przez Git. Przy publicznym repozytorium rzeczywiste materiały i rozwiązania trzymaj w ignorowanym katalogu lub prywatnym repozytorium. `course-example/` zawiera tylko publiczne przykłady bez rozwiązań. Po imporcie zaznacz lekcję na stronie klasy nauczyciela. Uczeń zobaczy ją pod `/student`.
+Własny `course/` jest ignorowany przez Git. Przy publicznym repozytorium rzeczywiste materiały i rozwiązania trzymaj w ignorowanym katalogu lub prywatnym repozytorium. `course-example/` zawiera tylko publiczne przykłady bez rozwiązań. Po imporcie dodaj lekcję do modułu w Materiałach nauczyciela i udostępnij moduł grupie lub uczniowi. Uczeń zobaczy go pod `/student/materials`.
 
 ## Konfiguracja i przykładowe dane
 
@@ -117,19 +117,12 @@ Interfejs i treść ćwiczeń są po polsku. Przełącznik języka został usuni
 
 Konta:
 
-- **Nauczyciel** (`/login`, potem `/teacher`) widzi listę klas z kodami i liczbą uczniów i może utworzyć klasę. Na stronie klasy może:
-  - przypisać lub odpiąć lekcje zaimportowane z Markdown;
-  - otworzyć podgląd pracy klasy, a klikając imię ucznia — jego kod;
-  - zmienić jej nazwę;
-  - dodać ucznia (imię i nazwa użytkownika podpowiadana z imienia, np. „Łucja” → `lucja`);
-  - ustawić uczniowi nowe hasło;
-  - usunąć ucznia z klasy (konto zostaje);
-  - dodać ucznia z innej swojej klasy.
+- **Nauczyciel** (`/login`, potem `/teacher`) ma Pulpit, Grupy, Uczniów i Materiały. Tworzy konta niezależnie od grup, resetuje hasła oraz zarządza członkostwami. W Materiałach tworzy moduły, ustawia kolejność modułów i lekcji oraz udostępnia moduły całym grupom albo indywidualnie. Treści lekcji nadal pochodzą z importu Markdown.
+- **Uczeń** (`/join`, potem `/student`) wpisuje globalnie unikalną nazwę użytkownika i hasło. Konto bez grup i materiałów również może się zalogować. Moduły są widoczne jako pełnoszerokościowe wiersze; dopiero rozwinięcie pokazuje lekcje. Dane wewnętrznych grup nie są udostępniane uczniom.
+- Hasło nowego ucznia jest wyświetlane raz, razem z loginem. Kody klas i stare RPC logowania pozostają wyłącznie jako zgodność przejściowa, bez pola w interfejsie.
+- Podgląd pracy grupy nadal jest tylko do odczytu. Pokazuje zapisany kod, ostatnie uruchomienie oraz szacowaną aktywność. Cofnięcie dostępu nie usuwa zapisanych prac; inna grupa lub przypisanie indywidualne może nadal zapewniać dostęp.
 
-  Wygenerowane hasło (8 znaków bez łatwych do pomylenia) jest pokazywane raz, razem z kodem klasy i nazwą użytkownika.
-  Podgląd pokazuje „pisze” przez 30 s od edycji, „aktywny” przez 2 min od edycji lub uruchomienia, a potem „bezczynny X min”. Samo otwarcie startera to „nie zaczął”. To oszacowanie z zapisanych danych, bez Presence. Bieżące ćwiczenie wynika z ostatniej edycji, a ostatnie uruchomienie w tabeli z najnowszego wyniku ucznia, również z innego ćwiczenia. Po rozłączeniu pozostaje ostatnio pobrany kod; powrót połączenia pobiera aktualny stan. Podgląd nie pozwala edytować ani uruchamiać kodu ucznia.
-- **Uczeń** (`/join`, potem `/student`) wpisuje kod klasy, nazwę użytkownika i hasło. Wielkość liter w kodzie i nazwie nie ma znaczenia. Błędne dane dają jeden komunikat, który nie zdradza, co było źle. Główny nagłówek pokazuje, kto jest zalogowany, i ma przycisk „Wyloguj się”. Na wspólnych komputerach uczeń powinien się wylogować.
-
+Szczegóły migracji i scenariusze odbioru: [materials-rollout.md](docs/materials-rollout.md).
 ## Architektura
 
 ```text

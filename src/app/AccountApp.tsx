@@ -8,10 +8,15 @@ import { TeacherLoginPage } from '../auth/TeacherLoginPage';
 import { getSupabase } from '../database/supabase';
 import type { Messages, Locale } from '../i18n/en';
 import { StudentExercisePage } from '../student/StudentExercisePage';
-import { StudentHomePage } from '../student/StudentHomePage';
+import { StudentHelpPage, StudentHomePage } from '../student/StudentHomePage';
 import { ClassPage } from '../teacher/ClassPage';
 import { TeacherClassesPage } from '../teacher/TeacherClassesPage';
 import { TeacherLivePage } from '../teacher/TeacherLivePage';
+import { DashboardLayout } from './DashboardLayout';
+import { TeacherDashboardPage } from '../teacher/TeacherDashboardPage';
+import { TeacherStudentsPage } from '../teacher/TeacherStudentsPage';
+import { TeacherModulesPage } from '../teacher/TeacherModulesPage';
+import { TeacherModulePage } from '../teacher/TeacherModulePage';
 
 /** Account area, loaded lazily from the start page. */
 export default function AccountApp({ messages: t, locale, headerTarget }: { messages: Messages; locale: Locale; headerTarget: HTMLElement | null }) {
@@ -29,10 +34,20 @@ export default function AccountApp({ messages: t, locale, headerTarget }: { mess
       <Route index element={<SessionHome messages={t} />} />
       <Route path="join" element={<StudentLoginPage messages={t} />} />
       <Route path="login" element={<TeacherLoginPage messages={t} />} />
-      <Route path="student" element={<RequireRole role="student" messages={t}><StudentHomePage messages={t} /></RequireRole>} />
+      <Route path="student" element={<RequireRole role="student" messages={t}><DashboardLayout /></RequireRole>}>
+        <Route index element={<StudentHomePage messages={t} />} />
+        <Route path="materials" element={<StudentHomePage messages={t} materials />} />
+        <Route path="help" element={<StudentHelpPage />} />
+      </Route>
       <Route path="student/exercises/:exerciseId" element={<RequireRole role="student" messages={t}><StudentExercisePage messages={t} locale={locale} /></RequireRole>} />
-      <Route path="teacher" element={<RequireRole role="teacher" messages={t}><TeacherClassesPage messages={t} /></RequireRole>} />
-      <Route path="teacher/classes/:classId" element={<RequireRole role="teacher" messages={t}><ClassPage messages={t} /></RequireRole>} />
+      <Route path="teacher" element={<RequireRole role="teacher" messages={t}><DashboardLayout /></RequireRole>}>
+        <Route index element={<TeacherDashboardPage />} />
+        <Route path="groups" element={<TeacherClassesPage messages={t} />} />
+        <Route path="students" element={<TeacherStudentsPage messages={t} />} />
+        <Route path="materials" element={<TeacherModulesPage messages={t} />} />
+        <Route path="materials/:moduleId" element={<TeacherModulePage messages={t} />} />
+        <Route path="classes/:classId" element={<ClassPage messages={t} />} />
+      </Route>
       <Route path="teacher/classes/:classId/live" element={<RequireRole role="teacher" messages={t}><TeacherLivePage messages={t} locale={locale} /></RequireRole>} />
       <Route path="*" element={<NotFound messages={t} />} />
     </Routes>

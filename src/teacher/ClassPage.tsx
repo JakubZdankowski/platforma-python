@@ -8,7 +8,7 @@ import { CredentialNotice, type IssuedCredentials } from './CredentialNotice';
 import { NewStudentForm } from './NewStudentForm';
 import { RenameClassForm } from './RenameClassForm';
 import { useClassData } from './useClassData';
-import { LessonAssignments } from './LessonAssignments';
+import { GroupModules } from './GroupModules';
 
 export function ClassPage({ messages: t }: { messages: Messages }) {
   const { client } = useAuth();
@@ -17,7 +17,7 @@ export function ClassPage({ messages: t }: { messages: Messages }) {
   const { data, reload } = useClassData(client, profile.id, classId);
   const [credentials, setCredentials] = useState<IssuedCredentials | null>(null);
 
-  const back = <p><Link to="/teacher">← {t.allClasses}</Link></p>;
+  const back = <p><Link to="/teacher/groups">← {t.allClasses}</Link></p>;
   if (data.status === 'loading') return <main className="account-page">{back}<p className="account-muted" role="status">{t.loadingData}</p></main>;
   if (data.status === 'not-found') return <main className="account-page">{back}<p className="form-error" role="alert">{t.classNotFound}</p></main>;
   if (data.status === 'error') {
@@ -34,12 +34,9 @@ export function ClassPage({ messages: t }: { messages: Messages }) {
   return <main className="account-page">
     {back}
     <RenameClassForm key={details.name} client={client} classId={details.id} name={details.name} messages={t} onRenamed={reload} />
-    <p className="join-code-line">
-      <span>{t.joinCode}: </span><code className="join-code" data-testid="join-code">{details.joinCode}</code>
-    </p>
-    <p className="account-muted">{t.joinCodeHint}</p>
+    <p className="account-muted">Grupa służy do organizacji uczniów i udostępniania materiałów. Uczniowie logują się bez kodu grupy.</p>
     <p className="class-live-link"><Link to={`/teacher/classes/${details.id}/live`}>{t.openLiveClass}</Link></p>
-    <LessonAssignments client={client} classId={details.id} messages={t} />
+    <GroupModules client={client} classId={details.id} messages={t} />
 
     <section className="account-section" aria-labelledby="class-students-heading">
       <h2 id="class-students-heading">{t.studentsTitle(members.length)}</h2>

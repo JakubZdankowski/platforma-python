@@ -38,6 +38,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
     await page.getByLabel('Hasło').fill(SEED.teacher.password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page.getByRole('link', { name: 'Grupy', exact: true }).click();
     await page.getByRole('link', { name: className, exact: true }).click();
     await page.getByRole('link', { name: 'Podgląd pracy klasy' }).click();
     await expect(page).toHaveURL(new RegExp(`/teacher/classes/${classId}/live$`));
@@ -52,11 +53,11 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
 
     const studentPage = await studentContext.newPage();
     await studentPage.goto('/join');
-    await studentPage.getByLabel('Kod klasy').fill(classResult.data.join_code);
     await studentPage.getByLabel('Nazwa użytkownika').fill(student.value.username);
     await studentPage.getByLabel('Hasło').fill(student.value.password);
     await studentPage.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await studentPage.getByRole('link', { name: 'Pierwsze ćwiczenie', exact: true }).click();
+    await studentPage.getByRole('button', { name: className, exact: true }).click();
+    await studentPage.getByRole('link', { name: /Pierwsze ćwiczenie/ }).click();
     const editor = studentPage.getByRole('textbox', { name: 'Edytor kodu Python' });
     await expect(editor).toHaveText('print("start")');
     const watched = page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' });
@@ -102,7 +103,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
 
     // Unavailable class URLs and student access are protected by existing RLS/guards.
     await page.goto(`/teacher/classes/${crypto.randomUUID()}/live`);
-    await expect(page.getByRole('alert')).toHaveText('Ta klasa nie istnieje albo należy do innego nauczyciela.');
+    await expect(page.getByRole('alert')).toHaveText('Ta grupa nie istnieje albo należy do innego nauczyciela.');
     await studentPage.goto(`/teacher/classes/${classId}/live`);
     await expect(studentPage).toHaveURL(/\/student$/);
   } finally {

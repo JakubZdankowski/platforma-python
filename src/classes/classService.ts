@@ -117,11 +117,11 @@ export async function removeClassMember(client: AppSupabaseClient, classId: stri
 
 export async function createStudent(
   client: AppSupabaseClient,
-  classId: string,
+  classId: string | undefined,
   username: string,
   displayName: string,
 ): Promise<Result<NewStudentCredentials>> {
-  return invokeStudentFunction<NewStudentCredentials>(client, { action: 'create', classId, username, displayName });
+  return invokeStudentFunction<NewStudentCredentials>(client, { action: 'create', ...(classId ? { classId } : {}), username, displayName });
 }
 
 export async function resetStudentPassword(client: AppSupabaseClient, studentId: string): Promise<Result<{ studentId: string; password: string }>> {

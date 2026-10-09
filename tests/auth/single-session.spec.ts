@@ -8,7 +8,6 @@ test('a second browser logs the first out and preserves its unsaved code for dow
   try {
     const login = async (target: typeof page) => {
       await target.goto('/join');
-      await target.getByLabel('Kod klasy').fill(f.joinCode);
       await target.getByLabel('Nazwa użytkownika').fill(f.username);
       await target.getByLabel('Hasło').fill(f.password);
       await target.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
@@ -53,7 +52,6 @@ test('tabs sharing a session have only one editor and load the latest code after
   let second: typeof page | undefined;
   try {
     await page.goto('/join');
-    await page.getByLabel('Kod klasy').fill(f.joinCode);
     await page.getByLabel('Nazwa użytkownika').fill(f.username);
     await page.getByLabel('Hasło').fill(f.password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();

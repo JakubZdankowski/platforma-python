@@ -14,7 +14,6 @@ test('offline edits are protected, downloadable and retained after access is rev
     const assigned = await admin.from('assignments').insert({ class_id: classroom.id, lesson_id: lessonId });
     if (assigned.error) throw assigned.error;
     await page.goto('/join');
-    await page.getByLabel('Kod klasy').fill(SEED.joinCode);
     await page.getByLabel('Nazwa użytkownika').fill('ania');
     await page.getByLabel('Hasło').fill(SEED.password('ania'));
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();

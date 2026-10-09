@@ -3,8 +3,8 @@ import type { Exercise } from '../exercises/types';
 
 export interface Lesson { id: string; title: string; exercises: Exercise[] }
 
-export async function listLessons(client: AppSupabaseClient, classId?: string): Promise<Lesson[]> {
-  let ids: string[] | undefined;
+export async function listLessons(client: AppSupabaseClient, classId?: string, lessonIds?: string[]): Promise<Lesson[]> {
+  let ids: string[] | undefined = lessonIds;
   if (classId) {
     const assignments = await client.from('assignments').select('lesson_id').eq('class_id', classId);
     if (assignments.error) throw assignments.error;

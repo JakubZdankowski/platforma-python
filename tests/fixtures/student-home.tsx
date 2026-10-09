@@ -7,7 +7,7 @@ import { RequireRole } from '../../src/auth/RequireRole';
 import { StudentHomePage } from '../../src/student/StudentHomePage';
 import type { AppSupabaseClient } from '../../src/database/supabase';
 import { pl } from '../../src/i18n/pl';
-import logo from '../../src/assets/blue-logo.png';
+import { DashboardLayout } from '../../src/app/DashboardLayout';
 import '../../src/app/styles.css';
 
 const mode = new URLSearchParams(location.search).get('mode');
@@ -30,8 +30,8 @@ const client = {
       maybeSingle() { return Promise.resolve({ data: { id: 'student', role: 'student', display_name: 'Ania', username: 'ania' }, error: null }); },
       then(resolve: (value: unknown) => void) {
         let data: unknown = [];
-        if (table === 'classes') data = mode === 'empty' ? [] : [{ id: 'a', name: 'Python · grupa początkująca' }, { id: 'b', name: 'Koło programistyczne' }];
-        if (table === 'assignments') data = filters.class_id === 'a' ? [{ lesson_id: 'first' }] : [];
+        if (table === 'modules') data = mode === 'empty' ? [] : [{ id: 'a', title: '1. Podstawy Pythona', position: 0 }, { id: 'b', title: '2. Programowanie obiektowe', position: 1 }];
+        if (table === 'module_lessons') data = filters.module_id === 'a' ? [{ lesson_id: 'first', position: 0 }] : [];
         if (table === 'lessons') {
           if (mode === 'error' && !failed) { failed = true; return Promise.resolve({ data: null, error: new Error('offline') }).then(resolve); }
           data = ['first', 'other'].filter((id) => (filters.id as string[]).includes(id)).map((id) => ({ id, title: id === 'first' ? 'Pierwsze kroki w Pythonie' : 'Inna klasa', exercises: [{ id: 'hello', title: 'Powitanie', position: 0, instructions_markdown: '', starter_code: '', runtime_type: 'python-console' }] }));
@@ -43,9 +43,8 @@ const client = {
   },
 } as unknown as AppSupabaseClient;
 createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={['/student']}>
-  <header className="site-header"><div className="site-header-inner"><div className="brand"><img className="brand-logo" src={logo} alt="Sky Blue" /><span>Kurs programowania w języku Python</span></div></div></header>
   <AuthProvider client={client}><Routes>
     <Route path="/" element={<SessionHome messages={pl} />} />
-    <Route path="/student" element={<RequireRole role="student" messages={pl}><StudentHomePage messages={pl} /></RequireRole>} />
+    <Route path="/student" element={<RequireRole role="student" messages={pl}><DashboardLayout /></RequireRole>}><Route index element={<StudentHomePage messages={pl} />} /><Route path="materials" element={<StudentHomePage messages={pl} materials />} /></Route>
   </Routes></AuthProvider>
 </MemoryRouter>);

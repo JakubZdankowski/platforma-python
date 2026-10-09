@@ -2,13 +2,12 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router';
 import type { Messages } from '../i18n/en';
 import { useAuth } from './AuthProvider';
-import { signInStudent, type SignInError } from './authService';
+import { signInStudentAccount, type SignInError } from './authService';
 import { AuthStatus, homePath } from './RequireRole';
 import { signInErrorMessage } from './signInErrorMessage';
 
 export function StudentLoginPage({ messages: t }: { messages: Messages }) {
   const { client, state } = useAuth();
-  const [joinCode, setJoinCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -22,7 +21,7 @@ export function StudentLoginPage({ messages: t }: { messages: Messages }) {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
-    const result = await signInStudent(client, joinCode, username, password);
+    const result = await signInStudentAccount(client, username, password);
     if (result) {
       setError(result);
       setPassword('');
@@ -35,10 +34,6 @@ export function StudentLoginPage({ messages: t }: { messages: Messages }) {
     <h1>{t.studentLoginTitle}</h1>
     <p className="account-lead">{t.studentLoginLead}</p>
     <form className="form" onSubmit={(event) => void submit(event)} noValidate>
-      <label className="field">
-        <span>{t.joinCode}</span>
-        <input name="joinCode" value={joinCode} onChange={(event) => setJoinCode(event.target.value)} autoComplete="off" autoCapitalize="characters" spellCheck={false} required />
-      </label>
       <label className="field">
         <span>{t.username}</span>
         <input name="username" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} required />

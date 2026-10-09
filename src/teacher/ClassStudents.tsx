@@ -5,7 +5,7 @@ import type { Messages } from '../i18n/en';
 
 export function ClassStudents({ client, classId, students, messages: t, onPasswordReset, onChanged }: {
   client: AppSupabaseClient;
-  classId: string;
+  classId?: string;
   students: Student[];
   messages: Messages;
   onPasswordReset: (student: Student, password: string) => void;
@@ -25,6 +25,7 @@ export function ClassStudents({ client, classId, students, messages: t, onPasswo
   };
 
   const remove = async (student: Student) => {
+    if (!classId) return;
     if (!window.confirm(t.confirmRemoveStudent(student.displayName))) return;
     setBusyId(student.id);
     setError(null);
@@ -46,7 +47,7 @@ export function ClassStudents({ client, classId, students, messages: t, onPasswo
           <td><code>{student.username}</code></td>
           <td className="table-actions">
             <button type="button" className="button button-secondary button-small" disabled={busyId !== null} onClick={() => void resetPassword(student)} aria-label={t.resetPasswordFor(student.displayName)}>{t.resetPassword}</button>
-            <button type="button" className="button button-quiet button-small" disabled={busyId !== null} onClick={() => void remove(student)} aria-label={t.removeStudentFor(student.displayName)}>{t.removeFromClass}</button>
+            {classId && <button type="button" className="button button-quiet button-small" disabled={busyId !== null} onClick={() => void remove(student)} aria-label={t.removeStudentFor(student.displayName)}>{t.removeFromClass}</button>}
           </td>
         </tr>)}
       </tbody>
