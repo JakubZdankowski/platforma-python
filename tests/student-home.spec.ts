@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test';
 
+test('returning home keeps the student signed in and offers their classes', async ({ page }) => {
+  await page.goto('/tests/fixtures/student-home.html');
+  await page.getByRole('link', { name: 'Strona startowa', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Cześć, Ania!' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Zaloguj/ })).toHaveCount(0);
+  await expect(page.getByText('Przygotuj kod klasy', { exact: false })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Przejdź do moich klas →' }).click();
+  await expect(page.getByRole('heading', { name: 'Twoje klasy' })).toBeVisible();
+});
+
 test('student chooses a class before seeing its assigned lessons', async ({ page }) => {
   await page.goto('/tests/fixtures/student-home.html');
   await expect(page.getByRole('heading', { name: 'Twoje klasy' })).toBeVisible();

@@ -1,13 +1,20 @@
 import { Link } from 'react-router';
+import type { Profile } from '../auth/authService';
+import { homePath } from '../auth/RequireRole';
 
-export function HomePage() {
+export function HomePage({ profile }: { profile?: Profile }) {
   return <main className="home-page">
     <section className="home-intro" aria-labelledby="home-title">
       <p className="eyebrow">SKY BLUE · NAUKA PROGRAMOWANIA</p>
       <h1 id="home-title">Twój pierwszy krok w Pythonie</h1>
       <p>Pisz kod, uruchamiaj go i odkrywaj, co potrafisz stworzyć. Lekcje, zadania i rysowanie z żółwiem — w jednym miejscu.</p>
     </section>
-    <div className="home-entries">
+    {profile ? <section className="home-card" aria-labelledby="continue-title">
+      <span className="home-role">{profile.role === 'student' ? 'STREFA UCZNIA' : 'STREFA NAUCZYCIELA'}</span>
+      <h2 id="continue-title">Cześć, {profile.displayName}!</h2>
+      <p>{profile.role === 'student' ? 'Wróć do swoich klas i kontynuuj naukę Pythona.' : 'Wróć do swoich klas, lekcji i pracy uczniów.'}</p>
+      <Link className="button button-primary" to={homePath(profile.role)}>{profile.role === 'student' ? 'Przejdź do moich klas →' : 'Przejdź do panelu nauczyciela →'}</Link>
+    </section> : <><div className="home-entries">
       <section className="home-card" aria-labelledby="student-entry">
         <span className="home-role" aria-hidden="true">01 / UCZEŃ</span>
         <h2 id="student-entry">Jestem uczniem</h2>
@@ -24,5 +31,6 @@ export function HomePage() {
       </section>
     </div>
     <p className="home-note">Dostęp do lekcji i ćwiczeń wymaga zalogowania. Konto ucznia tworzy nauczyciel.</p>
+    </>}
   </main>;
 }

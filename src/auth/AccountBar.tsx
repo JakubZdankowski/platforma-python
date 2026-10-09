@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { createPortal } from 'react-dom';
 import type { Messages } from '../i18n/en';
 import { useAuth } from './AuthProvider';
@@ -8,6 +8,8 @@ import { loginPath } from './RequireRole';
 export function AccountBar({ messages: t, target }: { messages: Messages; target: HTMLElement | null }) {
   const { state, signOut } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  if (state.status === 'signed-out' && target && pathname === '/') return createPortal(<Link to="/join" className="header-link">{t.signIn}</Link>, target);
   if (state.status !== 'signed-in' || !target) return null;
   const { profile } = state;
 

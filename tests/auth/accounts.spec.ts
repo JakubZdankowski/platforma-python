@@ -40,6 +40,15 @@ test('a student signs in with class code, username and password, then signs out'
   await expect(page.getByText('@students.invalid')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/student-home.png', fullPage: true });
 
+  await page.getByRole('link', { name: 'Strona startowa', exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { name: 'Cześć, Ania!' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Zaloguj/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Wyloguj się' })).toBeVisible();
+  await page.reload();
+  await page.getByRole('link', { name: 'Przejdź do moich klas →' }).click();
+  await expect(page).toHaveURL(/\/student$/);
+
   await page.getByRole('button', { name: 'Wyloguj się' }).click();
   await expect(page).toHaveURL(/\/join$/);
   await page.goto('/student');

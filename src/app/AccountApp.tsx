@@ -1,7 +1,8 @@
 import { Link, Route, Routes } from 'react-router';
 import { AccountBar } from '../auth/AccountBar';
-import { AuthProvider } from '../auth/AuthProvider';
-import { RequireRole } from '../auth/RequireRole';
+import { AuthProvider, useAuth } from '../auth/AuthProvider';
+import { AuthStatus, RequireRole } from '../auth/RequireRole';
+import { HomePage } from './HomePage';
 import { StudentLoginPage } from '../auth/StudentLoginPage';
 import { TeacherLoginPage } from '../auth/TeacherLoginPage';
 import { getSupabase } from '../database/supabase';
@@ -16,15 +17,16 @@ import { TeacherLivePage } from '../teacher/TeacherLivePage';
 export default function AccountApp({ messages: t, locale, headerTarget }: { messages: Messages; locale: Locale; headerTarget: HTMLElement | null }) {
   const client = getSupabase();
   if (!client) {
-    return <main className="account-page account-narrow">
+    return <Routes><Route index element={<HomePage />} /><Route path="*" element={<main className="account-page account-narrow">
       <p className="form-error" role="alert">{t.backendNotConfigured}</p>
       <p><Link to="/">{t.homeLink}</Link></p>
-    </main>;
+    </main>} /></Routes>;
   }
 
   return <AuthProvider client={client}>
     <AccountBar messages={t} target={headerTarget} />
     <Routes>
+      <Route index element={<SessionHome messages={t} />} />
       <Route path="join" element={<StudentLoginPage messages={t} />} />
       <Route path="login" element={<TeacherLoginPage messages={t} />} />
       <Route path="student" element={<RequireRole role="student" messages={t}><StudentHomePage messages={t} /></RequireRole>} />
@@ -35,6 +37,13 @@ export default function AccountApp({ messages: t, locale, headerTarget }: { mess
       <Route path="*" element={<NotFound messages={t} />} />
     </Routes>
   </AuthProvider>;
+}
+
+export function SessionHome({ messages }: { messages: Messages }) {
+  const { state } = useAuth();
+  if (state.status === 'signed-out') return <HomePage />;
+  if (state.status === 'signed-in') return <HomePage profile={state.profile} />;
+  return <AuthStatus messages={messages} />;
 }
 
 function NotFound({ messages: t }: { messages: Messages }) {

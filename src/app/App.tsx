@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Link } from 'react-router';
 import { pl } from '../i18n/pl';
-import { HomePage } from './HomePage';
 import blueLogo from '../assets/blue-logo.png';
 
 const AccountApp = lazy(() => import('./AccountApp'));
@@ -19,20 +18,10 @@ export function App() {
           <span className="brand-name">{messages.appName}</span>
         </Link>
         <div className="header-actions">
-          <SignInLink label={messages.signIn} />
           <div className="account-header-controls" ref={setHeaderTarget} />
         </div>
       </div>
     </header>
-    <Routes>
-      <Route index element={<HomePage />} />
-      <Route path="*" element={<Suspense fallback={<main className="account-page" />}><AccountApp messages={messages} locale="pl" headerTarget={headerTarget} /></Suspense>} />
-    </Routes>
+    <Suspense fallback={<main className="account-page" role="status">{messages.loadingData}</main>}><AccountApp messages={messages} locale="pl" headerTarget={headerTarget} /></Suspense>
   </BrowserRouter>;
-}
-
-/** Login entry on the start page. */
-function SignInLink({ label }: { label: string }) {
-  const { pathname } = useLocation();
-  return pathname === '/' ? <Link to="/join" className="header-link">{label}</Link> : null;
 }

@@ -1,6 +1,7 @@
 // Isolated UI fixture: real components and data service, deterministic client.
 import { createRoot } from 'react-dom/client';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
+import { SessionHome } from '../../src/app/AccountApp';
 import { AuthProvider } from '../../src/auth/AuthProvider';
 import { RequireRole } from '../../src/auth/RequireRole';
 import { StudentHomePage } from '../../src/student/StudentHomePage';
@@ -43,5 +44,8 @@ const client = {
 } as unknown as AppSupabaseClient;
 createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={['/student']}>
   <header className="site-header"><div className="site-header-inner"><div className="brand"><img className="brand-logo" src={logo} alt="Sky Blue" /><span>Kurs programowania w języku Python</span></div></div></header>
-  <AuthProvider client={client}><RequireRole role="student" messages={pl}><StudentHomePage messages={pl} /></RequireRole></AuthProvider>
+  <AuthProvider client={client}><Routes>
+    <Route path="/" element={<SessionHome messages={pl} />} />
+    <Route path="/student" element={<RequireRole role="student" messages={pl}><StudentHomePage messages={pl} /></RequireRole>} />
+  </Routes></AuthProvider>
 </MemoryRouter>);
