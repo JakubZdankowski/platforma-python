@@ -51,13 +51,13 @@ export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels,
           if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); trigger.current?.focus(); }
         }}>
           <button ref={trigger} type="button" className="exercise-picker-button exercise-picker-current" aria-expanded={open} aria-controls={listId} disabled={disabled} onClick={() => setOpen(!open)}>
-            <span>{title}</span><span aria-hidden="true">⌄</span>
+            <span>{title}</span><svg className="exercise-list-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
           <ol id={listId} className="exercise-picker-list" hidden={!open} aria-label={labels.navigation}>
             {exercises.map((exercise, index) => <li key={exercise.id}>
               <button type="button" disabled={disabled} aria-current={index === selectedIndex ? 'step' : undefined} onClick={() => {
                 setOpen(false); trigger.current?.focus(); onSelect(index);
-              }}><span>{index + 1}.</span><span>{exercise.title}</span>{index === selectedIndex && <span aria-hidden="true">✓</span>}</button>
+              }}><span>{index + 1}.</span><span>{exercise.title}</span></button>
             </li>)}
           </ol>
         </div>

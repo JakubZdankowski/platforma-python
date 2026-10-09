@@ -421,15 +421,18 @@ a.brand { color: inherit; text-decoration: none; }
 
 .exercise-picker-dropdown { position: relative; }
 .exercise-picker-list { position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; width: 340px; max-width: calc(100vw - 32px); max-height: 50vh; overflow-y: auto; list-style: none; margin: 0; padding: 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: 0 12px 32px #0006; }
-.exercise-picker-list button { display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left; padding: 12px; border: 0; border-radius: 6px; color: var(--text); background: transparent; overflow-wrap: anywhere; }
+.exercise-picker-list button { display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; padding: 7px 10px; font-size: 14px; line-height: 1.4; border: 0; border-radius: 6px; color: var(--text); background: transparent; overflow-wrap: anywhere; }
 .exercise-picker-list button span:nth-child(2) { flex: 1; min-width: 0; }
 .exercise-picker-list button:hover, .exercise-picker-list button[aria-current=step] { background: #20324c; }
 .exercise-picker-list button[aria-current=step] { color: var(--accent); }
 @media(max-width: 720px) { .exercise-picker-dropdown { flex: 1; min-width: 0; } .exercise-picker-current { width: 100%; } .exercise-picker-list { right: 50%; transform: translateX(50%); } }
 
- .instructions-heading .exercise-picker-dropdown { flex: 1; min-width: 0; padding: 8px 0; }
-.instructions-heading .exercise-picker-current { width: 100%; justify-content: space-between; text-align: left; border: 0; background: transparent; padding: 8px 0; white-space: normal; overflow-wrap: anywhere; }
+.instructions-heading .exercise-picker-dropdown { flex: 1; min-width: 0; padding: 8px 0; }
+.instructions-heading .exercise-picker-current { width: 100%; justify-content: flex-start; gap: 10px; align-items: center; text-align: left; border: 0; background: transparent; padding: 8px 0; white-space: normal; overflow-wrap: anywhere; }
 .instructions-heading .exercise-picker-current > span:first-child { min-width: 0; }
 .instructions-heading .exercise-picker-list { position: static; width: 100%; max-width: 100%; margin-top: 8px; transform: none; box-shadow: none; }
 .instructions-heading { align-items: flex-start; }
 .instructions-heading .instructions-toggle { margin-top: 11px; }
+
+.exercise-list-chevron { flex-shrink: 0; color: var(--text-muted); transition: transform 150ms ease; }
+.exercise-picker-current[aria-expanded=true] .exercise-list-chevron { transform: rotate(180deg); }
