@@ -6,7 +6,7 @@ import { OutputPanel } from '../output/OutputPanel';
 import { usePythonRunner } from '../runtime/usePythonRunner';
 import { TurtlePanel } from '../turtle/TurtlePanel';
 import { PanelResizer } from './PanelResizer';
-import { SampleExercisePicker } from './SampleExercisePicker';
+import { ExerciseListPicker, SampleExercisePicker } from './SampleExercisePicker';
 import { downloadCode } from './downloadCode';
 import type { Messages, Locale } from '../i18n/en';
 
@@ -103,6 +103,13 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             </button>
           </div>
           <div id="instructions-content" className="instructions-content" hidden={instructionsCollapsed}>
+            <ExerciseListPicker
+              exercises={exercises}
+              selectedIndex={exerciseIndex}
+              disabled={runner.isBusy || preparing}
+              labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise, exercises: t.exercises }}
+              onSelect={selectExercise}
+            />
             <span className="exercise-number">{t.exerciseLabel} {String(exerciseIndex + 1).padStart(2, '0')}{backLink && <> · {exercise.title}</>}</span>
             <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
             <details key={`tip-${exercise.id}`} className="tip">

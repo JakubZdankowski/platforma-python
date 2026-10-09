@@ -17,6 +17,19 @@ const arrow = (direction: 'left' | 'right') => (
 
 /** Previous/next navigation shared by the playground and assigned lessons. */
 export function SampleExercisePicker({ exercises, selectedIndex, disabled, labels, onSelect }: Props) {
+  return (
+    <nav className="exercise-picker" aria-label={labels.navigation}>
+      <button type="button" className="exercise-picker-button" disabled={disabled || selectedIndex <= 0} onClick={() => onSelect(selectedIndex - 1)}>
+        {arrow('left')}<span className="exercise-picker-label">{labels.previous}</span>
+      </button>
+      <button type="button" className="exercise-picker-button" disabled={disabled || selectedIndex >= exercises.length - 1} onClick={() => onSelect(selectedIndex + 1)}>
+        <span className="exercise-picker-label">{labels.next}</span>{arrow('right')}
+      </button>
+    </nav>
+  );
+}
+
+export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels, onSelect }: Props) {
   const current = exercises[selectedIndex];
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
@@ -30,11 +43,7 @@ export function SampleExercisePicker({ exercises, selectedIndex, disabled, label
     document.addEventListener('pointerdown', closeOutside);
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
-  return (
-    <nav className="exercise-picker" aria-label={labels.navigation}>
-      <button type="button" className="exercise-picker-button" disabled={disabled || selectedIndex <= 0} onClick={() => onSelect(selectedIndex - 1)}>
-        {arrow('left')}<span className="exercise-picker-label">{labels.previous}</span>
-      </button>
+  return (<>
       {current && (
         <div className="exercise-picker-dropdown" ref={container} onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
@@ -53,9 +62,5 @@ export function SampleExercisePicker({ exercises, selectedIndex, disabled, label
           </ol>
         </div>
       )}
-      <button type="button" className="exercise-picker-button" disabled={disabled || selectedIndex >= exercises.length - 1} onClick={() => onSelect(selectedIndex + 1)}>
-        <span className="exercise-picker-label">{labels.next}</span>{arrow('right')}
-      </button>
-    </nav>
-  );
+  </>);
 }
