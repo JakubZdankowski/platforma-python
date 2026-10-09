@@ -1,4 +1,18 @@
-# Baza danych — M3 i kroki A–B MVP
+# Baza danych
+
+## Aktualizacja 2026-10-09: moduły i niezależne konta
+
+Aktualny model i kolejność wdrożenia opisuje [materials-rollout.md](materials-rollout.md). Poniższe sekcje M3/A–B opisują bazę wyjściową; aktualizacja zastępuje logowanie kodem klasy i widok klas ucznia.
+
+- `profiles.username` ucznia jest globalnie unikalny. `student_login_address(p_username)` mapuje login na dotychczasowy adres Auth bez zmiany konta ani hasła. `student_login_email` pozostaje dla zgodności.
+- `modules`: właściciel, nazwa, kolejność, opcjonalne powiązanie migracyjne z dawną klasą.
+- `module_lessons`: relacja wiele-do-wielu moduł–lekcja z kolejnością. Ćwiczenia i `student_work` zachowują tożsamość.
+- `group_module_assignments` i `student_module_assignments`: dostęp przez grupę albo bezpośrednio. Wystarczy dowolne istniejące przypisanie.
+- `classes` i `class_members` pozostają organizacją wewnętrzną nauczyciela. Końcowa migracja odbiera uczniom możliwość odczytu tych tabel; dostęp do modułów nadal wyliczają prywatne funkcje.
+- Nowe tabele wymagają aktualnej sesji i zachowują izolację nauczycieli. Uczeń nie może nadawać sobie dostępu ani zmieniać materiałów.
+- Cofnięcie wszystkich przypisań odbiera dostęp do treści i możliwość zapisu, ale nie usuwa rozwiązania. Nauczyciel nadal ma dostęp do prac swoich uczniów.
+
+## Baza wyjściowa — M3 i kroki A–B MVP
 
 PostgreSQL w Supabase. Schemat tworzą migracje w `supabase/migrations/`, a dane deweloperskie pochodzą z `supabase/seed.sql`. Treści lekcji importuje `pnpm content:sync <dir>`. MVP przechowuje ostatni wynik uruchomienia w `student_work`; historia `execution_events` pozostaje poza MVP.
 

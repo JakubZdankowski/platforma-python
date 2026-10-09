@@ -101,10 +101,10 @@ describe('student sign-in', () => {
       expect(profiles.data).toEqual([{ id: session.id, username: SEED.students[index], role: 'student' }]);
 
       const classes = await session.client.from('classes').select('name');
-      expect(classes.data).toEqual([{ name: SEED.className }]);
+      expect(classes.data).toEqual([]);
 
       const members = await session.client.from('class_members').select('student_id');
-      expect(members.data).toEqual([{ student_id: session.id }]);
+      expect(members.data).toEqual([]);
 
       // Even when asking for a classmate directly.
       const classmate = sessions[(index + 1) % sessions.length]!;
@@ -205,7 +205,7 @@ describe('teachers', () => {
 
     const first = anonClient();
     expect(await signInStudent(first, classRow!.join_code, username, created.value.password)).toBeNull();
-    expect((await first.from('classes').select('id')).data).toEqual([{ id: otherClassId }]);
+    expect((await first.from('classes').select('id')).data).toEqual([]);
 
     expect(await createStudent(other.client, otherClassId, username, 'Zosia 2')).toEqual({ ok: false, error: 'username-taken' });
 

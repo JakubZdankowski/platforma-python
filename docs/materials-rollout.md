@@ -16,4 +16,26 @@ Identyfikatory kont, lekcji, ćwiczeń i zapisanej pracy pozostają bez zmian. G
 
 Nowe tabele muszą stosować zarówno RLS własności/dostępu, jak i wymóg aktualnej sesji. Cofnięcie jednego przypisania nie odbiera uprawnień uzyskanych inną drogą. Cofnięcie wszystkich nie usuwa zapisanej pracy.
 
-Zgodność: stare RPC logowania pozostaje przez okres przejściowy; stare przypisania lekcji są synchronizowane z modułami migracyjnymi. Wycofanie frontendu nie wymaga kasowania nowych tabel ani przywracania bazy.
+Zgodność: stare RPC logowania pozostaje przez okres przejściowy; stare przypisania lekcji są synchronizowane z modułami migracyjnymi. Nowy interfejs nie używa tych przypisań. Po końcowej migracji grup cofnięcie frontendu do wersji sprzed modułów wymaga również przywrócenia wcześniejszych polityk odczytu grup; nie należy usuwać nowych tabel ani zapisanej pracy.
+
+## Punkty kontrolne
+
+- Migracje `100000` i `110000` oraz funkcja kont uczniów zostały wdrożone przed zmianą UI. Kontrola produkcji: 2 uczniów, 1 moduł, 1 lekcja w module, 1 przypisanie grupowe, 3 zapisane prace, 0 brakujących mapowań.
+- Lokalnie: 85 testów jednostkowych i 4 testy parsera, 27 testów bazy, 16 scenariuszy kont i edytora oraz 3 testy strony startowej i materiałów. Produkcyjny build i TypeScript przechodzą.
+- Test przeglądarkowy `materials.spec.ts`: konto bez grupy → logowanie → pusty pulpit → indywidualny moduł → ćwiczenie → zapis → powrót do rozwiniętego modułu → cofnięcie dostępu bez utraty pracy.
+- Migrację `120000` wdrażać po publikacji interfejsu modułów. Odbiera uczniom odczyt wewnętrznych grup i członkostw; dostęp do materiałów przez grupę pozostaje aktywny.
+
+## Sprawdzenie na żywo
+
+1. Uczeń: `/join`, dotychczasowy login i hasło, bez kodu klasy. Pulpit i Materiały nie pokazują nazw grup. Wiersz modułu zawiera tylko nazwę i strzałkę; kliknięcie rozwija lekcje.
+2. Nauczyciel: Uczniowie → nowe konto, bez wymogu grupy. Materiały → nowy moduł → lekcje → udostępnienie grupie lub indywidualnie.
+3. Uczeń: odświeżenie pokazuje przypisany moduł. Powrót z zadania zachowuje otwarty moduł, a kod pozostaje zapisany.
+4. Nauczyciel: odpięcie jednej drogi dostępu nie odbiera drugiej. Usunięcie wszystkich przypisań ukrywa materiały, ale nie kasuje pracy.
+
+Automatyczny odczytowy test publicznej strony (dedykowane konto wdrożeniowe, bez zmian treści):
+
+```powershell
+node --env-file=.env.production.account.local scripts/check-materials-production.mjs
+```
+
+Logowanie testowe kończy wcześniejszą sesję tego samego konta. Skrypt nie używa kont zwykłych uczniów i nie wypisuje danych logowania.

@@ -35,7 +35,7 @@ it('new login revokes old tokens immediately and old sessions cannot reclaim the
     expect(await signInTeacher(first, f.teacherEmail, f.password)).toBeNull();
     expect(await signInTeacher(second, f.teacherEmail, f.password)).toBeNull();
     expect((await first.from('classes').select('id')).data).toHaveLength(0);
-    expect((await second.from('classes').select('id')).data).toHaveLength(1);
+    expect((await second.from('modules').select('id')).data).toHaveLength(1);
     const oldAdminAction = await first.functions.invoke('teacher-students', { body: {
       action: 'create', classId: f.classId, username: 'stale-test', displayName: 'Stara sesja',
     } });

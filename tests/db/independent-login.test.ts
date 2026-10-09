@@ -22,10 +22,19 @@ test('login works without any membership and usernames are globally unique', asy
     const old = await client.rpc('student_login_email', { p_join_code: SEED.joinCode, p_username: 'ania' });
     expect(old.error).toBeNull();
     expect(old.data).toContain('ania.');
-    // A direct insert with an existing global username is rejected even for another owner.
-    const existing = await admin.from('profiles').select('username').eq('role', 'student').neq('id', created.data.user.id).limit(1).single();
-    if (existing.error) throw existing.error;
-    const duplicate = await admin.from('profiles').insert({ id: '00000000-0000-4000-8000-000000000001', role: 'student', display_name: 'Duplicate', username: existing.data.username!, created_by: teacher.data.id });
-    expect(duplicate.error).not.toBeNull();
+    // Bypass the Edge Function pre-check: the database itself rejects a
+    // duplicate name belonging to another teacher.
+    const owner = await admin.auth.admin.createUser({ email: `${username}@example.test`, password, email_confirm: true, app_metadata: { role: 'teacher', display_name: 'Other owner' } });
+    if (owner.error) throw owner.error;
+    let duplicateId: string | undefined;
+    try {
+      const duplicate = await admin.auth.admin.createUser({ email: studentAuthEmail(owner.data.user.id, username), password, email_confirm: true,
+        app_metadata: { role: 'student', username, display_name: 'Duplicate', created_by: owner.data.user.id } });
+      duplicateId = duplicate.data.user?.id;
+      expect(duplicate.error).not.toBeNull();
+    } finally {
+      if (duplicateId) await admin.auth.admin.deleteUser(duplicateId);
+      await admin.auth.admin.deleteUser(owner.data.user.id);
+    }
   } finally { await client.auth.signOut(); await admin.auth.admin.deleteUser(created.data.user.id); }
 });
