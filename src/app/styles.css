@@ -9,6 +9,10 @@
   --text-muted: #a3b1c6;
   --text-subtle: #8493a9;
   --accent: #82a9eb;
+  --control-radius: 5px;
+  --button-size: 14px;
+  --exercise-list-size: 14px;
+  --exercise-list-padding: 7px;
   color: var(--text);
   background: var(--background);
   color-scheme: dark;
@@ -97,7 +101,7 @@ h1 { font-size: 28px; letter-spacing: -.7px; line-height: 1.3; font-weight: 650;
 .session-ended-notice { max-width: 700px; margin: 16px auto 0; padding: 12px 16px; background: #30291f; border: 1px solid #846745; border-radius: 6px; color: #f4d7aa; }
 .session-ended-notice p { margin-bottom: 8px; }
 .session-ended-notice textarea { width: 100%; min-height: 140px; margin: 8px 0; font-family: Consolas, monospace; }
-.button { border: 1px solid transparent; border-radius: 5px; min-height: 39px; padding: 8px 14px; font-size: 14px; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+.button { border: 1px solid transparent; border-radius: var(--control-radius); min-height: 39px; padding: 8px 14px; font-size: var(--button-size); font-weight: 650; display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
 .button-primary { background: var(--accent); color: #0d1a2d; }
 .button-primary:hover:not(:disabled) { background: #a2c1f2; }
 .button-stop { border-color: #655154; background: #2a2530; color: #e4b9b0; }
@@ -421,7 +425,7 @@ a.brand { color: inherit; text-decoration: none; }
 
 .exercise-picker-dropdown { position: relative; }
 .exercise-picker-list { position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; width: 340px; max-width: calc(100vw - 32px); max-height: 50vh; overflow-y: auto; list-style: none; margin: 0; padding: 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: 0 12px 32px #0006; }
-.exercise-picker-list button { display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; padding: 7px 10px; font-size: 14px; line-height: 1.4; border: 0; border-radius: 6px; color: var(--text); background: transparent; overflow-wrap: anywhere; }
+.exercise-picker-list button { display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; padding: var(--exercise-list-padding) 10px; font-size: var(--exercise-list-size); line-height: 1.4; border: 0; border-radius: 6px; color: var(--text); background: transparent; overflow-wrap: anywhere; }
 .exercise-picker-list button span:nth-child(2) { flex: 1; min-width: 0; }
 .exercise-picker-list button:hover, .exercise-picker-list button[aria-current=step] { background: #20324c; }
 .exercise-picker-list button[aria-current=step] { color: var(--accent); }

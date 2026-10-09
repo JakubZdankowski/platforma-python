@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Link, useLocation } from 'react-router';
+import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router';
 import { pl } from '../i18n/pl';
 import blueLogo from '../assets/blue-logo.png';
 
+const UiLab = lazy(() => import('./UiLab'));
 const AccountApp = lazy(() => import('./AccountApp'));
 
 export function App() {
@@ -12,12 +13,13 @@ export function App() {
 
   return <BrowserRouter basename={import.meta.env.BASE_URL}>
     <SiteHeader setHeaderTarget={setHeaderTarget} />
-    <Suspense fallback={<main className="account-page" role="status">{messages.loadingData}</main>}><AccountApp messages={messages} locale="pl" headerTarget={headerTarget} /></Suspense>
+    <Suspense fallback={<main className="account-page" role="status">{messages.loadingData}</main>}><Routes><Route path="/ui" element={<UiLab />} /><Route path="*" element={<AccountApp messages={messages} locale="pl" headerTarget={headerTarget} />} /></Routes></Suspense>
   </BrowserRouter>;
 }
 
 function SiteHeader({ setHeaderTarget }: { setHeaderTarget: (element: HTMLDivElement | null) => void }) {
   const { pathname } = useLocation();
+  if (pathname === '/ui') return null;
   if ((pathname.startsWith('/teacher') && !pathname.endsWith('/live')) || ['/student', '/student/materials', '/student/help'].includes(pathname.replace(/\/$/, ''))) return null;
   return <header className="site-header">
       <div className="site-header-inner">
