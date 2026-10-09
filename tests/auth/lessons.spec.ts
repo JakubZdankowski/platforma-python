@@ -45,6 +45,7 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeEnabled();
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeChecked();
     await studentPage.reload();
+    await studentPage.getByRole('link').filter({ has: studentPage.getByRole('heading', { name: SEED.className, exact: true }) }).click();
     await studentPage.locator(`a[href="/student/exercises/${original[0]!.id}"]`).click();
     const editor = studentPage.getByRole('textbox', { name: 'Edytor kodu Python' });
     await expect(editor).toHaveText('print("Cześć!")');

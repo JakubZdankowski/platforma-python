@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { Messages, Locale } from '../i18n/en';
 import { listLessons, type Lesson } from '../lessons/lessonService';
@@ -10,6 +10,9 @@ import type { Exercise } from '../exercises/types';
 export function StudentExercisePage({ messages: t, locale }: { messages: Messages; locale: Locale }) {
   const { client, editorLease } = useAuth();
   const { exerciseId = '' } = useParams();
+  const location = useLocation();
+  const classId = typeof location.state?.classId === 'string' ? location.state.classId as string : undefined;
+  const home = classId ? `/student?class=${encodeURIComponent(classId)}` : '/student';
   const [content, setContent] = useState<{ lessons: Lesson[] } | 'error' | null>(null);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -18,7 +21,7 @@ export function StudentExercisePage({ messages: t, locale }: { messages: Message
     void listLessons(client).then((lessons) => { if (active) setContent({ lessons }); }).catch(() => { if (active) setContent('error'); });
     return () => { active = false; };
   }, [client, exerciseId, attempt]);
-  const back = <p><Link to="/student">← {t.allLessons}</Link></p>;
+  const back = <p><Link to={home}>← {t.allLessons}</Link></p>;
   if (editorLease !== 'owned') return <main className="account-page">{back}
     {editorLease === 'checking' ? <p role="status">{t.loadingData}</p>
       : <p role="alert">{editorLease === 'unsupported'
@@ -39,8 +42,11 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
   const { client } = useAuth();
   const profile = useProfile();
   const navigate = useNavigate();
+  const location = useLocation();
+  const classId = typeof location.state?.classId === 'string' ? location.state.classId as string : undefined;
+  const home = classId ? `/student?class=${encodeURIComponent(classId)}` : '/student';
   const work = useStudentWork(client, profile.id, exercise);
-  const backLink = <Link to="/student" onClick={(event) => { event.preventDefault(); void work.flush().then((ok) => { if (ok || work.state.status !== 'ready') void navigate('/student'); }); }}>← {t.allLessons}</Link>;
+  const backLink = <Link to={home} onClick={(event) => { event.preventDefault(); void work.flush().then((ok) => { if (ok || work.state.status !== 'ready') void navigate(home); }); }}>← {t.allLessons}</Link>;
   const back = <p>{backLink}</p>;
   if (work.state.status !== 'ready') return <main className="account-page">{back}
     {work.state.status === 'loading' ? <p role="status">{t.loadingData}</p> : <div role="alert"><p>{t.dataUnavailable}</p>
@@ -56,5 +62,5 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
         : work.state.save === 'error' ? 'Zmiany nie zostały zapisane — ponawiam zapis. Zachowaj otwartą kartę lub pobierz kod .py.' : undefined}
     saveStatus={work.state.save === 'saved' ? t.savedCode : work.state.save === 'error' ? t.retryingSave : t.savingCode}
     beforeRun={work.flush} onRunResult={work.recordRun} onReset={() => { work.change(exercise.starterCode); void work.flush(); }}
-    onSelect={async (next) => { if (await work.flush()) void navigate(`/student/exercises/${lesson.exercises[next]!.id}`); }} />;
+    onSelect={async (next) => { if (await work.flush()) void navigate(`/student/exercises/${lesson.exercises[next]!.id}`, { state: { classId } }); }} />;
 }

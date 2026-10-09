@@ -36,7 +36,7 @@ test('a student signs in with class code, username and password, then signs out'
   await studentSignIn(page, 'ania', SEED.password('ania'), 'python25');
   await expect(page).toHaveURL(/\/student$/);
   await expect(page.getByRole('heading', { name: 'Cześć, Ania!' })).toBeVisible();
-  await expect(page.getByRole('list', { name: 'Twoje klasy' })).toHaveText(SEED.className);
+  await expect(page.getByRole('list', { name: 'Twoje klasy' })).toContainText(SEED.className);
   await expect(page.getByText('@students.invalid')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/student-home.png', fullPage: true });
 
