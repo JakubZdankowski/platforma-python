@@ -152,6 +152,7 @@ export const en = {
   activity: 'Activity',
   activityTyping: 'typing',
   activityActive: 'active',
+  activityInactive: 'inactive',
   activityIdle: (minutes: number) => `idle ${minutes} min`,
   activityNotStarted: 'not started',
   lastRun: 'Last run',

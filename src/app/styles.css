@@ -218,7 +218,8 @@ a.brand { color: inherit; text-decoration: none; }
 .student-watch-button:focus-visible { outline-offset: -3px; }
 .live-student-name { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); width: 100%; font-weight: 650; font-size: var(--font-control); overflow-wrap: anywhere; }
 .live-student-exercise { font-size: var(--font-meta); color: var(--text-muted); overflow-wrap: anywhere; }
-.live-student-status { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--font-meta); overflow-wrap: anywhere; }
+.live-student-status { display: flex; flex-wrap: wrap; align-items: center; width: 100%; gap: var(--space-2) var(--space-4); font-size: var(--font-meta); overflow-wrap: anywhere; }
+.live-student-completed { margin-left: auto; text-align: right; }
 .activity-label { color: var(--text-muted); }
 .activity-label.typing { color: var(--success); }
 .activity-label.active { color: var(--accent); }

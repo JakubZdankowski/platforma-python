@@ -68,6 +68,8 @@ for (const role of ['student', 'teacher', 'admin'] as const) {
         if (routes[index]!.endsWith('/live')) {
           const student = page.getByRole('button', { name: /Podgląd:/ }).first();
           await student.click();
+          await expect(student.locator('.activity-label')).toHaveText(/^(aktywny|nieaktywny)$/);
+          await expect(student).not.toContainText(/Sukces|bezczynny|Jeszcze nie uruchamiał/);
           await expect(page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' })).toBeVisible();
         }
         await page.screenshot({ path: `test-results/ui-audit/${role}-${index}-${width}.png`, fullPage: true });

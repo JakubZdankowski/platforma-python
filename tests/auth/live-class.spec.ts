@@ -49,8 +49,8 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await expect(connection).toHaveText('Na żywo');
     const row = page.getByTestId(`live-student-${student.value.studentId}`);
     const waitingRow = page.getByTestId(`live-student-${otherStudent.value.studentId}`);
-    await expect(row).toContainText('nie zaczął');
-    await expect(waitingRow).toContainText('nie zaczął');
+    await expect(row.locator('.activity-label')).toHaveText('nieaktywny');
+    await expect(waitingRow.locator('.activity-label')).toHaveText('nieaktywny');
     await page.getByRole('button', { name: 'Podgląd: Testowy uczeń', exact: true }).click();
     await expect(page.getByText('Uczeń nie otworzył jeszcze żadnego ćwiczenia.')).toBeVisible();
 
@@ -67,8 +67,8 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await expect(watched).toHaveText('print("start")');
     await editor.fill('print("Żółw i ąęł — zmiana na żywo")');
     await expect(watched).toHaveText('print("Żółw i ąęł — zmiana na żywo")', { timeout: 3000 });
-    await expect(row).toContainText('pisze');
-    await expect(waitingRow).toContainText('nie zaczął');
+    await expect(row.locator('.activity-label')).toHaveText('aktywny');
+    await expect(waitingRow.locator('.activity-label')).toHaveText('nieaktywny');
     await expect(watched).toHaveAttribute('aria-readonly', 'true');
     await expect(watched).toHaveAttribute('contenteditable', 'false');
     await watched.click();
@@ -80,10 +80,11 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     expect((await admin.from('student_work').select('code').eq('student_id', student.value.studentId).eq('exercise_id', exercises.data[0]!.id).single()).data?.code).toBe('print("Żółw i ąęł — zmiana na żywo")');
 
     await studentPage.getByRole('button', { name: 'Uruchom', exact: true }).click();
-    await expect(row).toContainText('✓ Sukces');
+    await expect(page.locator('#student-live-view')).toContainText('✓ Sukces');
+    await expect(row).not.toContainText('Sukces');
     await editor.fill('1 / 0');
     await studentPage.getByRole('button', { name: 'Uruchom', exact: true }).click();
-    await expect(row).toContainText('ZeroDivisionError');
+    await expect(row).not.toContainText('ZeroDivisionError');
     await expect(page.locator('#student-live-view')).toContainText('division by zero');
     await studentPage.getByRole('button', { name: 'Następne zadanie' }).click();
     await expect(editor).toHaveText('print("drugi")');

@@ -4,16 +4,11 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { Locale, Messages } from '../i18n/en';
-import { currentWork, latestRun, workActivity, type Activity, type StudentWork } from './liveWorkService';
+import { currentWork, workActivity, type StudentWork } from './liveWorkService';
 import { useLiveClass } from './useLiveClass';
 import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
 
 const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })));
-
-function activityLabel(activity: Activity, t: Messages) {
-  return activity.kind === 'idle' ? t.activityIdle(activity.minutes)
-    : activity.kind === 'typing' ? t.activityTyping : activity.kind === 'active' ? t.activityActive : t.activityNotStarted;
-}
 
 function runLabel(work: StudentWork | undefined, t: Messages) {
   if (!work?.last_run_at) return t.noLastRun;
@@ -65,16 +60,15 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
       {students.length ? <ul className="live-student-list">{students.map((student) => {
           const current = currentWork(work, student.id);
           const exercise = exercises.find((item) => item.id === current?.exercise_id);
-          const run = latestRun(work, student.id);
           const activity = workActivity(current, now);
+          const active = activity.kind === 'typing' || activity.kind === 'active';
           return <li key={student.id} data-testid={`live-student-${student.id}`}>
             <Button unstyled type="button" className={`student-watch-button${selectedId === student.id ? ' is-selected' : ''}`} onClick={() => { setSelectedId(student.id); setExerciseId(''); }}
               aria-label={t.watchStudent(student.displayName)} aria-pressed={selectedId === student.id} aria-controls="student-live-view">
-              {current?.status === 'completed' && <span className="run-success">✓ {t.completed}</span>}
               <span className="live-student-name">{student.displayName}</span>
               <span className="live-student-exercise" title={exercise ? `${exercise.lessonTitle} — ${exercise.title}` : undefined}>{current ? exercise?.title ?? t.unavailableExercise : '—'}</span>
-              <span className="live-student-status"><span className={`activity-label ${activity.kind}`}>{activityLabel(activity, t)}</span>
-                <span className={run?.last_run_success ? 'run-success' : undefined} title={`${t.lastRun}: ${runLabel(run, t)}${run?.last_run_at ? ` · ${formatTime(run.last_run_at)}` : ''}`}>{runLabel(run, t)}</span></span>
+              <span className="live-student-status"><span className={`activity-label ${active ? 'active' : 'inactive'}`}>{active ? t.activityActive : t.activityInactive}</span>
+                {current?.status === 'completed' && <span className="live-student-completed run-success">{t.completed}</span>}</span>
             </Button>
           </li>;
         })}</ul> : <p className="account-muted live-empty">{t.noClassStudents}</p>}

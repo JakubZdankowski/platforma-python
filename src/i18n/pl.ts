@@ -154,6 +154,7 @@ export const pl: Messages = {
   activity: 'Aktywność',
   activityTyping: 'pisze',
   activityActive: 'aktywny',
+  activityInactive: 'nieaktywny',
   activityIdle: (minutes: number) => `bezczynny ${minutes} min`,
   activityNotStarted: 'nie zaczął',
   lastRun: 'Ostatnie uruchomienie',
