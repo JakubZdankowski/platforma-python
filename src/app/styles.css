@@ -400,7 +400,9 @@ a.brand { color: inherit; text-decoration: none; }
 
 .exercise-list-chevron { flex-shrink: 0; color: var(--text-muted); transition: transform 150ms ease; }
 .exercise-picker-current[aria-expanded=true] .exercise-list-chevron { transform: rotate(180deg); }
-.lesson-workspace { --output-column: min(var(--output-width, clamp(280px, 25vw, 360px)), 60%); grid-template-columns: 52px clamp(240px, 22vw, 340px) minmax(0, 1fr) var(--output-column); }
+.lesson-workspace { --output-column: min(var(--output-width, clamp(280px, 25vw, 360px)), 60%); grid-template-columns: 52px min(var(--sidebar-width, clamp(240px, 22vw, 340px)), max(260px, calc(100% - 52px - 48px - var(--output-column) - 320px))) minmax(0, 1fr) var(--output-column); }
+.lesson-workspace .instructions-panel { position: relative; }
+.sidebar-resizer { left: auto; right: 0; }
 .lesson-workspace.lesson-panel-collapsed { grid-template-columns: 52px minmax(0, 1fr) var(--output-column); }
 .lesson-workspace > [hidden] { display: none; }
 .lesson-tool-rail { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-2) var(--space-1); border: 1px solid var(--border); border-radius: var(--panel-radius); background: var(--surface); }

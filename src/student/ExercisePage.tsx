@@ -42,6 +42,8 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
   const instructionsCollapsed = activePanel === null;
   // Width of the output column chosen with the resizer; null means the default responsive width.
   const [outputWidth, setOutputWidth] = useState<number | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const editorRef = useRef<HTMLElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
   const runner = usePythonRunner();
@@ -90,7 +92,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
       {warning && <div className="work-warning" role="alert">{warning}</div>}
       <div
         className={`exercise-layout lesson-workspace${instructionsCollapsed ? ' lesson-panel-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
-        style={outputWidth === null ? undefined : { '--output-width': `${outputWidth}px` } as CSSProperties}
+        style={{ ...(outputWidth === null ? {} : { '--output-width': `${outputWidth}px` }), ...(sidebarWidth === null ? {} : { '--sidebar-width': `${sidebarWidth}px` }) } as CSSProperties}
       >
         <nav className="lesson-tool-rail" aria-label={t.lessonPanels}>
           <Button unstyled type="button" aria-label={t.instructions} title={t.instructions} aria-expanded={activePanel === 'instructions'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'instructions' ? null : 'instructions')}>
@@ -100,7 +102,8 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             <Icon kind="list" />
           </Button>
         </nav>
-        <aside id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
+        <aside ref={sidebarRef} id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
+          <PanelResizer side="left" label={t.resizeSidebar} editorRef={editorRef} outputRef={sidebarRef} onResize={setSidebarWidth} />
           {activePanel === 'contents'
             ? <div className="panel-heading"><h2 id="instructions-title">{lessonTitle ?? t.lessonExercises}</h2></div>
             : <h2 id="instructions-title" className="sr-only">{exercise.title}</h2>}

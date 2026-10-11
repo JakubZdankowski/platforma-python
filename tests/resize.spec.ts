@@ -2,6 +2,31 @@ import { expect, test, type Page } from '@playwright/test';
 
 const handleName = 'Zmień szerokość edytora i podglądu (strzałki, Enter przywraca)';
 
+test('sidebar width supports dragging, keyboard, reset and survives panel switching', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/tests/fixtures/playground.html');
+  const panel = page.locator('#lesson-side-panel');
+  const handle = page.getByRole('separator', { name: 'Zmień szerokość panelu bocznego (strzałki, Enter przywraca)' });
+  const initial = (await panel.boundingBox())!.width;
+  const box = (await handle.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 100, box.y + box.height / 2, { steps: 8 });
+  await page.mouse.up();
+  expectNear((await panel.boundingBox())!.width, initial + 100);
+  await handle.focus();
+  await handle.press('ArrowLeft');
+  expectNear((await panel.boundingBox())!.width, initial + 76);
+  await page.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+  expectNear((await panel.boundingBox())!.width, initial + 76);
+  await handle.press('ArrowRight');
+  expectNear((await panel.boundingBox())!.width, initial + 100);
+  await handle.press('Enter');
+  expectNear((await panel.boundingBox())!.width, initial);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(handle).toBeHidden();
+});
+
 async function widths(page: Page) {
   const editor = (await page.getByRole('region', { name: 'Twój kod' }).boundingBox())!;
   const output = (await page.getByRole('region', { name: 'Konsola' }).boundingBox())!;

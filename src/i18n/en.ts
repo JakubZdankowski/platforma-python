@@ -43,6 +43,7 @@ export const en = {
   stderr: 'Error output',
   turtleTitle: 'Drawing',
   resizePanels: 'Resize the editor and output (arrow keys, Enter restores)',
+  resizeSidebar: 'Resize the sidebar (arrow keys, Enter restores)',
   turtleSpeed: 'Speed',
   skipAnimation: 'Skip animation',
   turtleDrawing: 'The turtle is drawing…',

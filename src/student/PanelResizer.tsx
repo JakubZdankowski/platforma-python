@@ -5,6 +5,7 @@ export const MIN_EDITOR_WIDTH = 320;
 const KEYBOARD_STEP = 24;
 
 interface Props {
+  side?: 'left' | 'right';
   label: string;
   editorRef: RefObject<HTMLElement | null>;
   outputRef: RefObject<HTMLElement | null>;
@@ -21,7 +22,7 @@ export function clampOutputWidth(width: number, sharedWidth: number): number {
  * Drag handle between the editor and the output column. Narrowing one widens the other.
  * Keyboard: arrows resize, Enter or double-click restores the default.
  */
-export function PanelResizer({ label, editorRef, outputRef, onResize }: Props) {
+export function PanelResizer({ label, editorRef, outputRef, onResize, side = 'right' }: Props) {
   const [dragging, setDragging] = useState(false);
   const [editorShare, setEditorShare] = useState<number>();
 
@@ -60,7 +61,7 @@ export function PanelResizer({ label, editorRef, outputRef, onResize }: Props) {
     setDragging(true);
     const move = (moveEvent: globalThis.PointerEvent) => {
       // The output column is on the right: moving the handle left widens it.
-      onResize(clampOutputWidth(start.output - (moveEvent.clientX - startX), start.shared));
+      onResize(clampOutputWidth(start.output + (side === 'left' ? 1 : -1) * (moveEvent.clientX - startX), start.shared));
     };
     const end = () => {
       setDragging(false);
@@ -75,8 +76,8 @@ export function PanelResizer({ label, editorRef, outputRef, onResize }: Props) {
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const { output, shared } = widths();
-    if (event.key === 'ArrowLeft') onResize(clampOutputWidth(output + KEYBOARD_STEP, shared));
-    else if (event.key === 'ArrowRight') onResize(clampOutputWidth(output - KEYBOARD_STEP, shared));
+    if (event.key === 'ArrowLeft') onResize(clampOutputWidth(output + (side === 'left' ? -1 : 1) * KEYBOARD_STEP, shared));
+    else if (event.key === 'ArrowRight') onResize(clampOutputWidth(output + (side === 'left' ? 1 : -1) * KEYBOARD_STEP, shared));
     else if (event.key === 'Enter') onResize(null);
     else return;
     event.preventDefault();
@@ -84,7 +85,7 @@ export function PanelResizer({ label, editorRef, outputRef, onResize }: Props) {
 
   return (
     <div
-      className={`panel-resizer${dragging ? ' is-dragging' : ''}`}
+      className={`panel-resizer${side === 'left' ? ' sidebar-resizer' : ''}${dragging ? ' is-dragging' : ''}`}
       role="separator"
       aria-orientation="vertical"
       aria-label={label}

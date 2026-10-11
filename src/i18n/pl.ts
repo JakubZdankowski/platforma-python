@@ -45,6 +45,7 @@ export const pl: Messages = {
   stderr: 'Wyjście błędów',
   turtleTitle: 'Rysunek',
   resizePanels: 'Zmień szerokość edytora i podglądu (strzałki, Enter przywraca)',
+  resizeSidebar: 'Zmień szerokość panelu bocznego (strzałki, Enter przywraca)',
   turtleSpeed: 'Tempo',
   skipAnimation: 'Pomiń animację',
   turtleDrawing: 'Żółw rysuje…',
