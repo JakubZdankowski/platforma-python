@@ -241,6 +241,11 @@ a.brand { color: inherit; text-decoration: none; }
 .live-work-details { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 11px; color: var(--text-muted); padding: 6px 12px 8px; flex-shrink: 0; }
 .live-viewer > .form-error { margin: 0; padding: 8px 12px; max-height: 80px; overflow-y: auto; flex-shrink: 0; }
 .live-empty { padding: 20px; font-size: 14px; }
+.live-exercise-picker { display: grid; gap: 6px; padding: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; font-size: 12px; color: var(--text-muted); }
+.live-exercise-picker select { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #3a4c66; border-radius: 6px; background: var(--surface-editor); color: var(--text); font: inherit; font-size: 14px; }
+.live-exercise-notice { margin: 0; padding: 8px 12px; font-size: 13px; flex-shrink: 0; }
+.live-exercise-instructions { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px; flex-shrink: 0; max-height: 200px; overflow-y: auto; }
+.live-exercise-instructions summary { cursor: pointer; color: var(--accent); }
 .live-code-container { flex: 1; min-height: 0; overflow: hidden; border-top: 1px solid var(--border); background: var(--surface-editor); display: flex; }
 .live-code-container .cm-content { cursor: text; }
 @media (min-width: 901px) {

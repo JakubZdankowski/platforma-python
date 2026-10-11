@@ -1,0 +1,38 @@
+import { expect, test } from '@playwright/test';
+import { sessionFixture } from '../db/sessionFixture';
+
+for (const role of ['teacher', 'admin'] as const) test(`${role} browses unstarted and saved exercises, pins a preview, and returns to live activity`, async ({ page }) => {
+  const f = await sessionFixture(role);
+  try {
+    const lessonId = (await f.admin.from('exercises').select('lesson_id').eq('id', f.exerciseId).single()).data!.lesson_id;
+    const second = await f.admin.from('exercises').insert({ lesson_id: lessonId, slug: 'second', title: 'Drugie zadanie', position: 2, instructions_markdown: '## Instrukcja drugiego zadania', starter_code: 'print("drugie")', runtime_type: 'python-console' }).select('id').single();
+    expect(second.error).toBeNull();
+    await page.goto('/login');
+    await page.getByLabel('Adres e-mail').fill(f.teacherEmail);
+    await page.getByLabel('Hasło').fill(f.password);
+    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${role}$`));
+    await page.goto(`/${role}/classes/${f.classId}/live`);
+    await page.getByRole('button', { name: 'Podgląd: Uczeń sesji', exact: true }).click();
+    const picker = page.getByLabel('Ćwiczenie ucznia'), editor = page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' });
+    await expect(picker.locator('option')).toHaveCount(3);
+    await picker.selectOption(second.data!.id);
+    await expect(editor).toHaveText('print("drugie")');
+    await expect(page.getByText('Uczeń nie rozpoczął tego ćwiczenia. Poniżej kod początkowy.')).toBeVisible();
+    await page.getByText('Treść ćwiczenia', { exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Instrukcja drugiego zadania' })).toBeVisible();
+    await page.getByText('Treść ćwiczenia', { exact: true }).click();
+    await f.admin.from('student_work').insert({ student_id: f.studentId, exercise_id: second.data!.id, code: 'print("zapisane drugie")', status: 'completed' });
+    await expect(editor).toHaveText('print("zapisane drugie")');
+    await f.admin.from('student_work').insert({ student_id: f.studentId, exercise_id: f.exerciseId, code: 'print("ostatnia aktywność")', status: 'in_progress' });
+    await expect(page.getByTestId(`live-student-${f.studentId}`)).toContainText('Kod sesji');
+    await expect(editor).toHaveText('print("zapisane drugie")');
+    await picker.selectOption('');
+    await expect(editor).toHaveText('print("ostatnia aktywność")');
+    await expect(editor).toHaveAttribute('aria-readonly', 'true');
+    await page.screenshot({ path: `test-results/${role}-exercise-preview-desktop.png`, fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `test-results/${role}-exercise-preview-mobile.png`, fullPage: true });
+  } finally { await f.cleanup(); }
+});

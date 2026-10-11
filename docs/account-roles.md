@@ -33,3 +33,11 @@ Usunięcie konta nauczyciela przenosi jego grupy i materiały oraz powiązania t
 Lokalny seed zawiera `admin@example.test` / `admin-dev-password`. To dane wyłącznie deweloperskie; seed nie służy do produkcji. Przy testach funkcji uruchom `pnpm exec supabase functions serve`.
 
 Uprawnienia egzekwują RLS, granty kolumn, integralność bazy i funkcje sprawdzające bieżącą sesję. Role w interfejsie służą tylko nawigacji. Testy: `pnpm test:db`, `pnpm test:e2e:auth`, `pnpm check`.
+
+## Przegląd ćwiczeń ucznia
+
+W podglądzie pracy grupy administrator i przypisany nauczyciel mogą wybrać dowolne ćwiczenie dostępne danemu uczniowi. Lista obejmuje zatwierdzone lekcje z modułów udostępnionych indywidualnie i przez wszystkie grupy ucznia. Pokazuje status pracy; nierozpoczęte zadanie wyświetla kod początkowy, a pozostałe zapisany kod. Treść zadania można rozwinąć. Podgląd pozostaje tylko do odczytu.
+
+Wybór konkretnego ćwiczenia pozostaje stały podczas aktualizacji kodu. Opcja „Na żywo — ostatnia aktywność” przywraca śledzenie ostatnio edytowanego ćwiczenia. Zmiany dostępności są odświeżane również co 15 sekund.
+
+Przed publikacją tej funkcji zastosuj migrację `20261011140000_student_exercise_preview.sql` poleceniem `pnpm exec supabase db push`, a następnie opublikuj frontend. Funkcja bazy sprawdza aktywną sesję i dostęp do grupy; nie wymaga aktualizacji Edge Functions.

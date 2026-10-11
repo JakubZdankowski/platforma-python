@@ -4,6 +4,7 @@ import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { Locale, Messages } from '../i18n/en';
 import { currentWork, latestRun, workActivity, type Activity, type StudentWork } from './liveWorkService';
 import { useLiveClass } from './useLiveClass';
+import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
 
 const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })));
 
@@ -27,6 +28,7 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
   const base = useProfile().role === 'admin' ? '/admin' : '/teacher';
   const live = useLiveClass(client, classId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [exerciseId, setExerciseId] = useState<string>('');
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 5000);
@@ -37,10 +39,13 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
   if (live.state.status === 'not-found') return <main className="account-page">{back}<p role="alert" className="form-error">{t.classNotFound}</p></main>;
   if (live.state.status === 'error') return <main className="account-page">{back}<div className="form-error" role="alert">
     <p>{t.dataUnavailable}</p><button type="button" className="button button-secondary" onClick={live.retry}>{t.retry}</button></div></main>;
-  const { details, students, exercises, work } = live.state.snapshot;
+  const { details, students, exercises, work, availableExercises } = live.state.snapshot;
   const selected = students.find((student) => student.id === selectedId);
-  const selectedWork = selected ? currentWork(work, selected.id) : undefined;
-  const selectedExercise = exercises.find((exercise) => exercise.id === selectedWork?.exercise_id);
+  const studentExercises = availableExercises.filter(e => e.student_id === selectedId);
+  const latestWork = selected ? currentWork(work, selected.id) : undefined;
+  const selectedExercise = exerciseId ? studentExercises.find(e => e.id === exerciseId) : studentExercises.find(e => e.id === latestWork?.exercise_id);
+  const selectedWork = selected ? (exerciseId ? (selectedExercise ? work.find(w => w.student_id === selected.id && w.exercise_id === exerciseId) : undefined) : latestWork) : undefined;
+  const exerciseTitle = selectedExercise ? `${selectedExercise.lesson_title} — ${selectedExercise.title}` : exercises.find(e => e.id === selectedWork?.exercise_id);
   const status = live.connection === 'live' ? t.liveConnected : live.connection === 'connecting' ? t.liveConnecting : t.liveDisconnected;
   const formatTime = (value: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(value));
   return <main className="account-page live-class-page">
@@ -61,7 +66,7 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
           const run = latestRun(work, student.id);
           const activity = workActivity(current, now);
           return <li key={student.id} data-testid={`live-student-${student.id}`}>
-            <button type="button" className={`student-watch-button${selectedId === student.id ? ' is-selected' : ''}`} onClick={() => setSelectedId(student.id)}
+            <button type="button" className={`student-watch-button${selectedId === student.id ? ' is-selected' : ''}`} onClick={() => { setSelectedId(student.id); setExerciseId(''); }}
               aria-label={t.watchStudent(student.displayName)} aria-pressed={selectedId === student.id} aria-controls="student-live-view">
               {current?.status === 'completed' && <span className="run-success">✓ {t.completed}</span>}
               <span className="live-student-name">{student.displayName}</span>
@@ -77,16 +82,25 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
       <div className="live-viewer-heading"><h2 id="student-live-title">{t.watchStudent(selected.displayName)}</h2>
         <span className="live-readonly">{t.readOnlyCode}</span>
         <button type="button" className="button button-secondary button-small" onClick={() => setSelectedId(null)}>{t.closeLiveView}</button></div>
-      {selectedWork ? <>
-        <p className="live-exercise-title">{selectedExercise ? `${selectedExercise.lessonTitle} — ${selectedExercise.title}` : t.unavailableExercise}</p>
+      <label className="live-exercise-picker"><span>Ćwiczenie ucznia</span><select value={exerciseId} onChange={event => setExerciseId(event.target.value)}>
+        <option value="">Na żywo — ostatnia aktywność</option>
+        {studentExercises.map(e => { const saved = work.find(w => w.student_id === selected.id && w.exercise_id === e.id); return <option key={e.id} value={e.id}>{e.lesson_title} — {e.title} · {saved?.status === 'completed' ? 'Ukończone' : saved && saved.status !== 'not_started' ? 'W trakcie' : 'Nierozpoczęte'}</option>; })}
+      </select></label>
+      {!studentExercises.length && <p className="account-muted live-exercise-notice">Uczeń nie ma obecnie dostępnych ćwiczeń.</p>}
+      {exerciseId && !selectedExercise && <p className="account-muted live-exercise-notice">To ćwiczenie nie jest już dostępne uczniowi. Wybierz inne ćwiczenie.</p>}
+      {selectedWork || selectedExercise ? <>
+        <p className="live-exercise-title">{typeof exerciseTitle === 'string' ? exerciseTitle : exerciseTitle ? `${exerciseTitle.lessonTitle} — ${exerciseTitle.title}` : t.unavailableExercise}</p>
+        {selectedExercise && <details className="live-exercise-instructions"><summary>Treść ćwiczenia</summary><MarkdownInstructions markdown={selectedExercise.instructions_markdown} /></details>}
+        {selectedWork ? <>
         <div className="live-work-details">
           <span>{selectedWork.status === 'completed' ? `✓ ${t.completed}` : t.inProgress}</span>
           <span>{t.lastEdited}: <time dateTime={selectedWork.last_edited_at}>{formatTime(selectedWork.last_edited_at)}</time></span>
           <span>{t.lastRun}: {runLabel(selectedWork, t)}{selectedWork.last_run_at && <> · <time dateTime={selectedWork.last_run_at}>{formatTime(selectedWork.last_run_at)}</time></>}</span>
         </div>
         {selectedWork.last_error_summary && <p className="form-error">{selectedWork.last_error_summary}</p>}
+        </> : <p className="account-muted live-exercise-notice">Uczeń nie rozpoczął tego ćwiczenia. Poniżej kod początkowy.</p>}
         <div className="live-code-container"><Suspense fallback={<p role="status">{t.loadingEditor}</p>}>
-          <CodeEditor key={`${selected.id}-${selectedWork.exercise_id}`} value={selectedWork.code} readOnly label={t.studentCodeLabel} helpId="live-editor-help" />
+          <CodeEditor key={`${selected.id}-${selectedWork?.exercise_id ?? selectedExercise?.id}`} value={selectedWork?.code ?? selectedExercise?.starter_code ?? ''} readOnly label={t.studentCodeLabel} helpId="live-editor-help" />
         </Suspense></div>
         <p id="live-editor-help" className="sr-only">{t.readOnlyHelp}</p>
       </> : <p className="account-muted live-empty">{t.studentHasNotStarted}</p>}

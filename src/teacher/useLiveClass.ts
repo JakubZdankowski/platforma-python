@@ -56,6 +56,8 @@ export function useLiveClass(client: AppSupabaseClient, classId: string) {
         } else setConnection('disconnected');
       });
     void refresh();
+    // Access changes may not emit student_work events (e.g. a new assignment).
+    const accessTimer = setInterval(() => { if (navigator.onLine) void refresh(); }, 15000);
     const offline = () => { awaitingSubscription = false; subscribed = false; setConnection('disconnected'); };
     const online = () => setAttempt((value) => value + 1);
     window.addEventListener('offline', offline);
@@ -63,6 +65,7 @@ export function useLiveClass(client: AppSupabaseClient, classId: string) {
     return () => {
       active = false;
       clearTimeout(retryTimer);
+      clearInterval(accessTimer);
       window.removeEventListener('offline', offline);
       window.removeEventListener('online', online);
       void client.removeChannel(channel);

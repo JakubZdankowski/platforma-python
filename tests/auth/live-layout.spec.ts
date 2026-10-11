@@ -47,7 +47,8 @@ test('four students remain visible beside a tall read-only editor without scroll
       await expect(editor).toHaveAttribute('aria-readonly', 'true');
       expect(await page.evaluate(() => window.scrollY)).toBe(0);
       expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
-      expect((await page.locator('.live-code-container').boundingBox())!.height).toBeGreaterThan(450);
+      // The exercise selector and instruction disclosure also occupy the viewer.
+      expect((await page.locator('.live-code-container').boundingBox())!.height).toBeGreaterThan(400);
     }
     await page.screenshot({ path: 'test-results/live-layout-desktop.png', fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
