@@ -60,6 +60,10 @@ h1 { font-size: var(--font-title); letter-spacing: -.7px; line-height: 1.3; font
 .instructions-toggle { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 30px; height: 30px; padding: 0; border: 1px solid transparent; border-radius: var(--control-radius); background: transparent; color: var(--text-muted); }
 .instructions-toggle:hover { background: var(--surface-hover); color: var(--text); border-color: #344962; }
 .instructions-content { padding: var(--space-6) var(--space-6); overflow-y: auto; }
+.instructions-content .markdown { font-size: var(--font-control); }
+.instructions-content .markdown h1 { font-size: var(--font-section); }
+.instructions-content .markdown h2 { font-size: 18px; }
+.instructions-content .markdown h3 { font-size: var(--font-body); }
 .exercise-number { display: inline-block; max-width: 100%; overflow-wrap: anywhere; padding: 3px var(--space-2); border: 1px solid #32445e; border-radius: 4px; background: var(--surface-selected); color: #b6c8e1; font-size: var(--font-meta); font-weight: 500; margin-bottom: var(--space-6); }
 .instructions-collapsed .instructions-heading { flex-direction: column; justify-content: flex-start; padding: var(--space-3) 0; gap: var(--space-6); border: 0; }
 .instructions-collapsed .instructions-heading h2, .instructions-collapsed .instructions-heading h1 { writing-mode: vertical-rl; color: var(--text-muted); letter-spacing: .3px; }
