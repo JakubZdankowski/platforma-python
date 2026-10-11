@@ -101,7 +101,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
         <aside id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
           <div className="panel-heading"><h2 id="instructions-title">{activePanel === 'contents' ? t.lessonExercises : t.instructions}</h2></div>
           <div className="instructions-content">
-            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><button type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}>{item.title}</button></li>)}</ol> : <>
+            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><button type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}><i className="file code outline icon" aria-hidden="true" /><span>{item.title}</span></button></li>)}</ol> : <>
               <span className="exercise-number">{lessonTitle && <>{lessonTitle} · </>}{exercise.title}</span>
               <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
               <details key={`tip-${exercise.id}`} className="tip"><summary>{t.tipTitle}</summary><p>{turtleEnabled ? t.turtleTip : t.tip}</p></details>
