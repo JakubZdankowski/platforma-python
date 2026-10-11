@@ -1,7 +1,7 @@
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { AppSupabaseClient } from '../database/supabase';
 import type { Messages } from '../i18n/en';
@@ -28,6 +28,7 @@ export function TeacherModulePage({ messages: t }: { messages: Messages }) {
 function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: Messages }) {
   const { client } = useAuth();
   const profile = useProfile();
+  const navigate = useNavigate();
   const [data, setData] = useState<Awaited<ReturnType<typeof load>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -54,6 +55,16 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
   function confirmRemoval(checked: boolean) {
     return checked || window.confirm('Cofnąć dostęp do tych materiałów? Uczeń może stracić możliwość dalszego zapisu. Dotychczasowe prace pozostaną zachowane.');
   }
+  async function removeModule() {
+    if (!data?.module || busy || profile.role !== 'admin' || !window.confirm(`Usunąć moduł „${data.module.title}”? Dostęp przez ten moduł zostanie cofnięty. Lekcje, ćwiczenia i prace uczniów pozostaną zachowane.`)) return;
+    setBusy(true); setError(null);
+    try {
+      const result = await client.from('modules').delete().eq('id', moduleId).select('id').single();
+      if (result.error) throw result.error;
+      void navigate('/admin/modules');
+    } catch { setError('Nie udało się usunąć modułu.'); }
+    finally { setBusy(false); }
+  }
   function saveModule(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -68,6 +79,7 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
     {data && !data.module && <Notice tone="error">Ten moduł nie istnieje lub nie masz do niego dostępu.</Notice>}
     {data?.module && <><h1>{data.module.title}</h1><p className="account-lead">Zawartość modułu i dostęp uczniów</p>
       <fieldset className="module-editor-fields" disabled={busy}>
+        {profile.role === 'admin' && <div className="staff-actions"><Button variant="danger" onClick={() => void removeModule()}>Usuń moduł</Button></div>}
         <form className="form form-inline" key={`${data.module.title}-${data.module.position}`} onSubmit={saveModule}>
           <label className="field">Nazwa modułu<input name="title" defaultValue={data.module.title} maxLength={200} required /></label>
           <label className="field">Kolejność<input name="position" type="number" min="0" max="1000000" step="1" defaultValue={data.module.position} required /></label>

@@ -6,6 +6,57 @@ const teacherEmail = `ui-audit-${Date.now()}@example.test`;
 const teacherPassword = 'ui-audit-test-password';
 const title = 'Audyt UI: bardzo długa nazwa materiału o zmiennych, obliczeniach i programowaniu w Pythonie';
 
+test('admin can cancel deletions, remove an exercise on save, delete a module and a lesson', async ({ page }) => {
+  const service = adminClient();
+  const lesson = await service.from('lessons').insert({ teacher_id: teacherId, title: 'Lekcja do usunięcia', slug: `delete-${Date.now()}`, publication_status: 'approved' }).select('id').single();
+  if (lesson.error) throw lesson.error;
+  const module = await service.from('modules').insert({ teacher_id: teacherId, title: 'Moduł do usunięcia' }).select('id').single();
+  if (module.error) throw module.error;
+  try {
+    const exercise = await service.from('exercises').insert({ lesson_id: lesson.data.id, title: 'Ćwiczenie do usunięcia', slug: 'delete', instructions_markdown: 'Instrukcja', starter_code: '', runtime_type: 'python-console' }).select('id').single();
+    if (exercise.error) throw exercise.error;
+    const student = await service.from('profiles').select('id').eq('username', 'ania').single();
+    if (student.error) throw student.error;
+    const work = await service.from('student_work').insert({ student_id: student.data.id, exercise_id: exercise.data.id, code: 'print("praca")' });
+    if (work.error) throw work.error;
+    await service.from('module_lessons').insert({ module_id: module.data.id, lesson_id: lesson.data.id });
+    await page.goto('/login');
+    await page.getByLabel('Adres e-mail').fill(SEED.admin.email);
+    await page.getByLabel('Hasło').fill(SEED.admin.password);
+    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.goto(`/admin/materials/${lesson.data.id}`);
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.getByRole('button', { name: 'Usuń ćwiczenie', exact: true }).click();
+    await expect(page.getByLabel('Tytuł ćwiczenia', { exact: true })).toHaveValue('Ćwiczenie do usunięcia');
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Usuń ćwiczenie', exact: true }).click();
+    expect((await service.from('exercises').select('id').eq('id', exercise.data.id)).data).toHaveLength(1);
+    await page.getByRole('button', { name: 'Zatwierdź i zapisz', exact: true }).click();
+    await expect(page.getByText('Lekcja zatwierdzona. Możesz dodać ją do modułu.')).toBeVisible();
+    expect((await service.from('exercises').select('id').eq('id', exercise.data.id)).data).toHaveLength(0);
+    expect((await service.from('student_work').select('exercise_id').eq('exercise_id', exercise.data.id)).data).toHaveLength(0);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Usuń ćwiczenie', exact: true })).toHaveCount(0);
+    await page.goto(`/admin/modules/${module.data.id}`);
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.getByRole('button', { name: 'Usuń moduł', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(module.data.id));
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Usuń moduł', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/modules$/);
+    expect((await service.from('lessons').select('id').eq('id', lesson.data.id)).data).toHaveLength(1);
+    await page.goto(`/admin/materials/${lesson.data.id}`);
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Usuń lekcję', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/materials$/);
+    expect((await service.from('lessons').select('id').eq('id', lesson.data.id)).data).toHaveLength(0);
+  } finally {
+    await service.from('modules').delete().eq('id', module.data.id);
+    await service.from('lessons').delete().eq('id', lesson.data.id);
+  }
+});
+
 test('exercise navigation keeps the workspace mounted and preserves widths and saved code', async ({ page }) => {
   const service = adminClient();
   const second = await service.from('exercises').insert({ lesson_id: lessonId, title: 'Drugie zadanie', slug: 'navigation', position: 1, starter_code: 'print("drugie")', instructions_markdown: 'Drugie zadanie', runtime_type: 'python-console' }).select('id').single();

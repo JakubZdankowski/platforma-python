@@ -38,7 +38,8 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
       if (l.error || e.error || !l.data) throw new Error('unavailable');
       if (!active) return;
       setTitle(l.data.title); setStatus(l.data.publication_status); setOwner(l.data.teacher_id);
-      setExercises(e.data.length ? e.data.map(x => ({ id: x.id, title: x.title, markdown: x.instructions_markdown, code: x.starter_code, runtime: x.runtime_type })) : [emptyExercise()]);
+      setExercises(e.data.map(x => ({ id: x.id, title: x.title, markdown: x.instructions_markdown, code: x.starter_code, runtime: x.runtime_type })));
+      setSelected(0);
       setDirty(false);
     })().catch(() => { if (active) setError('Nie udało się wczytać lekcji lub nie masz do niej dostępu.'); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -56,6 +57,22 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
   }, [dirty]);
   const editable = !loading && !error && (admin || owner === profile.id && status === 'draft');
   function update(patch: Partial<ExerciseDraft>) { setDirty(true); setNotice(''); setExercises(prev => prev.map((x,i) => i === selected ? { ...x,...patch } : x)); }
+  function removeExercise() {
+    const exercise = exercises[selected];
+    if (!editable || !exercise || !window.confirm(`Usunąć ćwiczenie „${exercise.title}”? Po zapisaniu lekcji jego prace uczniów zostaną trwale usunięte.`)) return;
+    setExercises(prev => prev.filter((_, i) => i !== selected));
+    setSelected(Math.max(0, selected - 1)); setDirty(true); setNotice('Usunięcie ćwiczenia zostanie zastosowane po zapisaniu lekcji.');
+  }
+  async function removeLesson() {
+    if (!id || !editable || busy || !window.confirm(`Trwale usunąć lekcję „${title}”, wszystkie jej ćwiczenia i prace uczniów? Tej operacji nie można cofnąć.`)) return;
+    setBusy(true); setNotice('');
+    try {
+      const result = await client.from('lessons').delete().eq('id', id).select('id').single();
+      if (result.error) throw result.error;
+      setDirty(false); void navigate(`${base}/materials`);
+    } catch { setNotice('Nie udało się usunąć lekcji.'); }
+    finally { setBusy(false); }
+  }
   function insert(before: string, after = '') {
     const input = textarea.current;
     if (!input) return;
@@ -87,6 +104,7 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
         <label className="field">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={e => { setTitle(e.target.value); setDirty(true); }} /></label>
         <div className="staff-actions">{exercises.map((x,i) => <Button variant="secondary" type="button" className="exercise-tab" key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}</Button>)}{editable && <Button variant="secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</Button>}</div>
         {exercises[selected] && <>
+          {editable && <div className="staff-actions"><Button variant="danger" size="compact" onClick={removeExercise}>Usuń ćwiczenie</Button></div>}
           <label className="field">Tytuł ćwiczenia<input maxLength={200} readOnly={!editable} value={exercises[selected]!.title} onChange={e => update({ title: e.target.value })} /></label>
           <label className="field">Środowisko<select disabled={!editable} value={exercises[selected]!.runtime} onChange={e => update({ runtime: e.target.value })}><option value="python-console">Python — konsola</option><option value="python-turtle">Python — żółw</option></select></label>
           <p className="account-muted">Markdown: nagłówki, listy, linki i bloki kodu. Podgląd aktualizuje się podczas pisania.</p>
@@ -97,6 +115,7 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
         <div className="staff-actions">{editable && <><Button variant="secondary" onClick={() => void save('draft')}>Zapisz szkic</Button><Button variant="primary" onClick={() => void save(admin ? 'approved' : 'pending')}>{admin ? 'Zatwierdź i zapisz' : 'Wyślij do zatwierdzenia'}</Button></>}
         {admin && status === 'pending' && <Button variant="secondary" onClick={() => void save('draft')}>Zwróć do poprawy</Button>}
         {!admin && status === 'approved' && <Button variant="secondary" onClick={() => { setId(null); setStatus('draft'); setOwner(profile.id); setExercises(prev => prev.map(x => ({ ...x,id: undefined }))); setTitle(title + ' — kopia'); setDirty(true); }}>Utwórz kopię do edycji</Button>}</div>
+        {id && editable && <div className="staff-actions"><Button variant="danger" onClick={() => void removeLesson()}>Usuń lekcję</Button></div>}
       </fieldset><p role="status">{busy ? 'Zapisywanie…' : notice}{dirty && !busy && ' Niezapisane zmiany.'}</p>
     </>}
   </main>;
