@@ -1,3 +1,4 @@
+import { Button } from '../app/ui/Button';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { createPortal } from 'react-dom';
 import type { Messages } from '../i18n/en';
@@ -24,6 +25,6 @@ export function AccountBar({ messages: t, target }: { messages: Messages; target
         <strong>{profile.displayName}</strong>
         <span className="account-muted"> · {profile.role === 'admin' ? 'Administrator' : profile.role === 'teacher' ? t.roleTeacher : profile.username}</span>
       </p>
-      <button type="button" className="button button-secondary button-small" onClick={() => void handleSignOut()}>{t.signOut}</button>
+      <Button type="button" variant="secondary" size="compact" onClick={() => void handleSignOut()}>{t.signOut}</Button>
   </>, target);
 }

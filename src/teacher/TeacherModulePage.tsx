@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
@@ -61,15 +63,15 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
     void mutate(() => client.from('modules').update({ title, position }).eq('id', moduleId));
   }
   return <main className="account-page"><p className="student-back"><Link to="/admin/modules">← Materiały</Link></p>
-    {error && <div className="form-error" role="alert">{error}<button className="button button-secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</button></div>}
-    {!data && !error && <p role="status">{t.loadingData}</p>}
-    {data && !data.module && <p role="alert">Ten moduł nie istnieje lub nie masz do niego dostępu.</p>}
+    {error && <div className="form-error" role="alert">{error}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
+    {!data && !error && <Notice>{t.loadingData}</Notice>}
+    {data && !data.module && <Notice tone="error">Ten moduł nie istnieje lub nie masz do niego dostępu.</Notice>}
     {data?.module && <><h1>{data.module.title}</h1><p className="account-lead">Zawartość modułu i dostęp uczniów</p>
       <fieldset className="module-editor-fields" disabled={busy}>
         <form className="form form-inline" key={`${data.module.title}-${data.module.position}`} onSubmit={saveModule}>
           <label className="field">Nazwa modułu<input name="title" defaultValue={data.module.title} maxLength={200} required /></label>
           <label className="field">Kolejność<input name="position" type="number" min="0" max="1000000" step="1" defaultValue={data.module.position} required /></label>
-          <button className="button button-secondary">Zapisz moduł</button>
+          <Button variant="secondary">Zapisz moduł</Button>
         </form>
         <p className="account-muted" role="status">{busy ? 'Zapisywanie…' : saved ? 'Zapisano' : ''}</p>
         <section className="account-section"><h2>Lekcje w module</h2>
@@ -84,7 +86,7 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
             {link && <form className="lesson-order" onSubmit={(e) => {
               e.preventDefault(); const position = Number(new FormData(e.currentTarget).get('position'));
               if (Number.isSafeInteger(position) && position >= 0 && position <= 1000000) void mutate(() => client.from('module_lessons').update({ position }).eq('module_id', moduleId).eq('lesson_id', lesson.id));
-            }}><label>Kolejność<input key={link.position} type="number" name="position" min="0" max="1000000" step="1" defaultValue={link.position} required aria-label={`Kolejność: ${lesson.title}`} /></label><button className="button button-secondary button-small">Zapisz kolejność</button></form>}</li>;
+            }}><label>Kolejność<input key={link.position} type="number" name="position" min="0" max="1000000" step="1" defaultValue={link.position} required aria-label={`Kolejność: ${lesson.title}`} /></label><Button variant="secondary" size="compact">Zapisz kolejność</Button></form>}</li>;
           })}</ul>
         </section>
         <section className="account-section"><h2>Udostępnij grupom</h2><p className="account-muted">Dostęp otrzymają obecni i przyszli członkowie zaznaczonych grup.</p>

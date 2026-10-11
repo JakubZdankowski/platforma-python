@@ -1,4 +1,5 @@
-import 'semantic-ui-css/components/icon.min.css';
+import { Button } from '../app/ui/Button';
+import { Icon } from '../app/ui/Icon';
 import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Exercise } from '../exercises/types';
 import type { ExecutionResult } from '../runtime/protocol';
@@ -68,6 +69,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
 
   return (
     <main className={`page${saveStatus ? ' saved-exercise' : ''}`}>
+      {backLink && <h1 className="sr-only">{exercise.title}</h1>}
       <header className={`exercise-header${backLink ? ' exercise-header-compact' : ''}`}>
         <div>
           {!backLink && <p className="eyebrow">{lessonTitle ?? t.lessonLabel}</p>}
@@ -91,17 +93,17 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
         style={outputWidth === null ? undefined : { '--output-width': `${outputWidth}px` } as CSSProperties}
       >
         <nav className="lesson-tool-rail" aria-label={t.lessonPanels}>
-          <button type="button" aria-label={t.instructions} title={t.instructions} aria-expanded={activePanel === 'instructions'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'instructions' ? null : 'instructions')}>
-            <i className="file alternate outline icon" aria-hidden="true" />
-          </button>
-          <button type="button" aria-label={t.lessonExercises} title={t.lessonExercises} aria-expanded={activePanel === 'contents'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'contents' ? null : 'contents')}>
-            <i className="tasks icon" aria-hidden="true" />
-          </button>
+          <Button unstyled type="button" aria-label={t.instructions} title={t.instructions} aria-expanded={activePanel === 'instructions'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'instructions' ? null : 'instructions')}>
+            <Icon kind="file" />
+          </Button>
+          <Button unstyled type="button" aria-label={t.lessonExercises} title={t.lessonExercises} aria-expanded={activePanel === 'contents'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'contents' ? null : 'contents')}>
+            <Icon kind="list" />
+          </Button>
         </nav>
         <aside id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
           <div className="panel-heading"><h2 id="instructions-title">{activePanel === 'contents' ? t.lessonExercises : t.instructions}</h2></div>
           <div className="instructions-content">
-            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><button type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}><i className="file code outline icon" aria-hidden="true" /><span>{item.title}</span></button></li>)}</ol> : <>
+            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><Button unstyled type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}><Icon kind="code" /><span>{item.title}</span></Button></li>)}</ol> : <>
               <span className="exercise-number">{lessonTitle && <>{lessonTitle} · </>}{exercise.title}</span>
               <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
               <details key={`tip-${exercise.id}`} className="tip"><summary>{t.tipTitle}</summary><p>{turtleEnabled ? t.turtleTip : t.tip}</p></details>
@@ -120,16 +122,16 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
           <p id="editor-help" className="sr-only">{t.editorHelp}</p>
           <div className="editor-toolbar">
             <div className="run-controls">
-              <button type="button" className="button button-primary" onClick={run} disabled={readOnly || runner.isBusy || preparing} aria-keyshortcuts="Control+Enter Meta+Enter">
+              <Button type="button" variant="primary" onClick={run} disabled={readOnly || runner.isBusy || preparing} aria-keyshortcuts="Control+Enter Meta+Enter">
                 <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5 13 8l-9 5.5z" fill="currentColor" /></svg>
                 {runner.status === 'error' ? t.retry : t.run}
-              </button>
+              </Button>
               {runner.isBusy
-                ? <button type="button" className="button button-stop" onClick={runner.stop}><span className="stop-symbol" aria-hidden="true" />{t.stop}</button>
+                ? <Button type="button" variant="danger" onClick={runner.stop}><span className="stop-symbol" aria-hidden="true" />{t.stop}</Button>
                 : <span className="shortcut">{t.shortcut}</span>}
-              {onReset && <button type="button" className="button button-secondary button-small" disabled={readOnly || runner.isBusy || preparing}
-                onClick={() => { if (window.confirm(t.confirmResetCode)) { onReset(); runner.clear(); } }}>{t.resetCode}</button>}
-              <button type="button" className="button button-secondary button-small" onClick={() => downloadCode(code, exercise.title)}>Pobierz kod .py</button>
+              {onReset && <Button type="button" variant="secondary" size="compact" disabled={readOnly || runner.isBusy || preparing}
+                onClick={() => { if (window.confirm(t.confirmResetCode)) { onReset(); runner.clear(); } }}>{t.resetCode}</Button>}
+              <Button type="button" variant="secondary" size="compact" onClick={() => downloadCode(code, exercise.title)}>Pobierz kod .py</Button>
             </div>
             <span className="runtime-status"><span className={`status-dot ${runner.isBusy ? 'is-busy' : ''}`} aria-hidden="true" />{runtimeLabel}</span>
           </div>

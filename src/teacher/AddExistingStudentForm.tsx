@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useState, type FormEvent } from 'react';
 import { addClassMember, type Student } from '../classes/classService';
 import type { AppSupabaseClient } from '../database/supabase';
@@ -37,7 +39,7 @@ export function AddExistingStudentForm({ client, classId, candidates, messages: 
         {candidates.map((student) => <option key={student.id} value={student.id}>{student.displayName} ({student.username})</option>)}
       </select>
     </label>
-    <button type="submit" className="button button-secondary" disabled={!selected || submitting}>{t.addToClass}</button>
-    {error && <p className="form-error" role="alert">{error}</p>}
+    <Button type="submit" variant="secondary" disabled={!selected || submitting}>{t.addToClass}</Button>
+    {error && <Notice tone="error">{error}</Notice>}
   </form>;
 }

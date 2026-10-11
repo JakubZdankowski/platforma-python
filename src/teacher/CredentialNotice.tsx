@@ -1,3 +1,4 @@
+import { Button } from '../app/ui/Button';
 import type { Messages } from '../i18n/en';
 
 export interface IssuedCredentials {
@@ -20,6 +21,6 @@ export function CredentialNotice({ credentials, messages: t, onDismiss }: {
       <dt>{t.password}</dt><dd><code data-testid="issued-password">{credentials.password}</code></dd>
     </dl>
     <p className="account-muted">{t.credentialsHint}</p>
-    <button type="button" className="button button-secondary button-small" onClick={onDismiss}>{t.hidePassword}</button>
+    <Button type="button" variant="secondary" size="compact" onClick={onDismiss}>{t.hidePassword}</Button>
   </div>;
 }

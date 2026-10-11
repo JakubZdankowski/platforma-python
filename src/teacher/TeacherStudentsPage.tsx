@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import { listTeacherStudents, type Student } from '../classes/classService';
@@ -21,9 +23,9 @@ export function TeacherStudentsPage({ messages: t }: { messages: Messages }) {
   }, [client, profile.id, attempt]);
   return <main className="account-page"><h1>Uczniowie</h1><p className="account-lead">Konta uczniów są niezależne od grup. Do logowania wystarczą nazwa użytkownika i hasło.</p>
     {credentials && <CredentialNotice credentials={credentials} messages={t} onDismiss={() => setCredentials(null)} />}
-    {error ? <div className="form-error" role="alert">{t.dataUnavailable}<button className="button button-secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</button></div>
+    {error ? <div className="form-error" role="alert">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>
       : students ? <ClassStudents client={client} students={students} messages={t} onChanged={() => setAttempt((v) => v + 1)} onPasswordReset={(s, password) => setCredentials({ ...s, password })} />
-      : <p role="status">{t.loadingData}</p>}
+      : <Notice>{t.loadingData}</Notice>}
     <section className="account-section"><h2>Nowe konto ucznia</h2><NewStudentForm client={client} messages={t} onCreated={(c, displayName) => { setCredentials({ ...c, displayName }); setAttempt((v) => v + 1); }} /></section>
   </main>;
 }

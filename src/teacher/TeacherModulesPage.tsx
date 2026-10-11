@@ -1,3 +1,5 @@
+import { Notice, EmptyState } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
@@ -29,9 +31,9 @@ export function TeacherModulesPage({ messages: t }: { messages: Messages }) {
     } catch { setError(true); } finally { setBusy(false); }
   }
   return <main className="account-page"><h1>Materiały</h1><p className="account-lead">Układaj lekcje w moduły i udostępniaj je grupom lub wybranym uczniom.</p>
-    {error && <div className="form-error" role="alert">{t.dataUnavailable}<button className="button button-secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</button></div>}
-    {!modules && !error && <p role="status">{t.loadingData}</p>}
-    {modules && <div className="materials-list">{modules.length ? modules.map((m) => <Link className="material-link" key={m.id} to={`/admin/modules/${m.id}`}><span>{m.title}</span><span aria-hidden="true">→</span></Link>) : <p className="account-muted">Nie masz jeszcze modułów. Utwórz pierwszy poniżej.</p>}</div>}
-    <section className="account-section"><h2>Nowy moduł</h2><form className="form form-inline" onSubmit={(e) => void create(e)}><label className="field">Nazwa modułu<input required maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="np. 1. Podstawy Pythona" /></label><button className="button button-primary" disabled={busy || !modules}>Utwórz moduł</button></form></section>
+    {error && <div className="form-error" role="alert">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
+    {!modules && !error && <Notice>{t.loadingData}</Notice>}
+    {modules && <div className="materials-list">{modules.length ? modules.map((m) => <Link className="material-link" key={m.id} to={`/admin/modules/${m.id}`}><span>{m.title}</span><span aria-hidden="true">→</span></Link>) : <EmptyState title="Nie masz jeszcze modułów.">Utwórz pierwszy poniżej.</EmptyState>}</div>}
+    <section className="account-section"><h2>Nowy moduł</h2><form className="form form-inline" onSubmit={(e) => void create(e)}><label className="field">Nazwa modułu<input required maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="np. 1. Podstawy Pythona" /></label><Button variant="primary" disabled={busy || !modules}>Utwórz moduł</Button></form></section>
   </main>;
 }

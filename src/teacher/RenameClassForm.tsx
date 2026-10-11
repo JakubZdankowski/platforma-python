@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useState, type FormEvent } from 'react';
 import { CLASS_NAME_MAX, normalizeName } from '../auth/credentials';
 import { renameClass } from '../classes/classService';
@@ -20,7 +22,7 @@ export function RenameClassForm({ client, classId, name, messages: t, onRenamed 
   if (!editing) {
     return <div className="class-title">
       <h1>{name}</h1>
-      <button type="button" className="button button-quiet button-small" onClick={() => setEditing(true)}>{t.renameClass}</button>
+      <Button type="button" variant="quiet" size="compact" onClick={() => setEditing(true)}>{t.renameClass}</Button>
     </div>;
   }
 
@@ -42,8 +44,8 @@ export function RenameClassForm({ client, classId, name, messages: t, onRenamed 
       <span>{t.className}</span>
       <input name="className" value={value} maxLength={CLASS_NAME_MAX} onChange={(event) => setValue(event.target.value)} autoFocus required />
     </label>
-    <button type="submit" className="button button-primary" disabled={submitting}>{t.save}</button>
-    <button type="button" className="button button-quiet" onClick={() => { setEditing(false); setValue(name); setError(null); }}>{t.cancel}</button>
-    {error && <p className="form-error" role="alert">{error}</p>}
+    <Button type="submit" variant="primary" disabled={submitting}>{t.save}</Button>
+    <Button type="button" variant="quiet" onClick={() => { setEditing(false); setValue(name); setError(null); }}>{t.cancel}</Button>
+    {error && <Notice tone="error">{error}</Notice>}
   </form>;
 }

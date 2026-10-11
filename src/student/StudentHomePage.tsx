@@ -1,3 +1,5 @@
+import { MaterialModule, EmptyState, PageHeading, Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
@@ -20,23 +22,16 @@ export function StudentHomePage({ messages: t, materials = false }: { messages: 
   }, [client, attempt]);
   const selected = params.get('module');
   return <main className="account-page student-materials">
-    <header className="materials-heading"><h1>{materials ? 'Materiały' : t.studentGreeting(profile.displayName)}</h1>
-      <p className="account-lead">{materials ? 'Rozwiń moduł, aby zobaczyć dostępne lekcje.' : 'Wybierz moduł i wróć do programowania.'}</p>
-    </header>
+    <PageHeading title={materials ? 'Materiały' : t.studentGreeting(profile.displayName)} description={materials ? 'Rozwiń moduł, aby zobaczyć dostępne lekcje.' : 'Wybierz moduł i wróć do programowania.'} />
     {!materials && <h2>Materiały</h2>}
-    {error && <div className="form-error" role="alert"><p>{t.dataUnavailable}</p><button className="button button-secondary" onClick={() => setAttempt((n) => n + 1)}>{t.retry}</button></div>}
-    {!modules && !error && <p className="student-empty" role="status">{t.loadingData}</p>}
+    {error && <Notice tone="error">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>{t.retry}</Button></Notice>}
+    {!modules && !error && <Notice>{t.loadingData}</Notice>}
     {modules && (modules.length ? <div className="materials-list">{modules.map((module) => {
       const expanded = selected === module.id;
-      return <section className="material-module" key={module.id}>
-        <h2><button type="button" className="material-toggle" id={`module-${module.id}`} aria-expanded={expanded} aria-controls={`lessons-${module.id}`} onClick={() => setParams(expanded ? {} : { module: module.id })}>
-          <span>{module.title}</span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 5 7 7-7 7" /></svg>
-        </button></h2>
-        <div id={`lessons-${module.id}`} role="region" aria-labelledby={`module-${module.id}`} hidden={!expanded}>
-          {expanded && <ModuleLessons moduleId={module.id} messages={t} />}
-        </div>
-      </section>;
-    })}</div> : <div className="student-empty"><h2>Nie masz jeszcze materiałów</h2><p>Gdy nauczyciel udostępni Ci moduł, pojawi się tutaj.</p></div>)}
+      return <MaterialModule key={module.id} id={module.id} title={module.title} expanded={expanded} onToggle={() => setParams(expanded ? {} : { module: module.id })}>
+        <ModuleLessons moduleId={module.id} messages={t} />
+      </MaterialModule>;
+    })}</div> : <EmptyState title="Nie masz jeszcze materiałów">Gdy nauczyciel udostępni Ci moduł, pojawi się tutaj.</EmptyState>)}
   </main>;
 }
 
@@ -59,9 +54,9 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
     return () => { active = false; };
   }, [client, moduleId, profile.id, attempt]);
   return <div className="material-lessons">
-    {error ? <div className="form-error" role="alert"><p>{t.dataUnavailable}</p><button className="button button-secondary" onClick={() => setAttempt((n) => n + 1)}>{t.retry}</button></div>
-      : !data ? <p role="status">{t.loadingData}</p>
-      : !data.lessons.length ? <p className="account-muted">W tym module nie ma jeszcze dostępnych lekcji.</p>
+    {error ? <Notice tone="error">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>{t.retry}</Button></Notice>
+      : !data ? <Notice>{t.loadingData}</Notice>
+      : !data.lessons.length ? <EmptyState title="W tym module nie ma jeszcze dostępnych lekcji." />
       : <ol className="module-lesson-list">{data.lessons.map((lesson, index) => <li key={lesson.id}>
         {lesson.exercises.length ? <Link className="module-lesson-link" to={`/student/exercises/${lesson.exercises[0]!.id}`} state={{ moduleId }}>
           <span className="module-lesson-index">{String(index + 1).padStart(2, '0')}</span>

@@ -16,9 +16,9 @@ interface Props {
 }
 
 const editorTheme = EditorView.theme({
-  '&': { height: '100%', fontSize: '16px', backgroundColor: 'var(--surface-editor)', color: 'var(--text)' },
+  '&': { height: '100%', fontSize: 'var(--font-code)', backgroundColor: 'var(--surface-editor)', color: 'var(--text)' },
   '&.cm-focused': { outline: 'none' },
-  '.cm-scroller': { overflow: 'auto', fontFamily: 'Consolas, "Liberation Mono", monospace', lineHeight: '1.7' },
+  '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--font-mono)', lineHeight: '1.7' },
   '.cm-content': { padding: '20px 0', minHeight: '100%' },
   '.cm-line': { padding: '0 20px 0 12px' },
   '.cm-gutters': { backgroundColor: 'var(--surface-editor)', color: 'var(--text-subtle)', border: 'none', paddingLeft: '12px' },

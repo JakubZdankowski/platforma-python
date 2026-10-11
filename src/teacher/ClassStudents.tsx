@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useState } from 'react';
 import { removeClassMember, resetStudentPassword, type Student } from '../classes/classService';
 import type { AppSupabaseClient } from '../database/supabase';
@@ -38,7 +40,7 @@ export function ClassStudents({ client, classId, students, messages: t, onPasswo
   if (students.length === 0) return <p className="account-muted">{t.noClassStudents}</p>;
 
   return <>
-    {error && <p className="form-error" role="alert">{error}</p>}
+    {error && <Notice tone="error">{error}</Notice>}
     <table className="data-table">
       <thead><tr><th scope="col">{t.displayName}</th><th scope="col">{t.username}</th><th scope="col"><span className="sr-only">{t.actions}</span></th></tr></thead>
       <tbody>
@@ -46,8 +48,8 @@ export function ClassStudents({ client, classId, students, messages: t, onPasswo
           <td>{student.displayName}</td>
           <td><code>{student.username}</code></td>
           <td className="table-actions">
-            <button type="button" className="button button-secondary button-small" disabled={busyId !== null} onClick={() => void resetPassword(student)} aria-label={t.resetPasswordFor(student.displayName)}>{t.resetPassword}</button>
-            {classId && <button type="button" className="button button-quiet button-small" disabled={busyId !== null} onClick={() => void remove(student)} aria-label={t.removeStudentFor(student.displayName)}>{t.removeFromClass}</button>}
+            <Button type="button" variant="secondary" size="compact" disabled={busyId !== null} onClick={() => void resetPassword(student)} aria-label={t.resetPasswordFor(student.displayName)}>{t.resetPassword}</Button>
+            {classId && <Button type="button" variant="quiet" size="compact" disabled={busyId !== null} onClick={() => void remove(student)} aria-label={t.removeStudentFor(student.displayName)}>{t.removeFromClass}</Button>}
           </td>
         </tr>)}
       </tbody>

@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import type { AppSupabaseClient } from '../database/supabase';
@@ -30,8 +32,8 @@ export function GroupModules({ client, classId, messages: t }: { client: AppSupa
     } catch { setData(previous); setError(true); } finally { setBusy(false); }
   }
   return <section className="account-section"><h2>Materiały grupy</h2>
-    {error && <div className="form-error" role="alert">{t.dataUnavailable}<button className="button button-secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</button></div>}
-    {!data && !error && <p role="status">{t.loadingData}</p>}
+    {error && <div className="form-error" role="alert">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
+    {!data && !error && <Notice>{t.loadingData}</Notice>}
     {data && (data.modules.length ? <ul className="module-checklist">{data.modules.map((m) => <li key={m.id}><label><input type="checkbox" checked={data.assigned.has(m.id)} disabled={busy} onChange={(e) => void toggle(m.id, e.target.checked)} />{m.title}</label><Link to={`/teacher/materials/${m.id}`}>Edytuj moduł</Link></li>)}</ul> : <p>Brak modułów. <Link to="/teacher/materials">Przejdź do materiałów</Link></p>)}
   </section>;
 }

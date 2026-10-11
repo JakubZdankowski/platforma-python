@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
@@ -76,25 +78,25 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
     finally { setBusy(false); }
   }
   return <main className="account-page material-author"><Link to={`${base}/materials`}>← Materiały</Link><h1>{lessonId === 'new' ? 'Nowa lekcja' : title}</h1>
-    {loading && <p role="status">Wczytywanie…</p>}
-    {error && <p className="form-error" role="alert">{error}<button onClick={() => setAttempt(v => v + 1)}>Ponów</button></p>}
+    {loading && <Notice>Wczytywanie…</Notice>}
+    {error && <Notice tone="error">{error}<Button onClick={() => setAttempt(v => v + 1)}>Ponów</Button></Notice>}
     {!loading && !error && <><p>Status: <strong>{publicationLabels[status]}</strong></p>
       {!admin && status === 'pending' && <p>Materiał czeka na decyzję administratora. Edycja będzie dostępna po zwrocie do poprawy.</p>}
       {!admin && status === 'approved' && <p>Zatwierdzona lekcja jest dostępna do odczytu. Możesz utworzyć nową lekcję na jej podstawie.</p>}
       <fieldset disabled={busy} className="module-editor-fields">
         <label className="field">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={e => { setTitle(e.target.value); setDirty(true); }} /></label>
-        <div className="staff-actions">{exercises.map((x,i) => <button type="button" className={`button ${selected === i ? 'button-primary' : 'button-secondary'}`} key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}</button>)}{editable && <button className="button button-secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</button>}</div>
+        <div className="staff-actions">{exercises.map((x,i) => <Button variant="secondary" type="button" className="exercise-tab" key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}</Button>)}{editable && <Button variant="secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</Button>}</div>
         {exercises[selected] && <>
           <label className="field">Tytuł ćwiczenia<input maxLength={200} readOnly={!editable} value={exercises[selected]!.title} onChange={e => update({ title: e.target.value })} /></label>
           <label className="field">Środowisko<select disabled={!editable} value={exercises[selected]!.runtime} onChange={e => update({ runtime: e.target.value })}><option value="python-console">Python — konsola</option><option value="python-turtle">Python — żółw</option></select></label>
           <p className="account-muted">Markdown: nagłówki, listy, linki i bloki kodu. Podgląd aktualizuje się podczas pisania.</p>
-          {editable && <div className="staff-actions markdown-toolbar" aria-label="Formatowanie Markdown"><button onClick={() => insert('## ')}>Nagłówek</button><button onClick={() => insert('**','**')}>Pogrubienie</button><button onClick={() => insert('- ')}>Lista</button><button onClick={() => insert('```python\n','\n```')}>Kod Python</button><button onClick={() => insert('> ')}>Wskazówka</button></div>}
+          {editable && <div className="staff-actions markdown-toolbar" aria-label="Formatowanie Markdown"><Button size="compact" onClick={() => insert('## ')}>Nagłówek</Button><Button size="compact" onClick={() => insert('**','**')}>Pogrubienie</Button><Button size="compact" onClick={() => insert('- ')}>Lista</Button><Button size="compact" onClick={() => insert('```python\n','\n```')}>Kod Python</Button><Button size="compact" onClick={() => insert('> ')}>Wskazówka</Button></div>}
           <div className="markdown-editor-grid"><label className="field">Instrukcja Markdown<textarea ref={textarea} readOnly={!editable} rows={18} value={exercises[selected]!.markdown} onChange={e => update({ markdown: e.target.value })} /></label><section className="markdown-preview" aria-label="Podgląd instrukcji"><h2>Podgląd</h2><MarkdownInstructions markdown={exercises[selected]!.markdown} /></section></div>
           <label className="field">Kod początkowy ucznia<textarea rows={5} readOnly={!editable} value={exercises[selected]!.code} onChange={e => update({ code: e.target.value })} /></label>
         </>}
-        <div className="staff-actions">{editable && <><button className="button button-secondary" onClick={() => void save('draft')}>Zapisz szkic</button><button className="button button-primary" onClick={() => void save(admin ? 'approved' : 'pending')}>{admin ? 'Zatwierdź i zapisz' : 'Wyślij do zatwierdzenia'}</button></>}
-        {admin && status === 'pending' && <button className="button button-secondary" onClick={() => void save('draft')}>Zwróć do poprawy</button>}
-        {!admin && status === 'approved' && <button className="button button-secondary" onClick={() => { setId(null); setStatus('draft'); setOwner(profile.id); setExercises(prev => prev.map(x => ({ ...x,id: undefined }))); setTitle(title + ' — kopia'); setDirty(true); }}>Utwórz kopię do edycji</button>}</div>
+        <div className="staff-actions">{editable && <><Button variant="secondary" onClick={() => void save('draft')}>Zapisz szkic</Button><Button variant="primary" onClick={() => void save(admin ? 'approved' : 'pending')}>{admin ? 'Zatwierdź i zapisz' : 'Wyślij do zatwierdzenia'}</Button></>}
+        {admin && status === 'pending' && <Button variant="secondary" onClick={() => void save('draft')}>Zwróć do poprawy</Button>}
+        {!admin && status === 'approved' && <Button variant="secondary" onClick={() => { setId(null); setStatus('draft'); setOwner(profile.id); setExercises(prev => prev.map(x => ({ ...x,id: undefined }))); setTitle(title + ' — kopia'); setDirty(true); }}>Utwórz kopię do edycji</Button>}</div>
       </fieldset><p role="status">{busy ? 'Zapisywanie…' : notice}{dirty && !busy && ' Niezapisane zmiany.'}</p>
     </>}
   </main>;

@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useState, type FormEvent } from 'react';
 import { DISPLAY_NAME_MAX, USERNAME_MAX, isValidUsername, normalizeName, normalizeUsername, suggestUsername } from '../auth/credentials';
 import { createStudent, type NewStudentCredentials } from '../classes/classService';
@@ -64,7 +66,7 @@ export function NewStudentForm({ client, classId, messages: t, onCreated }: {
       </label>
     </div>
     <p id="username-rules" className="field-hint">{t.usernameRules}</p>
-    {error && <p className="form-error" role="alert">{error}</p>}
-    <div><button type="submit" className="button button-primary" disabled={submitting}>{t.addStudent}</button></div>
+    {error && <Notice tone="error">{error}</Notice>}
+    <div><Button type="submit" variant="primary" disabled={submitting}>{t.addStudent}</Button></div>
   </form>;
 }

@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { Link } from 'react-router';
 import type { AppSupabaseClient } from '../database/supabase';
 import { useStaffData } from './useStaffData';
@@ -20,7 +22,7 @@ export function AdminDashboardPage() {
   const { data, error, reload } = useStaffData(load);
   return <main className="account-page admin-dashboard">
     <header className="admin-dashboard-header"><h1>Panel administratora</h1><p className="account-lead">Zarządzaj platformą i sprawdzaj postępy uczniów.</p></header>
-    {error && <p className="form-error" role="alert">{error} <button className="button button-secondary button-small" onClick={reload}>Ponów</button></p>}
+    {error && <Notice tone="error">{error} <Button variant="secondary" size="compact" onClick={reload}>Ponów</Button></Notice>}
     {!data && !error && <p role="status">Wczytywanie statystyk…</p>}
     {data && <>
       <section className="admin-dashboard-section" aria-labelledby="admin-overview-title">

@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router';
 import type { Messages } from '../i18n/en';
@@ -40,8 +42,8 @@ export function TeacherLoginPage({ messages: t }: { messages: Messages }) {
         <span>{t.password}</span>
         <input name="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required />
       </label>
-      {error && <p className="form-error" role="alert">{signInErrorMessage(t, error, 'teacher')}</p>}
-      <button type="submit" className="button button-primary" disabled={submitting}>{submitting ? t.signingIn : t.signIn}</button>
+      {error && <Notice tone="error">{signInErrorMessage(t, error, 'teacher')}</Notice>}
+      <Button type="submit" variant="primary" disabled={submitting}>{submitting ? t.signingIn : t.signIn}</Button>
     </form>
     <p className="account-links"><Link to="/join">{t.studentLoginLink}</Link></p>
   </main>;

@@ -1,3 +1,5 @@
+import { Notice, PageHeading, EmptyState } from '../app/ui/Patterns';
+import { Button, ButtonLink } from '../app/ui/Button';
 import { Link } from 'react-router';
 import { useProfile } from '../auth/AuthProvider';
 import type { AppSupabaseClient } from '../database/supabase';
@@ -11,10 +13,10 @@ async function load(client: AppSupabaseClient) {
 export function MaterialsPage() {
   const profile = useProfile(), admin = profile.role === 'admin', base = admin ? '/admin' : '/teacher';
   const { data, error, reload } = useStaffData(load);
-  return <main className="account-page"><h1>Materiały</h1><p className="account-lead">{admin ? 'Twórz lekcje i zatwierdzaj materiały nauczycieli. Zatwierdzone lekcje dodaj do modułu, aby udostępnić je uczniom.' : 'Przygotuj lekcję w Markdown i wyślij ją administratorowi do zatwierdzenia.'}</p>
-    <p><Link className="button button-primary" to={`${base}/materials/new`}>Nowa lekcja</Link>{admin && <> <Link className="button button-secondary" to="/admin/modules">Moduły i udostępnianie</Link></>}</p>
-    {error && <p className="form-error" role="alert">{error}<button onClick={reload}>Ponów</button></p>}
-    {!data && !error && <p role="status">Wczytywanie…</p>}
-    {data && <div className="materials-list">{[...data].sort((a,b) => Number(b.publication_status === 'pending') - Number(a.publication_status === 'pending')).map(l => <Link key={l.id} className="material-link" to={`${base}/materials/${l.id}`}><span>{l.title}</span><span>{publicationLabels[l.publication_status]}</span></Link>)}{!data.length && <p>Brak materiałów.</p>}</div>}
+  return <main className="account-page"><PageHeading title={<>Materiały</>} description={<>{admin ? 'Twórz lekcje i zatwierdzaj materiały nauczycieli. Zatwierdzone lekcje dodaj do modułu, aby udostępnić je uczniom.' : 'Przygotuj lekcję w Markdown i wyślij ją administratorowi do zatwierdzenia.'}</>} />
+    <div className="ui-actions"><ButtonLink variant="primary" to={`${base}/materials/new`}>Nowa lekcja</ButtonLink>{admin && <> <ButtonLink variant="secondary" to="/admin/modules">Moduły i udostępnianie</ButtonLink></>}</div>
+    {error && <Notice tone="error">{error}<Button onClick={reload}>Ponów</Button></Notice>}
+    {!data && !error && <Notice>Wczytywanie…</Notice>}
+    {data && <div className="materials-list">{[...data].sort((a,b) => Number(b.publication_status === 'pending') - Number(a.publication_status === 'pending')).map(l => <Link key={l.id} className="material-link" to={`${base}/materials/${l.id}`}><span>{l.title}</span><span className="publication-badge">{publicationLabels[l.publication_status]}</span></Link>)}{!data.length && <EmptyState title="Brak materiałów." />}</div>}
   </main>;
 }

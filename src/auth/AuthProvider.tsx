@@ -1,3 +1,4 @@
+import { Button } from '../app/ui/Button';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AppSupabaseClient } from '../database/supabase';
 import { loadProfile, signOut as signOutRequest, type Profile } from './authService';
@@ -133,7 +134,7 @@ export function AuthProvider({ client, children }: { client: AppSupabaseClient; 
         <details><summary>Zachowany kod: {recoveredWork.title}</summary>
           <textarea aria-label="Zachowany niezapisany kod" readOnly value={recoveredWork.code} />
         </details>
-        <button type="button" className="button button-secondary" onClick={() => downloadCode(recoveredWork.code, recoveredWork.title)}>Pobierz zachowany kod .py</button>
+        <Button type="button" variant="secondary" onClick={() => downloadCode(recoveredWork.code, recoveredWork.title)}>Pobierz zachowany kod .py</Button>
       </>}
     </section>}
     {children}

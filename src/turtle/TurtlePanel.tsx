@@ -1,3 +1,4 @@
+import { Button } from '../app/ui/Button';
 import type { Messages } from '../i18n/en';
 import { TurtleCanvas } from './TurtleCanvas';
 import { TURTLE_SPEED_MAX, TURTLE_SPEED_MIN, type TurtleDrawing } from './turtleTypes';
@@ -30,7 +31,7 @@ export function TurtlePanel({ messages: t, drawing, speed, onSpeedChange, canSki
             onChange={(event) => onSpeedChange(Number(event.target.value))}
           />
         </label>
-        <button type="button" className="turtle-skip" disabled={!canSkip} onClick={onSkip}>{t.skipAnimation}</button>
+        <Button unstyled type="button" className="turtle-skip" disabled={!canSkip} onClick={onSkip}>{t.skipAnimation}</Button>
       </div>
       <div className="turtle-stage">
         <div className="turtle-viewport">

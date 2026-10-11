@@ -1,3 +1,4 @@
+import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
@@ -31,7 +32,7 @@ export function StudentExercisePage({ messages: t, locale }: { messages: Message
   </main>;
   if (!content) return <main className="account-page">{back}<p role="status">{t.loadingData}</p></main>;
   if (content === 'error') return <main className="account-page">{back}<p role="alert">{t.dataUnavailable}</p>
-    <button type="button" className="button button-secondary" onClick={() => setAttempt((a) => a + 1)}>{t.retry}</button></main>;
+    <Button type="button" variant="secondary" onClick={() => setAttempt((a) => a + 1)}>{t.retry}</Button></main>;
   const lesson = content.lessons.find((l) => l.exercises.some((e) => e.id === exerciseId));
   const index = lesson?.exercises.findIndex((e) => e.id === exerciseId) ?? -1;
   const exercise = lesson?.exercises[index];
@@ -51,7 +52,7 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
   const back = <p>{backLink}</p>;
   if (work.state.status !== 'ready') return <main className="account-page">{back}
     {work.state.status === 'loading' ? <p role="status">{t.loadingData}</p> : <div role="alert"><p>{t.dataUnavailable}</p>
-      <button type="button" className="button button-secondary" onClick={work.retry}>{t.retry}</button></div>}
+      <Button type="button" variant="secondary" onClick={work.retry}>{t.retry}</Button></div>}
   </main>;
   return <ExercisePage messages={t} locale={locale} exercise={exercise} exercises={lesson.exercises} backLink={backLink}
     exerciseIndex={index} lessonTitle={lesson.title} code={work.state.code} onChange={work.change}

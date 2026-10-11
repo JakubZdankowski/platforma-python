@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
@@ -19,11 +21,11 @@ export function ClassPage({ messages: t }: { messages: Messages }) {
 
   const back = <p><Link to="/teacher/groups">← {t.allClasses}</Link></p>;
   if (data.status === 'loading') return <main className="account-page">{back}<p className="account-muted" role="status">{t.loadingData}</p></main>;
-  if (data.status === 'not-found') return <main className="account-page">{back}<p className="form-error" role="alert">{t.classNotFound}</p></main>;
+  if (data.status === 'not-found') return <main className="account-page">{back}<Notice tone="error">{t.classNotFound}</Notice></main>;
   if (data.status === 'error') {
     return <main className="account-page">{back}<div className="form-error" role="alert">
       <p>{t.dataUnavailable}</p>
-      <button type="button" className="button button-secondary button-small" onClick={reload}>{t.retry}</button>
+      <Button type="button" variant="secondary" size="compact" onClick={reload}>{t.retry}</Button>
     </div></main>;
   }
 

@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
@@ -48,7 +50,7 @@ export function TeacherClassesPage({ messages: t }: { messages: Messages }) {
       {state.status === 'loading' && <p className="account-muted" role="status">{t.loadingData}</p>}
       {state.status === 'error' && <div className="form-error" role="alert">
         <p>{t.dataUnavailable}</p>
-        <button type="button" className="button button-secondary button-small" onClick={() => setAttempt((value) => value + 1)}>{t.retry}</button>
+        <Button type="button" variant="secondary" size="compact" onClick={() => setAttempt((value) => value + 1)}>{t.retry}</Button>
       </div>}
       {state.status === 'ready' && (state.classes.length === 0
         ? <p className="account-muted">{t.noTeacherClasses}</p>
@@ -69,9 +71,9 @@ export function TeacherClassesPage({ messages: t }: { messages: Messages }) {
           <span>{t.className}</span>
           <input name="className" value={name} maxLength={CLASS_NAME_MAX} onChange={(event) => setName(event.target.value)} required />
         </label>
-        <button type="submit" className="button button-primary" disabled={creating}>{t.createClass}</button>
+        <Button type="submit" variant="primary" disabled={creating}>{t.createClass}</Button>
       </form>
-      {createError && <p className="form-error" role="alert">{createError}</p>}
+      {createError && <Notice tone="error">{createError}</Notice>}
     </section>
   </main>;
 }

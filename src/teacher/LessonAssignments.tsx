@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
 import type { AppSupabaseClient } from '../database/supabase';
 import type { Messages } from '../i18n/en';
@@ -45,8 +47,8 @@ export function LessonAssignments({ client, classId, messages: t }: { client: Ap
   return <section className="account-section" aria-labelledby="lesson-assignments-heading">
     <h2 id="lesson-assignments-heading">{t.classLessons}</h2>
     {error && <div role="alert" className="form-error"><p>{state ? t.saveFailed : t.dataUnavailable}</p>
-      <button type="button" className="button button-secondary button-small" onClick={() => setAttempt((a) => a + 1)}>{t.retry}</button></div>}
-    {!state && !error && <p role="status">{t.loadingData}</p>}
+      <Button type="button" variant="secondary" size="compact" onClick={() => setAttempt((a) => a + 1)}>{t.retry}</Button></div>}
+    {!state && !error && <Notice>{t.loadingData}</Notice>}
     {state && (state.lessons.length ? <ul className="lesson-list">{state.lessons.map((lesson) => <li key={lesson.id}>
       <label><input type="checkbox" checked={state.assigned.has(lesson.id)} disabled={pending !== null}
         onChange={(event) => void toggle(lesson.id, event.target.checked)} /> {lesson.title}</label>

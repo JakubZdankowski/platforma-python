@@ -1,3 +1,4 @@
+import { Button } from '../app/ui/Button';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Exercise } from '../exercises/types';
 
@@ -19,12 +20,12 @@ const arrow = (direction: 'left' | 'right') => (
 export function SampleExercisePicker({ exercises, selectedIndex, disabled, labels, onSelect }: Props) {
   return (
     <nav className="exercise-picker" aria-label={labels.navigation}>
-      <button type="button" className="exercise-picker-button" disabled={disabled || selectedIndex <= 0} onClick={() => onSelect(selectedIndex - 1)}>
+      <Button unstyled type="button" className="exercise-picker-button" disabled={disabled || selectedIndex <= 0} onClick={() => onSelect(selectedIndex - 1)}>
         {arrow('left')}<span className="exercise-picker-label">{labels.previous}</span>
-      </button>
-      <button type="button" className="exercise-picker-button" disabled={disabled || selectedIndex >= exercises.length - 1} onClick={() => onSelect(selectedIndex + 1)}>
+      </Button>
+      <Button unstyled type="button" className="exercise-picker-button" disabled={disabled || selectedIndex >= exercises.length - 1} onClick={() => onSelect(selectedIndex + 1)}>
         <span className="exercise-picker-label">{labels.next}</span>{arrow('right')}
-      </button>
+      </Button>
     </nav>
   );
 }
@@ -50,14 +51,14 @@ export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels,
         }} onKeyDown={(event) => {
           if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); trigger.current?.focus(); }
         }}>
-          <button ref={trigger} type="button" className="exercise-picker-button exercise-picker-current" aria-expanded={open} aria-controls={listId} disabled={disabled} onClick={() => setOpen(!open)}>
+          <Button unstyled ref={trigger} type="button" className="exercise-picker-button exercise-picker-current" aria-expanded={open} aria-controls={listId} disabled={disabled} onClick={() => setOpen(!open)}>
             <span>{title}</span><svg className="exercise-list-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
+          </Button>
           <ol id={listId} className="exercise-picker-list" hidden={!open} aria-label={labels.navigation}>
             {exercises.map((exercise, index) => <li key={exercise.id}>
-              <button type="button" disabled={disabled} aria-current={index === selectedIndex ? 'step' : undefined} onClick={() => {
+              <Button unstyled type="button" disabled={disabled} aria-current={index === selectedIndex ? 'step' : undefined} onClick={() => {
                 setOpen(false); trigger.current?.focus(); onSelect(index);
-              }}><span>{index + 1}.</span><span>{exercise.title}</span></button>
+              }}><span>{index + 1}.</span><span>{exercise.title}</span></Button>
             </li>)}
           </ol>
         </div>

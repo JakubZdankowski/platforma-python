@@ -1,3 +1,5 @@
+import { Notice } from '../app/ui/Patterns';
+import { Button } from '../app/ui/Button';
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router';
 import type { Messages } from '../i18n/en';
@@ -30,14 +32,14 @@ export function AuthStatus({ messages: t }: { messages: Messages }) {
   const { state, retry, signOut } = useAuth();
   if (state.status === 'error') {
     return <main className="account-page account-narrow">
-      <p className="form-error" role="alert">{t.authUnavailable}</p>
-      <button type="button" className="button button-secondary" onClick={retry}>{t.retry}</button>
+      <Notice tone="error">{t.authUnavailable}</Notice>
+      <Button type="button" variant="secondary" onClick={retry}>{t.retry}</Button>
     </main>;
   }
   if (state.status === 'no-access') {
     return <main className="account-page account-narrow">
-      <p className="form-error" role="alert">{t.noAccess}</p>
-      <button type="button" className="button button-secondary" onClick={() => void signOut()}>{t.signOut}</button>
+      <Notice tone="error">{t.noAccess}</Notice>
+      <Button type="button" variant="secondary" onClick={() => void signOut()}>{t.signOut}</Button>
     </main>;
   }
   return <main className="account-page account-narrow"><p className="account-muted" role="status">{t.authLoading}</p></main>;

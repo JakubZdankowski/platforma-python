@@ -1,0 +1,46 @@
+/* Single source of defaults, also read by the UI workshop. */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: Consolas, "Liberation Mono", monospace;
+  --font-body: 16px;
+  --font-control: 14px;
+  --font-meta: 12px;
+  --font-section: 20px;
+  --font-title: 28px;
+  --font-code: 16px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --background: #0c1320;
+  --surface: #111c2d;
+  --surface-raised: #162235;
+  --surface-editor: #0f1828;
+  --surface-hover: #20324c;
+  --surface-selected: #1d3150;
+  --border: #29384e;
+  --border-control: #60758f;
+  --text: #e2e8f0;
+  --text-muted: #a3b1c6;
+  --text-subtle: #96a5ba;
+  --accent: #82a9eb;
+  --accent-hover: #a2c1f2;
+  --on-accent: #0d1a2d;
+  --success: #abd2b2;
+  --danger: #edc9bc;
+  --danger-surface: #28232d;
+  --danger-border: #af8378;
+  --warning: #f4d7aa;
+  --warning-surface: #30291f;
+  --warning-border: #846745;
+  --control-radius: 6px;
+  --panel-radius: 8px;
+  --control-height: 40px;
+  --control-height-small: 32px;
+  --button-size: var(--font-control);
+  --exercise-list-size: var(--font-control);
+  --exercise-list-padding: 8px;
+}
