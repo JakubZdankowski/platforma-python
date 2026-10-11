@@ -32,11 +32,12 @@ interface Props {
   warning?: string;
   readOnly?: boolean;
   completed?: boolean;
+  switching?: boolean;
   onCompletedChange?: (completed: boolean) => void;
 }
 
 export function ExercisePage({ messages: t, locale, exercise, exercises, exerciseIndex, code, onChange: setCode,
-  onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink, warning, readOnly = false, completed, onCompletedChange }: Props) {
+  onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink, warning, readOnly = false, completed, onCompletedChange, switching = false }: Props) {
   const turtleEnabled = exercise.runtimeType === 'python-turtle';
   const [activePanel, setActivePanel] = useState<'instructions' | 'contents' | null>('instructions');
   const instructionsCollapsed = activePanel === null;
@@ -50,7 +51,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
   const [preparing, setPreparing] = useState(false);
   const preparingRef = useRef(false);
   const run = useCallback(() => {
-    if (readOnly || preparingRef.current || runner.isBusy) return;
+    if (readOnly || switching || preparingRef.current || runner.isBusy) return;
     preparingRef.current = true;
     setPreparing(true);
     void (async () => {
@@ -60,7 +61,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
         if (result) onRunResult?.(result);
       } finally { preparingRef.current = false; setPreparing(false); }
     })();
-  }, [readOnly, runner.run, runner.isBusy, code, t.inputUnavailable, turtleEnabled, beforeRun, onRunResult]);
+  }, [readOnly, switching, runner.run, runner.isBusy, code, t.inputUnavailable, turtleEnabled, beforeRun, onRunResult]);
   const selectExercise = useCallback((index: number) => {
     if (index < 0 || index >= exercises.length || index === exerciseIndex || preparingRef.current) return;
     void onSelect(index);
@@ -84,7 +85,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
         <SampleExercisePicker
           exercises={exercises}
           selectedIndex={exerciseIndex}
-          disabled={runner.isBusy || preparing}
+          disabled={runner.isBusy || preparing || switching}
           labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise, exercises: t.exercises }}
           onSelect={selectExercise}
         />
@@ -108,7 +109,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             ? <div className="panel-heading"><h2 id="instructions-title">{lessonTitle ?? t.lessonExercises}</h2></div>
             : <h2 id="instructions-title" className="sr-only">{exercise.title}</h2>}
           <div className="instructions-content">
-            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><Button unstyled type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}><Icon kind="code" /><span>{item.title}</span></Button></li>)}</ol> : <>
+            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><Button unstyled type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing || switching} onClick={() => selectExercise(index)}><Icon kind="code" /><span>{item.title}</span></Button></li>)}</ol> : <>
               <span className="exercise-number">{exercise.title}</span>
               <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
             </>}
@@ -126,7 +127,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
           <p id="editor-help" className="sr-only">{t.editorHelp}</p>
           <div className="editor-toolbar">
             <div className="run-controls">
-              <Button type="button" variant="primary" onClick={run} disabled={readOnly || runner.isBusy || preparing} aria-keyshortcuts="Control+Enter Meta+Enter">
+              <Button type="button" variant="primary" onClick={run} disabled={readOnly || runner.isBusy || preparing || switching} aria-keyshortcuts="Control+Enter Meta+Enter">
                 <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5 13 8l-9 5.5z" fill="currentColor" /></svg>
                 {runner.status === 'error' ? t.retry : t.run}
               </Button>

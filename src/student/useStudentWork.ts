@@ -6,10 +6,32 @@ import type { ExecutionResult } from '../runtime/protocol';
 import { WorkAutosaver, type SaveStatus, type WorkPatch } from './WorkAutosaver';
 
 type State = { status: 'loading' | 'error' } | { status: 'ready'; code: string; completed: boolean; save: SaveStatus };
+export type PreparedWork = { exerciseId: string; code: string; status: string };
 
-export function useStudentWork(client: AppSupabaseClient, studentId: string, exercise: Exercise) {
+export async function prepareStudentWork(client: AppSupabaseClient, studentId: string, exercise: Exercise): Promise<PreparedWork> {
+  let result = await client.from('student_work').select('code, status').eq('student_id', studentId).eq('exercise_id', exercise.id).maybeSingle();
+  if (result.error) throw result.error;
+  if (!result.data) {
+    const created = await client.from('student_work').insert({ student_id: studentId, exercise_id: exercise.id, code: exercise.starterCode });
+    if (created.error && created.error.code !== '23505') throw created.error;
+    result = await client.from('student_work').select('code, status').eq('student_id', studentId).eq('exercise_id', exercise.id).single();
+    if (result.error) throw result.error;
+  }
+  if (!result.data) throw new Error('Work unavailable');
+  return { exerciseId: exercise.id, ...result.data };
+}
+
+export function useStudentWork(client: AppSupabaseClient, studentId: string, exercise: Exercise, prepared?: PreparedWork) {
   const [state, setState] = useState<State>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const [stateExercise, setStateExercise] = useState(exercise.id);
+  if (stateExercise !== exercise.id) {
+    setStateExercise(exercise.id);
+    setAttempt(0);
+    setState(prepared?.exerciseId === exercise.id
+      ? { status: 'ready', code: prepared.code, completed: prepared.status === 'completed', save: 'saved' }
+      : { status: 'loading' });
+  }
   const saver = useRef<WorkAutosaver | null>(null);
   const [accessLost, setAccessLost] = useState(false);
   const [offline, setOffline] = useState(!navigator.onLine);
@@ -52,7 +74,8 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
     let writer: WorkAutosaver | null = null;
     let token: string | null = null;
     const { data: auth } = client.auth.onAuthStateChange((_event, session) => { token = session?.access_token ?? null; });
-    setState({ status: 'loading' });
+    const initial = attempt === 0 && prepared?.exerciseId === exercise.id ? prepared : undefined;
+    if (!initial) setState({ status: 'loading' });
     const flush = () => { void writer?.flush(); };
     const visibility = () => { if (document.visibilityState === 'hidden') flush(); };
     const beforeUnload = (event: BeforeUnloadEvent) => {
@@ -73,16 +96,8 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
     void (async () => {
       const session = await client.auth.getSession();
       token = session.data.session?.access_token ?? null;
-      let result = await client.from('student_work').select('code, status').eq('student_id', studentId).eq('exercise_id', exercise.id).maybeSingle();
-      if (result.error) throw result.error;
-      if (!result.data) {
-        const created = await client.from('student_work').insert({ student_id: studentId, exercise_id: exercise.id, code: exercise.starterCode });
-        // Another tab may have initialized the row while we were loading.
-        if (created.error && created.error.code !== '23505') throw created.error;
-        result = await client.from('student_work').select('code, status').eq('student_id', studentId).eq('exercise_id', exercise.id).single();
-        if (result.error) throw result.error;
-      }
-      if (!active || !result.data) return;
+      const data = initial ?? await prepareStudentWork(client, studentId, exercise);
+      if (!active) return;
       const write = async (patch: WorkPatch) => {
         const config = supabaseConfig();
         if (!config || !token) throw new Error('No session');
@@ -98,11 +113,11 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
         const rows: unknown = await response.json();
         if (!Array.isArray(rows) || rows.length !== 1) throw new Error('Work is no longer writable');
       };
-      writer = new WorkAutosaver(result.data.code, result.data.status as WorkPatch['status'], write, (save) => {
+      writer = new WorkAutosaver(data.code, data.status as WorkPatch['status'], write, (save) => {
         if (active) setState((previous) => previous.status === 'ready' ? { ...previous, save } : previous);
       });
       saver.current = writer;
-      setState({ status: 'ready', code: result.data.code, completed: result.data.status === 'completed', save: 'saved' });
+      setState({ status: 'ready', code: data.code, completed: data.status === 'completed', save: 'saved' });
     })().catch(() => { if (active) setState({ status: 'error' }); });
     return () => {
       active = false;

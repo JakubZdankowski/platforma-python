@@ -6,6 +6,42 @@ const teacherEmail = `ui-audit-${Date.now()}@example.test`;
 const teacherPassword = 'ui-audit-test-password';
 const title = 'Audyt UI: bardzo długa nazwa materiału o zmiennych, obliczeniach i programowaniu w Pythonie';
 
+test('exercise navigation keeps the workspace mounted and preserves widths and saved code', async ({ page }) => {
+  const service = adminClient();
+  const second = await service.from('exercises').insert({ lesson_id: lessonId, title: 'Drugie zadanie', slug: 'navigation', position: 1, starter_code: 'print("drugie")', instructions_markdown: 'Drugie zadanie', runtime_type: 'python-console' }).select('id').single();
+  if (second.error) throw second.error;
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/join');
+  await page.getByLabel('Nazwa użytkownika').fill('ania');
+  await page.getByLabel('Hasło').fill(SEED.password('ania'));
+  await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+  await expect(page).toHaveURL(/\/student$/);
+  await page.goto(`/student/exercises/${exerciseId}`);
+  const editor = page.getByRole('textbox', { name: 'Edytor kodu Python' });
+  await expect(editor).toBeVisible();
+  const sidebar = page.locator('#lesson-side-panel');
+  const resizer = page.getByRole('separator', { name: /szerokość panelu bocznego/ });
+  await resizer.focus();
+  await resizer.press('ArrowRight');
+  const width = (await sidebar.boundingBox())!.width;
+  await page.locator('.lesson-workspace').evaluate(node => {
+    (window as unknown as { originalWorkspace: Element }).originalWorkspace = node;
+  });
+  await editor.fill('print("zapis przed przejściem")');
+  await page.getByRole('button', { name: 'Następne zadanie', exact: true }).click();
+  await expect(editor).toHaveText('print("drugie")');
+  await expect(page).toHaveURL(new RegExp(second.data.id));
+  expect(await page.locator('.lesson-workspace').evaluate(node => node === (window as unknown as { originalWorkspace: Element }).originalWorkspace)).toBe(true);
+  expect((await sidebar.boundingBox())!.width).toBe(width);
+  await page.getByRole('button', { name: 'Poprzednie zadanie', exact: true }).click();
+  await expect(editor).toHaveText('print("zapis przed przejściem")');
+  expect((await sidebar.boundingBox())!.width).toBe(width);
+  await page.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+  await page.locator('.lesson-contents-list').getByRole('button', { name: 'Drugie zadanie', exact: true }).click();
+  await expect(editor).toHaveText('print("drugie")');
+  await expect(page.locator('.lesson-contents-list')).toBeVisible();
+});
+
 test.beforeAll(async () => {
   const service = adminClient();
   const teacher = await service.auth.admin.createUser({ email: teacherEmail, password: teacherPassword, email_confirm: true, app_metadata: { role: 'teacher', display_name: 'Nauczyciel audytu UI' } });

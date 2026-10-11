@@ -82,6 +82,8 @@ test('admin assigns imported content; student code survives refresh, retries, na
     await editor.fill('print("Lista ćwiczeń")');
     await studentPage.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
     await studentPage.locator('.lesson-contents-list').getByRole('button', { name: /Kwadrat/ }).click();
+    await expect(studentPage.locator('.lesson-contents-list')).toBeVisible();
+    await studentPage.getByRole('button', { name: 'Twoje zadanie', exact: true }).click();
     await expect(studentPage.locator('.exercise-number')).toContainText('Kwadrat');
     await studentPage.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
     await studentPage.locator('.lesson-contents-list').getByRole('button').first().click();
