@@ -62,6 +62,7 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
           return <li key={student.id} data-testid={`live-student-${student.id}`}>
             <button type="button" className={`student-watch-button${selectedId === student.id ? ' is-selected' : ''}`} onClick={() => setSelectedId(student.id)}
               aria-label={t.watchStudent(student.displayName)} aria-pressed={selectedId === student.id} aria-controls="student-live-view">
+              {current?.status === 'completed' && <span className="run-success">✓ {t.completed}</span>}
               <span className="live-student-name">{student.displayName}</span>
               <span className="live-student-exercise" title={exercise ? `${exercise.lessonTitle} — ${exercise.title}` : undefined}>{current ? exercise?.title ?? t.unavailableExercise : '—'}</span>
               <span className="live-student-status"><span className={`activity-label ${activity.kind}`}>{activityLabel(activity, t)}</span>
@@ -78,6 +79,7 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
       {selectedWork ? <>
         <p className="live-exercise-title">{selectedExercise ? `${selectedExercise.lessonTitle} — ${selectedExercise.title}` : t.unavailableExercise}</p>
         <div className="live-work-details">
+          <span>{selectedWork.status === 'completed' ? `✓ ${t.completed}` : t.inProgress}</span>
           <span>{t.lastEdited}: <time dateTime={selectedWork.last_edited_at}>{formatTime(selectedWork.last_edited_at)}</time></span>
           <span>{t.lastRun}: {runLabel(selectedWork, t)}{selectedWork.last_run_at && <> · <time dateTime={selectedWork.last_run_at}>{formatTime(selectedWork.last_run_at)}</time></>}</span>
         </div>

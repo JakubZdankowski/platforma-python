@@ -3,6 +3,20 @@ import { WorkAutosaver, type WorkPatch } from './WorkAutosaver';
 
 afterEach(() => vi.useRealTimers());
 describe('student autosave ordering and recovery', () => {
+  it('persists completion through edits and runs and allows reopening', async () => {
+    const write = vi.fn(async (_patch: WorkPatch) => {});
+    const saver = new WorkAutosaver('starter', 'not_started', write, () => {});
+    saver.setCompleted(true);
+    await saver.flush();
+    saver.change('updated');
+    saver.recordRun({ success: true, outcome: 'success' });
+    await saver.flush();
+    expect(write).toHaveBeenLastCalledWith(expect.objectContaining({ code: 'updated', status: 'completed' }));
+    saver.setCompleted(false);
+    await saver.flush();
+    expect(write).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'in_progress' }));
+    saver.dispose();
+  });
   it('debounces edits for 1.5 seconds', async () => {
     vi.useFakeTimers();
     const write = vi.fn(async () => {});

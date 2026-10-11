@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { Messages, Locale } from '../i18n/en';
 import { listLessons, type Lesson } from '../lessons/lessonService';
+import { listModuleLessons } from '../modules/moduleService';
 import { ExercisePage } from './ExercisePage';
 import { useStudentWork } from './useStudentWork';
 import type { Exercise } from '../exercises/types';
@@ -18,9 +19,9 @@ export function StudentExercisePage({ messages: t, locale }: { messages: Message
   useEffect(() => {
     let active = true;
     setContent(null);
-    void listLessons(client).then((lessons) => { if (active) setContent({ lessons }); }).catch(() => { if (active) setContent('error'); });
+    void (moduleId ? listModuleLessons(client, moduleId) : listLessons(client)).then((lessons) => { if (active) setContent({ lessons }); }).catch(() => { if (active) setContent('error'); });
     return () => { active = false; };
-  }, [client, exerciseId, attempt]);
+  }, [client, exerciseId, moduleId, attempt]);
   const back = <p><Link to={home}>← {t.allLessons}</Link></p>;
   if (editorLease !== 'owned') return <main className="account-page">{back}
     {editorLease === 'checking' ? <p role="status">{t.loadingData}</p>
@@ -54,6 +55,7 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
   </main>;
   return <ExercisePage messages={t} locale={locale} exercise={exercise} exercises={lesson.exercises} backLink={backLink}
     exerciseIndex={index} lessonTitle={lesson.title} code={work.state.code} onChange={work.change}
+    completed={work.state.completed} onCompletedChange={work.setCompleted}
     readOnly={work.accessLost}
     warning={work.accessLost
       ? 'Dostęp do tej lekcji został odebrany. Twój kod pozostał na ekranie. Skopiuj go lub pobierz plik .py przed opuszczeniem strony. Zapis jest niedostępny.'

@@ -5,7 +5,7 @@ import type { Exercise } from '../exercises/types';
 import type { ExecutionResult } from '../runtime/protocol';
 import { WorkAutosaver, type SaveStatus, type WorkPatch } from './WorkAutosaver';
 
-type State = { status: 'loading' | 'error' } | { status: 'ready'; code: string; save: SaveStatus };
+type State = { status: 'loading' | 'error' } | { status: 'ready'; code: string; completed: boolean; save: SaveStatus };
 
 export function useStudentWork(client: AppSupabaseClient, studentId: string, exercise: Exercise) {
   const [state, setState] = useState<State>({ status: 'loading' });
@@ -102,7 +102,7 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
         if (active) setState((previous) => previous.status === 'ready' ? { ...previous, save } : previous);
       });
       saver.current = writer;
-      setState({ status: 'ready', code: result.data.code, save: 'saved' });
+      setState({ status: 'ready', code: result.data.code, completed: result.data.status === 'completed', save: 'saved' });
     })().catch(() => { if (active) setState({ status: 'error' }); });
     return () => {
       active = false;
@@ -121,7 +121,12 @@ export function useStudentWork(client: AppSupabaseClient, studentId: string, exe
     setState((previous) => previous.status === 'ready' ? { ...previous, code, save: 'saving' } : previous);
     saver.current?.change(code);
   }, []);
+  const setCompleted = useCallback((completed: boolean) => {
+    if (accessLost) return;
+    setState((previous) => previous.status === 'ready' ? { ...previous, completed, save: 'saving' } : previous);
+    saver.current?.setCompleted(completed);
+  }, [accessLost]);
   const flush = useCallback(() => saver.current?.flush() ?? Promise.resolve(false), []);
   const recordRun = useCallback((result: ExecutionResult) => saver.current?.recordRun(result), []);
-  return { state, change, flush, recordRun, accessLost, offline, retry: () => setAttempt((value) => value + 1) };
+  return { state, change, setCompleted, flush, recordRun, accessLost, offline, retry: () => setAttempt((value) => value + 1) };
 }

@@ -43,7 +43,7 @@ export function StudentHomePage({ messages: t, materials = false }: { messages: 
 function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: Messages }) {
   const { client } = useAuth();
   const profile = useProfile();
-  const [data, setData] = useState<{ lessons: Lesson[]; started: Set<string> } | null>(null);
+  const [data, setData] = useState<{ lessons: Lesson[]; started: Set<string>; completed: Set<string> } | null>(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -54,7 +54,7 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
       const ids = lessons.flatMap((lesson) => lesson.exercises.map((e) => e.id));
       const work = ids.length ? await client.from('student_work').select('exercise_id, status').eq('student_id', profile.id).in('exercise_id', ids) : { data: [], error: null };
       if (work.error) throw work.error;
-      if (active) setData({ lessons, started: new Set(work.data.filter((w) => w.status === 'in_progress').map((w) => w.exercise_id)) });
+      if (active) setData({ lessons, started: new Set(work.data.filter((w) => w.status !== 'not_started').map((w) => w.exercise_id)), completed: new Set(work.data.filter((w) => w.status === 'completed').map((w) => w.exercise_id)) });
     })().catch(() => { if (active) setError(true); });
     return () => { active = false; };
   }, [client, moduleId, profile.id, attempt]);
@@ -65,7 +65,7 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
       : <ol className="module-lesson-list">{data.lessons.map((lesson, index) => <li key={lesson.id}>
         {lesson.exercises.length ? <Link className="module-lesson-link" to={`/student/exercises/${lesson.exercises[0]!.id}`} state={{ moduleId }}>
           <span className="module-lesson-index">{String(index + 1).padStart(2, '0')}</span>
-          <span className="module-lesson-title">{lesson.title}<small>{lesson.exercises.some((exercise) => data.started.has(exercise.id)) ? 'W trakcie' : 'Jeszcze nierozpoczęte'}</small></span>
+          <span className="module-lesson-title">{lesson.title}<small>{lesson.exercises.every((exercise) => data.completed.has(exercise.id)) ? t.completed : lesson.exercises.some((exercise) => data.started.has(exercise.id)) ? 'W trakcie' : 'Jeszcze nierozpoczęte'}</small></span>
           <span aria-hidden="true">→</span>
         </Link> : <><h3>{lesson.title}</h3><p className="account-muted">{t.noClassExercises}</p></>}
       </li>)}</ol>}

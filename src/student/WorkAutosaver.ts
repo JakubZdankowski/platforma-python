@@ -1,7 +1,7 @@
 export type SaveStatus = 'saving' | 'saved' | 'error';
 export interface WorkPatch {
   code: string;
-  status: 'not_started' | 'in_progress';
+  status: 'not_started' | 'in_progress' | 'completed';
   last_run_at?: string;
   last_run_success?: boolean;
   last_error_type?: string | null;
@@ -28,17 +28,23 @@ export class WorkAutosaver {
   }
 
   change(code: string) {
-    this.patch = { ...this.patch, code, status: 'in_progress' };
+    this.patch = { ...this.patch, code, status: this.patch.status === 'completed' ? 'completed' : 'in_progress' };
     this.revision++;
     this.notify('saving');
     this.schedule(1500);
   }
 
   recordRun(result: { success: boolean; errorType?: string; errorMessage?: string; outcome: string }) {
-    this.patch = { ...this.patch, status: 'in_progress', last_run_at: new Date().toISOString(),
+    this.patch = { ...this.patch, status: this.patch.status === 'completed' ? 'completed' : 'in_progress', last_run_at: new Date().toISOString(),
       last_run_success: result.success,
       last_error_type: result.success ? null : result.errorType ?? result.outcome,
       last_error_summary: result.success ? null : (result.errorMessage ?? result.outcome).slice(0, 1000) };
+    this.revision++;
+    void this.flush();
+  }
+
+  setCompleted(completed: boolean) {
+    this.patch = { ...this.patch, status: completed ? 'completed' : 'in_progress' };
     this.revision++;
     void this.flush();
   }

@@ -6,7 +6,7 @@ import { OutputPanel } from '../output/OutputPanel';
 import { usePythonRunner } from '../runtime/usePythonRunner';
 import { TurtlePanel } from '../turtle/TurtlePanel';
 import { PanelResizer } from './PanelResizer';
-import { ExerciseListPicker, SampleExercisePicker } from './SampleExercisePicker';
+import { SampleExercisePicker } from './SampleExercisePicker';
 import { downloadCode } from './downloadCode';
 import type { Messages, Locale } from '../i18n/en';
 
@@ -29,12 +29,15 @@ interface Props {
   backLink?: ReactNode;
   warning?: string;
   readOnly?: boolean;
+  completed?: boolean;
+  onCompletedChange?: (completed: boolean) => void;
 }
 
 export function ExercisePage({ messages: t, locale, exercise, exercises, exerciseIndex, code, onChange: setCode,
-  onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink, warning, readOnly = false }: Props) {
+  onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink, warning, readOnly = false, completed, onCompletedChange }: Props) {
   const turtleEnabled = exercise.runtimeType === 'python-turtle';
-  const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
+  const [activePanel, setActivePanel] = useState<'instructions' | 'contents' | null>('instructions');
+  const instructionsCollapsed = activePanel === null;
   // Width of the output column chosen with the resizer; null means the default responsive width.
   const [outputWidth, setOutputWidth] = useState<number | null>(null);
   const editorRef = useRef<HTMLElement>(null);
@@ -72,6 +75,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             <p className="exercise-description">{t.lessonDescription}</p>
           </>}
         </div>
+        {onCompletedChange && <label className="completion-checkbox"><input type="checkbox" checked={completed ?? false} disabled={readOnly} onChange={(event) => onCompletedChange(event.target.checked)} />{t.markCompleted}</label>}
         <SampleExercisePicker
           exercises={exercises}
           selectedIndex={exerciseIndex}
@@ -82,42 +86,25 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
       </header>
       {warning && <div className="work-warning" role="alert">{warning}</div>}
       <div
-        className={`exercise-layout${instructionsCollapsed ? ' instructions-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
+        className={`exercise-layout lesson-workspace${instructionsCollapsed ? ' lesson-panel-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
         style={outputWidth === null ? undefined : { '--output-width': `${outputWidth}px` } as CSSProperties}
       >
-        <aside className="instructions-panel" aria-labelledby="instructions-title">
-          <div className="panel-heading instructions-heading">
-            {backLink ? <h1 id="instructions-title" className={instructionsCollapsed ? undefined : 'sr-only'}>{lessonTitle ?? t.lessonLabel}</h1> : <h2 id="instructions-title" className={instructionsCollapsed ? undefined : 'sr-only'}>{t.instructions}</h2>}
-            {!instructionsCollapsed && <ExerciseListPicker
-              title={lessonTitle ?? t.lessonLabel}
-              exercises={exercises}
-              selectedIndex={exerciseIndex}
-              disabled={runner.isBusy || preparing}
-              labels={{ navigation: lessonTitle ? t.lessonExercises : t.sampleExercises, previous: t.previousExercise, next: t.nextExercise, exercises: t.exercises }}
-              onSelect={selectExercise}
-            />}
-
-            <button
-              type="button"
-              className="instructions-toggle"
-              aria-expanded={!instructionsCollapsed}
-              aria-controls="instructions-content"
-              aria-label={instructionsCollapsed ? t.expandInstructions : t.collapseInstructions}
-              title={instructionsCollapsed ? t.expandInstructions : t.collapseInstructions}
-              onClick={() => setInstructionsCollapsed((collapsed) => !collapsed)}
-            >
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="m12 5-5 5 5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-          <div id="instructions-content" className="instructions-content" hidden={instructionsCollapsed}>
-            <span className="exercise-number">{t.exerciseLabel} {String(exerciseIndex + 1).padStart(2, '0')}{backLink && <> · {exercise.title}</>}</span>
-            <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
-            <details key={`tip-${exercise.id}`} className="tip">
-              <summary>{t.tipTitle}</summary>
-              <p>{turtleEnabled ? t.turtleTip : t.tip}</p>
-            </details>
+        <nav className="lesson-tool-rail" aria-label={t.lessonPanels}>
+          <button type="button" aria-label={t.instructions} title={t.instructions} aria-expanded={activePanel === 'instructions'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'instructions' ? null : 'instructions')}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 5h1v3M3 11h2l-2 3h2M3 17h2v3H3" /></svg>
+          </button>
+          <button type="button" aria-label={t.lessonExercises} title={t.lessonExercises} aria-expanded={activePanel === 'contents'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'contents' ? null : 'contents')}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6" /></svg>
+          </button>
+        </nav>
+        <aside id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
+          <div className="panel-heading"><h2 id="instructions-title">{activePanel === 'contents' ? t.lessonExercises : t.instructions}</h2></div>
+          <div className="instructions-content">
+            {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><button type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}>{item.title}</button></li>)}</ol> : <>
+              <span className="exercise-number">{lessonTitle && <>{lessonTitle} · </>}{exercise.title}</span>
+              <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
+              <details key={`tip-${exercise.id}`} className="tip"><summary>{t.tipTitle}</summary><p>{turtleEnabled ? t.turtleTip : t.tip}</p></details>
+            </>}
           </div>
         </aside>
         <section ref={editorRef} className="editor-panel" aria-labelledby="editor-title">
