@@ -111,7 +111,6 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><Button unstyled type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}><Icon kind="code" /><span>{item.title}</span></Button></li>)}</ol> : <>
               <span className="exercise-number">{exercise.title}</span>
               <MarkdownInstructions key={`markdown-${exercise.id}`} markdown={exercise.instructionsMarkdown} />
-              <details key={`tip-${exercise.id}`} className="tip"><summary>{t.tipTitle}</summary><p>{turtleEnabled ? t.turtleTip : t.tip}</p></details>
             </>}
           </div>
         </aside>
