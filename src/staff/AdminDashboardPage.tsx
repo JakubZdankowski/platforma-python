@@ -18,10 +18,34 @@ async function load(client: AppSupabaseClient) {
 }
 export function AdminDashboardPage() {
   const { data, error, reload } = useStaffData(load);
-  return <main className="account-page"><h1>Panel administratora</h1><p className="account-lead">Użytkownicy, grupy i materiały całej platformy.</p>
-    {error && <p role="alert">{error}<button onClick={reload}>Ponów</button></p>}
+  return <main className="account-page admin-dashboard">
+    <header className="admin-dashboard-header"><h1>Panel administratora</h1><p className="account-lead">Zarządzaj platformą i sprawdzaj postępy uczniów.</p></header>
+    {error && <p className="form-error" role="alert">{error} <button className="button button-secondary button-small" onClick={reload}>Ponów</button></p>}
     {!data && !error && <p role="status">Wczytywanie statystyk…</p>}
-    {data && <div className="staff-stats">{Object.entries({ 'Nauczyciele': data.teachers, 'Uczniowie': data.students, 'Grupy': data.groups, 'Materiały do zatwierdzenia': data.pending, 'Zapisane prace': data.work, 'Ukończone zadania': data.completed, 'Prace z ostatnim poprawnym uruchomieniem': data.successful }).map(([label, value]) => <div className="account-section" key={label}><strong>{value}</strong><p>{label}</p></div>)}</div>}
-    <div className="teacher-dashboard-links"><Link to="/admin/students"><h2>Konta</h2><p>Twórz i edytuj konta nauczycieli oraz uczniów.</p></Link><Link to="/admin/groups"><h2>Grupy</h2><p>Przypisuj uczniów i nauczycieli.</p></Link><Link to="/admin/materials"><h2>Materiały</h2><p>Twórz lekcje i zatwierdzaj zgłoszenia.</p></Link></div>
+    {data && <>
+      <section className="admin-dashboard-section" aria-labelledby="admin-overview-title">
+        <h2 id="admin-overview-title">Platforma w liczbach</h2>
+        <dl className="admin-overview-grid">
+          {[['Nauczyciele', data.teachers], ['Uczniowie', data.students], ['Grupy', data.groups]].map(([label, value]) => <div className="admin-stat" key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+          <div className={`admin-stat admin-stat-review${data.pending > 0 ? ' has-pending' : ''}`}><dt>Do zatwierdzenia</dt><dd>{data.pending}</dd><Link to="/admin/materials">Przejdź do materiałów <span aria-hidden="true">→</span></Link></div>
+        </dl>
+      </section>
+      <section className="admin-dashboard-section" aria-labelledby="admin-progress-title">
+        <h2 id="admin-progress-title">Prace uczniów</h2>
+        <dl className="admin-progress-grid">
+          <div className="admin-stat"><dt>Zapisane prace</dt><dd>{data.work}</dd><p>Ćwiczenia z zapisanym kodem</p></div>
+          <div className="admin-stat"><dt>Ukończone zadania</dt><dd>{data.completed}</dd><p>Oznaczone przez uczniów jako ukończone</p></div>
+          <div className="admin-stat"><dt>Poprawne uruchomienia</dt><dd>{data.successful}</dd><p>Prace, których ostatnie uruchomienie było poprawne</p></div>
+        </dl>
+      </section>
+    </>}
+    <section className="admin-dashboard-section" aria-labelledby="admin-actions-title">
+      <h2 id="admin-actions-title">Zarządzanie</h2>
+      <div className="admin-actions-grid">
+        <Link to="/admin/students"><div className="admin-action-title"><h3>Konta</h3><span aria-hidden="true">→</span></div><p>Twórz i edytuj konta nauczycieli oraz uczniów.</p></Link>
+        <Link to="/admin/groups"><div className="admin-action-title"><h3>Grupy</h3><span aria-hidden="true">→</span></div><p>Przypisuj uczniów i nauczycieli do grup.</p></Link>
+        <Link to="/admin/materials"><div className="admin-action-title"><h3>Materiały</h3><span aria-hidden="true">→</span></div><p>Twórz lekcje i zatwierdzaj zgłoszenia.</p></Link>
+      </div>
+    </section>
   </main>;
 }
