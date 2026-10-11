@@ -470,3 +470,5 @@ a.brand { color: inherit; text-decoration: none; }
   .lesson-workspace.lesson-panel-collapsed { grid-template-rows: 400px minmax(240px, auto); }
   .lesson-workspace.lesson-panel-collapsed .output-column { grid-row: 2; }
 }
+
+.lesson-tool-rail i.icon { margin: 0; font-size: 22px; line-height: 1; }

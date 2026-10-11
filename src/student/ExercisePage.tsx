@@ -1,3 +1,4 @@
+import 'semantic-ui-css/components/icon.min.css';
 import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Exercise } from '../exercises/types';
 import type { ExecutionResult } from '../runtime/protocol';
@@ -91,10 +92,10 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
       >
         <nav className="lesson-tool-rail" aria-label={t.lessonPanels}>
           <button type="button" aria-label={t.instructions} title={t.instructions} aria-expanded={activePanel === 'instructions'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'instructions' ? null : 'instructions')}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 5h1v3M3 11h2l-2 3h2M3 17h2v3H3" /></svg>
+            <i className="file alternate outline icon" aria-hidden="true" />
           </button>
           <button type="button" aria-label={t.lessonExercises} title={t.lessonExercises} aria-expanded={activePanel === 'contents'} aria-controls="lesson-side-panel" onClick={() => setActivePanel((panel) => panel === 'contents' ? null : 'contents')}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6" /></svg>
+            <i className="tasks icon" aria-hidden="true" />
           </button>
         </nav>
         <aside id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
