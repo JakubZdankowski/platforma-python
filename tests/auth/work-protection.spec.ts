@@ -5,7 +5,7 @@ import { adminClient, SEED } from '../db/localSupabase';
 test('offline edits are protected, downloadable and retained after access is revoked', async ({ page, context }) => {
   const admin = adminClient();
   const classroom = (await admin.from('classes').select('id, teacher_id').eq('join_code', SEED.joinCode).single()).data!;
-  const lesson = await admin.from('lessons').insert({ teacher_id: classroom.teacher_id, slug: `protection-${Date.now()}`, title: 'Ochrona pracy' }).select('id').single();
+  const lesson = await admin.from('lessons').insert({ publication_status: 'approved', teacher_id: classroom.teacher_id, slug: `protection-${Date.now()}`, title: 'Ochrona pracy' }).select('id').single();
   if (lesson.error) throw lesson.error;
   const lessonId = lesson.data.id;
   try {

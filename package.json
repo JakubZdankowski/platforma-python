@@ -21,6 +21,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local --schema public > src/database/database.types.ts",
+    "admin:create": "node scripts/create-admin.mjs",
     "teacher:create": "node scripts/create-teacher.mjs",
     "content:sync": "node scripts/sync-content.mjs",
     "test:db": "vitest run --config vitest.db.config.ts",

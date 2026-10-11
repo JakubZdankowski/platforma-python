@@ -1,12 +1,12 @@
 import { adminClient } from './localSupabase';
 
-export async function sessionFixture() {
+export async function sessionFixture(role: 'teacher' | 'admin' = 'teacher') {
   const admin = adminClient();
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const password = `session-test-${suffix}`;
   const teacherEmail = `session-${suffix}@example.test`;
   const teacher = await admin.auth.admin.createUser({ email: teacherEmail, password, email_confirm: true,
-    app_metadata: { role: 'teacher', display_name: 'Nauczyciel sesji' } });
+    app_metadata: { role, display_name: 'Nauczyciel sesji' } });
   if (teacher.error) throw teacher.error;
   const teacherId = teacher.data.user.id;
   let studentId: string | undefined;
@@ -25,9 +25,11 @@ export async function sessionFixture() {
     const classroom = await admin.from('classes').insert({ name: 'Test sesji', teacher_id: teacherId,
       join_code: `S${Math.random().toString(36).slice(2, 10).toUpperCase()}` }).select('id, join_code').single();
     if (classroom.error) throw classroom.error;
+    const teacherMember = role === 'teacher' ? await admin.from('class_teachers').insert({ class_id: classroom.data.id, teacher_id: teacherId }) : { error: null };
+    if (teacherMember.error) throw teacherMember.error;
     const member = await admin.from('class_members').insert({ class_id: classroom.data.id, student_id: studentId });
     if (member.error) throw member.error;
-    const lesson = await admin.from('lessons').insert({ teacher_id: teacherId, slug: 'session-test', title: 'Lekcja sesji' }).select('id').single();
+    const lesson = await admin.from('lessons').insert({ teacher_id: teacherId, slug: 'session-test', title: 'Lekcja sesji', publication_status: 'approved' }).select('id').single();
     if (lesson.error) throw lesson.error;
     const exercise = await admin.from('exercises').insert({ lesson_id: lesson.data.id, slug: 'session-test', title: 'Kod sesji', position: 1,
       instructions_markdown: 'Test sesji', starter_code: 'print("start")', runtime_type: 'python-console' }).select('id').single();

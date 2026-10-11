@@ -5,7 +5,7 @@ import { join, resolve, sep } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { adminClient, localKeys, SEED } from '../db/localSupabase';
 
-test('teacher assigns imported content; student code survives refresh, retries, navigation and reset', async ({ page, browser }) => {
+test('admin assigns imported content; student code survives refresh, retries, navigation and reset', async ({ page, browser }) => {
   test.setTimeout(120_000);
   const admin = adminClient();
   // Identify the seed teacher by their class rather than their editable display name.
@@ -36,10 +36,10 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await expect(studentPage.getByRole('heading', { name: lessonTitle, exact: true })).toHaveCount(0);
 
     await page.goto('/login');
-    await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
-    await page.getByLabel('Hasło').fill(SEED.teacher.password);
+    await page.getByLabel('Adres e-mail').fill(SEED.admin.email);
+    await page.getByLabel('Hasło').fill(SEED.admin.password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await page.getByRole('link', { name: 'Materiały', exact: true }).click();
+    await page.getByRole('link', { name: 'Moduły i dostęp', exact: true }).click();
     await page.getByRole('link', { name: new RegExp(SEED.className) }).click();
     await page.getByRole('checkbox', { name: lessonTitle }).check();
     await expect(page.getByRole('checkbox', { name: lessonTitle })).toBeEnabled();
@@ -80,11 +80,11 @@ test('teacher assigns imported content; student code survives refresh, retries, 
     await studentPage.getByRole('button', { name: 'Poprzednie zadanie' }).click();
     await expect(editor).toHaveText('print("Nawigacja")');
     await editor.fill('print("Lista ćwiczeń")');
-    await studentPage.getByRole('button', { name: lessonTitle, exact: true }).click();
-    await studentPage.locator('.exercise-picker-list').getByRole('button', { name: /Kwadrat/ }).click();
+    await studentPage.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+    await studentPage.locator('.lesson-contents-list').getByRole('button', { name: /Kwadrat/ }).click();
     await expect(studentPage.locator('.exercise-number')).toContainText('Kwadrat');
-    await studentPage.getByRole('button', { name: lessonTitle, exact: true }).click();
-    await studentPage.locator('.exercise-picker-list').getByRole('button').first().click();
+    await studentPage.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+    await studentPage.locator('.lesson-contents-list').getByRole('button').first().click();
     await expect(editor).toHaveText('print("Lista ćwiczeń")');
     await editor.fill('print("Nawigacja")');
     studentPage.once('dialog', (dialog) => void dialog.dismiss());

@@ -1,4 +1,4 @@
-// Teacher-only management of student accounts. Runtime-independent: the
+// Privileged management of student accounts (admin-only in the Deno adapter). Runtime-independent: the
 // Deno entry point (index.ts) supplies the Supabase-backed dependencies,
 // unit tests supply fakes.
 
@@ -23,7 +23,7 @@ export type StudentAction =
   | { action: 'reset-password'; studentId: string };
 
 export interface StudentAdmin {
-  /** Returns the caller's id when the access token belongs to a teacher. */
+  /** Returns the caller's id when the access token belongs to an administrator. */
   teacherIdFromToken(accessToken: string): Promise<string | null>;
   ownsClass(teacherId: string, classId: string): Promise<boolean>;
   usernameTaken(teacherId: string, username: string): Promise<boolean>;

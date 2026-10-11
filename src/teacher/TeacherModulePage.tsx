@@ -4,14 +4,14 @@ import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { AppSupabaseClient } from '../database/supabase';
 import type { Messages } from '../i18n/en';
 
-async function load(client: AppSupabaseClient, moduleId: string, teacherId: string) {
+async function load(client: AppSupabaseClient, moduleId: string, _teacherId: string) {
   const results = await Promise.all([
     client.from('modules').select('id, title, position').eq('id', moduleId).maybeSingle(),
-    client.from('lessons').select('id, title, position').order('position').order('slug'),
+    client.from('lessons').select('id, title, position').eq('publication_status', 'approved').order('position').order('slug'),
     client.from('module_lessons').select('lesson_id, position').eq('module_id', moduleId),
     client.from('classes').select('id, name').order('name'),
     client.from('group_module_assignments').select('class_id').eq('module_id', moduleId),
-    client.from('profiles').select('id, display_name, username').eq('created_by', teacherId).eq('role', 'student').order('display_name'),
+    client.from('profiles').select('id, display_name, username').eq('role', 'student').order('display_name'),
     client.from('student_module_assignments').select('student_id').eq('module_id', moduleId),
   ]);
   for (const r of results) if (r.error) throw r.error;
@@ -60,7 +60,7 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
     if (!title || !Number.isSafeInteger(position) || position < 0 || position > 1000000) return;
     void mutate(() => client.from('modules').update({ title, position }).eq('id', moduleId));
   }
-  return <main className="account-page"><p className="student-back"><Link to="/teacher/materials">← Materiały</Link></p>
+  return <main className="account-page"><p className="student-back"><Link to="/admin/modules">← Materiały</Link></p>
     {error && <div className="form-error" role="alert">{error}<button className="button button-secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</button></div>}
     {!data && !error && <p role="status">{t.loadingData}</p>}
     {data && !data.module && <p role="alert">Ten moduł nie istnieje lub nie masz do niego dostępu.</p>}
@@ -88,14 +88,14 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
           })}</ul>
         </section>
         <section className="account-section"><h2>Udostępnij grupom</h2><p className="account-muted">Dostęp otrzymają obecni i przyszli członkowie zaznaczonych grup.</p>
-          {!data.groups.length && <p>Nie masz jeszcze grup. <Link to="/teacher/groups">Utwórz grupę</Link></p>}
+          {!data.groups.length && <p>Nie masz jeszcze grup. <Link to="/admin/groups">Utwórz grupę</Link></p>}
           <ul className="module-checklist">{data.groups.map((group) => <li key={group.id}><label><input type="checkbox" checked={data.assignedGroups.some((g) => g.class_id === group.id)} onChange={(e) => {
             const checked = e.target.checked; if (!confirmRemoval(checked)) return;
             void mutate(() => checked ? client.from('group_module_assignments').insert({ module_id: moduleId, class_id: group.id }) : client.from('group_module_assignments').delete().eq('module_id', moduleId).eq('class_id', group.id), (prev) => ({ ...prev, assignedGroups: checked ? [...prev.assignedGroups, { class_id: group.id }] : prev.assignedGroups.filter((g) => g.class_id !== group.id) }));
           }} />{group.name}</label></li>)}</ul>
         </section>
         <section className="account-section"><h2>Udostępnij indywidualnie</h2><p className="account-muted">Dodatkowy dostęp niezależny od grup. Odznaczenie nie odbiera dostępu uzyskanego przez grupę.</p>
-          {!data.students.length && <p>Nie masz jeszcze uczniów. <Link to="/teacher/students">Utwórz konto ucznia</Link></p>}
+          {!data.students.length && <p>Nie masz jeszcze uczniów. <Link to="/admin/students">Utwórz konto ucznia</Link></p>}
           <ul className="module-checklist">{data.students.map((s) => <li key={s.id}><label><input type="checkbox" checked={data.assignedStudents.some((a) => a.student_id === s.id)} onChange={(e) => {
             const checked = e.target.checked; if (!confirmRemoval(checked)) return;
             void mutate(() => checked ? client.from('student_module_assignments').insert({ module_id: moduleId, student_id: s.id }) : client.from('student_module_assignments').delete().eq('module_id', moduleId).eq('student_id', s.id), (prev) => ({ ...prev, assignedStudents: checked ? [...prev.assignedStudents, { student_id: s.id }] : prev.assignedStudents.filter((a) => a.student_id !== s.id) }));

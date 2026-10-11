@@ -36,6 +36,11 @@ select pg_temp.seed_user(
 );
 
 select pg_temp.seed_user(
+  'a0000000-0000-4000-8000-000000000002', 'admin@example.test', 'admin-dev-password',
+  '{"role": "admin", "display_name": "Administrator"}'
+);
+
+select pg_temp.seed_user(
   s.id,
   private.student_auth_email('a0000000-0000-4000-8000-000000000001', s.username),
   s.username || '-dev-pass',
@@ -59,3 +64,5 @@ insert into public.class_members (class_id, student_id)
 select 'c0000000-0000-4000-8000-000000000001', p.id
 from public.profiles p
 where p.role = 'student';
+
+insert into public.class_teachers(class_id,teacher_id) select id,teacher_id from public.classes on conflict do nothing;

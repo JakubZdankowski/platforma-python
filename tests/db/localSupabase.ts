@@ -45,6 +45,7 @@ export function adminClient(): AppSupabaseClient {
 }
 
 export const SEED = {
+  admin: { email: 'admin@example.test', password: 'admin-dev-password' },
   teacher: { email: 'teacher@example.test', password: 'teacher-dev-password' },
   joinCode: 'PYTHON25',
   className: 'Python 101',

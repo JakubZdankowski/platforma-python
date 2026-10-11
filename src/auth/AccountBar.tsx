@@ -22,7 +22,7 @@ export function AccountBar({ messages: t, target }: { messages: Messages; target
       <p className="header-account-summary">
         <span className="account-muted">{t.signedInAs} </span>
         <strong>{profile.displayName}</strong>
-        <span className="account-muted"> · {profile.role === 'teacher' ? t.roleTeacher : profile.username}</span>
+        <span className="account-muted"> · {profile.role === 'admin' ? 'Administrator' : profile.role === 'teacher' ? t.roleTeacher : profile.username}</span>
       </p>
       <button type="button" className="button button-secondary button-small" onClick={() => void handleSignOut()}>{t.signOut}</button>
   </>, target);

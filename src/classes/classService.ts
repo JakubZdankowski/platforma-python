@@ -1,7 +1,7 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import type { AppSupabaseClient } from '../database/supabase';
 
-// Data access for classes and class membership. RLS decides what each
+// Data access for classes and class membership. Mutations require admin role. RLS decides what each
 // query may see or change; these functions only shape requests and results.
 
 export type ServiceError = 'unavailable' | 'not-found' | 'username-taken' | 'invalid-input' | 'forbidden';

@@ -8,18 +8,19 @@ test('four students remain visible beside a tall read-only editor without scroll
   const teacher = anonClient();
   expect(await signInTeacher(teacher, SEED.teacher.email, SEED.teacher.password)).toBeNull();
   const teacherId = (await teacher.auth.getUser()).data.user!.id;
-  const createdClass = await teacher.from('classes').insert({ name: `Układ podglądu ${Date.now()}` }).select('id').single();
+  const createdClass = await admin.from('classes').insert({ teacher_id: teacherId, name: `Układ podglądu ${Date.now()}` }).select('id').single();
   if (createdClass.error) throw createdClass.error;
   const classId = createdClass.data.id;
   const userIds: string[] = [];
   let lessonId: string | undefined;
   try {
-    const lesson = await admin.from('lessons').insert({ teacher_id: teacherId, slug: `layout-${Date.now()}`, title: 'Lekcja testowa' }).select('id').single();
+    const lesson = await admin.from('lessons').insert({ publication_status: 'approved', teacher_id: teacherId, slug: `layout-${Date.now()}`, title: 'Lekcja testowa' }).select('id').single();
     if (lesson.error) throw lesson.error;
     lessonId = lesson.data.id;
     const exercise = await admin.from('exercises').insert({ lesson_id: lessonId, slug: 'exercise-01', title: 'Ćwiczenie testowe', position: 0, instructions_markdown: 'Test', starter_code: '', runtime_type: 'python-console' }).select('id').single();
     if (exercise.error) throw exercise.error;
-    const assignment = await teacher.from('assignments').insert({ class_id: classId, lesson_id: lessonId });
+    await admin.from('class_teachers').insert({ class_id: classId, teacher_id: teacherId });
+    const assignment = await admin.from('assignments').insert({ class_id: classId, lesson_id: lessonId });
     if (assignment.error) throw assignment.error;
     for (let i = 1; i <= 4; i++) {
       const username = `layout-${Date.now()}-${i}`;

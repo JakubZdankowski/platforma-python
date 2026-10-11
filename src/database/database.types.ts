@@ -5,6 +5,12 @@ export type Database = {
   
   "public": {
           Tables: {
+            class_teachers: {
+              Row: { class_id: string; teacher_id: string };
+              Insert: { class_id: string; teacher_id: string };
+              Update: { class_id?: string; teacher_id?: string };
+              Relationships: [];
+            },
             "assignments": {
                   Row: {
                     "class_id": string,"lesson_id": string
@@ -120,13 +126,13 @@ isOneToOne: false
                   ]
                 },"lessons": {
                   Row: {
-                    "id": string,"position": number,"slug": string,"teacher_id": string,"title": string
+                    "id": string,"position": number,"slug": string,"teacher_id": string,"title": string,"publication_status": string
                   }
                   Insert: {
-                    "id"?: string,"position"?: number,"slug": string,"teacher_id": string,"title": string
+                    "id"?: string,"position"?: number,"slug": string,"teacher_id": string,"title": string,"publication_status"?: string
                   }
                   Update: {
-                    "id"?: string,"position"?: number,"slug"?: string,"teacher_id"?: string,"title"?: string
+                    "id"?: string,"position"?: number,"slug"?: string,"teacher_id"?: string,"title"?: string,"publication_status"?: string
                   }
                   Relationships: [
                     {
@@ -262,6 +268,8 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
+            save_material: { Args: { p_lesson_id: string | null; p_title: string; p_exercises: Json; p_status: string }; Returns: string };
+            admin_account_emails: { Args: Record<PropertyKey, never>; Returns: { id: string; email: string }[] };
             "claim_account_session":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
@@ -279,7 +287,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "user_role": "teacher"|"student"
+            "user_role": "admin"|"teacher"|"student"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -395,7 +403,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "user_role": ["teacher", "student"]
+            "user_role": ["admin", "teacher", "student"]
           }
         }
 } as const

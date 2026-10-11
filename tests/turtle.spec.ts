@@ -5,7 +5,9 @@ async function openTurtleExercise(page: Page) {
   await expect(page.getByRole('button', { name: 'Poprzednie zadanie' })).toBeDisabled();
   await page.getByRole('button', { name: 'Następne zadanie' }).click();
   await expect(page.getByRole('heading', { name: 'Narysuj kwadrat', level: 1 })).toBeVisible();
-  await expect(page.getByRole('button', { name: '2. Narysuj kwadrat' })).toHaveAttribute('aria-current', 'step');
+  await page.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+  await expect(page.locator('.lesson-contents-list').getByRole('button', { name: 'Narysuj kwadrat', exact: true })).toHaveAttribute('aria-current', 'step');
+  await page.getByRole('button', { name: 'Twoje zadanie', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Następne zadanie' })).toBeDisabled();
 }
 
@@ -154,7 +156,9 @@ test('Turtle stays out of console exercises and switching keeps each exercise co
   await openTurtleExercise(page);
   await page.getByRole('textbox').fill('forward(20)');
   await page.getByRole('button', { name: 'Poprzednie zadanie' }).click();
-  await expect(page.getByRole('button', { name: '1. Pierwszy program' })).toHaveAttribute('aria-current', 'step');
+  await page.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+  await expect(page.locator('.lesson-contents-list').getByRole('button', { name: 'Pierwszy program', exact: true })).toHaveAttribute('aria-current', 'step');
+  await page.getByRole('button', { name: 'Twoje zadanie', exact: true }).click();
   await expect(page.getByRole('img', { name: 'Rysunek żółwia' })).toHaveCount(0);
   await expect(page.getByRole('textbox')).toHaveText('print("Hello!")');
   await run(page, 'forward(20)');
@@ -176,7 +180,10 @@ test('Turtle layout fits laptop, tablet and phone widths', async ({ page }) => {
     await page.setViewportSize({ width, height });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     const box = await page.getByTestId('turtle-canvas').boundingBox();
-    expect(box!.width).toBeGreaterThan(200);
+    const viewport = await page.locator('.turtle-viewport').boundingBox();
+    expect(box!.width).toBeCloseTo(Math.min(viewport!.width, viewport!.height), 0);
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(width);
     expect(Math.abs(box!.width - box!.height)).toBeLessThanOrEqual(1);
   }
   await run(page, 'for i in range(4):\n    forward(100)\n    left(90)');

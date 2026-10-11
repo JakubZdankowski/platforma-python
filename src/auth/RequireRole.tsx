@@ -5,11 +5,11 @@ import { useAuth } from './AuthProvider';
 import type { UserRole } from './authService';
 
 export function homePath(role: UserRole): string {
-  return role === 'teacher' ? '/teacher' : '/student';
+  return role === 'admin' ? '/admin' : role === 'teacher' ? '/teacher' : '/student';
 }
 
 export function loginPath(role: UserRole): string {
-  return role === 'teacher' ? '/login' : '/join';
+  return role === 'student' ? '/join' : '/login';
 }
 
 /**

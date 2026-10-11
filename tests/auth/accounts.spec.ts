@@ -10,12 +10,12 @@ async function studentSignIn(page: Page, username: string, password: string, _jo
   await page.getByRole('button', { name: 'Zaloguj się' }).click();
 }
 
-async function teacherSignIn(page: Page) {
+async function adminSignIn(page: Page) {
   await page.goto('/login');
-  await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
-  await page.getByLabel('Hasło').fill(SEED.teacher.password);
+  await page.getByLabel('Adres e-mail').fill(SEED.admin.email);
+  await page.getByLabel('Hasło').fill(SEED.admin.password);
   await page.getByRole('button', { name: 'Zaloguj się' }).click();
-  await expect(page).toHaveURL(/\/teacher$/);
+  await expect(page).toHaveURL(/\/admin$/);
 }
 
 test.afterAll(async () => {
@@ -82,49 +82,45 @@ test('route guards send users to the right screens', async ({ page }) => {
   await expect(page).toHaveURL(/\/student$/);
 });
 
-test('a teacher creates a student, who then signs in with the generated password', async ({ page, browser }) => {
-  await teacherSignIn(page);
-  await page.getByRole('link', { name: 'Grupy', exact: true }).click();
-  const row = page.getByRole('row', { name: new RegExp(SEED.className) });
-  await row.getByRole('link', { name: SEED.className }).click();
-
-  await expect(page.getByRole('heading', { name: 'Uczniowie w grupie (3)' })).toBeVisible();
-  await page.getByLabel('Imię widoczne dla nauczyciela').fill(`Łucja ${run}`);
-  await expect(page.getByLabel('Nazwa użytkownika')).toHaveValue(`lucja-${run}`);
+test('admin creates a student, assigns a group and resets the password', async ({ page, browser }) => {
+  await adminSignIn(page);
+  await page.getByRole('link', { name: 'Konta', exact: true }).click();
+  await page.getByLabel('Imię i nazwisko').fill(`Łucja ${run}`);
+  await page.getByLabel('Nazwa użytkownika (3–30 znaków)').fill(`lucja-${run}`);
   await page.getByRole('button', { name: 'Utwórz konto' }).click();
-
-  const password = (await page.getByTestId('issued-password').textContent()) ?? '';
+  const issued = page.getByTestId('issued-password');
+  await expect(issued).toBeVisible();
+  const password = (await issued.textContent())!;
   expect(password).toMatch(/^[a-hjkmnp-z2-9]{8}$/);
-  await expect(page.getByRole('heading', { name: 'Uczniowie w grupie (4)' })).toBeVisible();
-  await page.screenshot({ path: 'test-results/teacher-class.png', fullPage: true });
-
   const studentContext = await browser.newContext();
-  const studentPage = await studentContext.newPage();
-  await studentSignIn(studentPage, `lucja-${run}`, password);
-  await expect(studentPage.getByRole('heading', { name: `Cześć, Łucja ${run}!` })).toBeVisible();
-  await studentContext.close();
-
-  page.once('dialog', (dialog) => void dialog.accept());
-  await page.getByRole('button', { name: `Usuń z grupy: Łucja ${run}` }).click();
-  await expect(page.getByRole('heading', { name: 'Uczniowie w grupie (3)' })).toBeVisible();
+  try {
+    const studentPage = await studentContext.newPage();
+    await studentSignIn(studentPage, `lucja-${run}`, password);
+    await expect(studentPage.getByRole('heading', { name: `Cześć, Łucja ${run}!` })).toBeVisible();
+    await page.getByRole('link', { name: 'Grupy', exact: true }).click();
+    await page.getByRole('link', { name: SEED.className, exact: true }).click();
+    const member=page.getByRole('checkbox',{name:`Łucja ${run} (lucja-${run})`,exact:true});
+    await member.check(); await expect(member).toBeEnabled(); await expect(member).toBeChecked();
+    await member.uncheck(); await expect(member).toBeEnabled(); await expect(member).not.toBeChecked();
+    await page.getByRole('link', { name: 'Konta', exact: true }).click();
+    const row=page.getByRole('row',{name:new RegExp(`Łucja ${run}`)});
+    page.once('dialog',d=>void d.accept());
+    await row.getByRole('button',{name:'Nowe hasło'}).click();
+    await expect(issued).toBeVisible();
+    expect(await issued.textContent()).not.toBe(password);
+  } finally { await studentContext.close(); }
 });
 
-test('a teacher creates and renames a class', async ({ page }) => {
-  await teacherSignIn(page);
+test('admin creates and renames a group', async ({ page }) => {
+  await adminSignIn(page);
   await page.getByRole('link', { name: 'Grupy', exact: true }).click();
   await page.getByLabel('Nazwa grupy').fill(`Klasa ${run}`);
   await page.getByRole('button', { name: 'Utwórz grupę' }).click();
-  await expect(page.getByRole('heading', { name: `Klasa ${run}` })).toBeVisible();
-  await expect(page.getByTestId('join-code')).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Zmień nazwę' }).click();
+  await page.getByRole('link', { name: `Klasa ${run}`, exact:true }).click();
   await page.getByLabel('Nazwa grupy').fill(`Klasa ${run} B`);
-  await page.getByRole('button', { name: 'Zapisz' }).click();
+  await page.getByRole('button', { name: 'Zapisz nazwę' }).click();
   await expect(page.getByRole('heading', { name: `Klasa ${run} B` })).toBeVisible();
-
-  // Leave the shared seed teacher as it was.
-  const admin = adminClient();
-  await admin.from('classes').delete().like('name', `Klasa ${run}%`);
+  await adminClient().from('classes').delete().like('name', `Klasa ${run}%`);
 });
 
 test('account screens fit a phone', async ({ page }) => {

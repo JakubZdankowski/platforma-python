@@ -11,20 +11,23 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
   const teacherId = (await teacherClient.auth.getUser()).data.user!.id;
   const run = Date.now().toString(36);
   const className = `Podgląd ${run}`;
-  const classResult = await teacherClient.from('classes').insert({ name: className }).select('id, join_code').single();
+  const classResult = await admin.from('classes').insert({ teacher_id: teacherId, name: className }).select('id, join_code').single();
   if (classResult.error) throw classResult.error;
   const classId = classResult.data.id;
+  await admin.from('class_teachers').insert({ class_id: classId, teacher_id: teacherId });
+  const manager = anonClient();
+  expect(await signInTeacher(manager,SEED.admin.email,SEED.admin.password)).toBeNull();
   const userIds: string[] = [];
   let lessonId: string | undefined;
   const studentContext = await browser.newContext();
   try {
-    const student = await createStudent(teacherClient, classId, `live-${run}`, 'Testowy uczeń');
+    const student = await createStudent(manager, classId, `live-${run}`, 'Testowy uczeń');
     if (!student.ok) throw new Error('Could not create test student');
     userIds.push(student.value.studentId);
-    const otherStudent = await createStudent(teacherClient, classId, `waiting-${run}`, 'Drugi uczeń');
+    const otherStudent = await createStudent(manager, classId, `waiting-${run}`, 'Drugi uczeń');
     if (!otherStudent.ok) throw new Error('Could not create waiting student');
     userIds.push(otherStudent.value.studentId);
-    const lesson = await admin.from('lessons').insert({ teacher_id: teacherId, slug: `live-${run}`, title: 'Lekcja podglądu' }).select('id').single();
+    const lesson = await admin.from('lessons').insert({ publication_status: 'approved', teacher_id: teacherId, slug: `live-${run}`, title: 'Lekcja podglądu' }).select('id').single();
     if (lesson.error) throw lesson.error;
     lessonId = lesson.data.id;
     const exercises = await admin.from('exercises').insert([
@@ -32,7 +35,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
       { lesson_id: lessonId, slug: 'exercise-02', title: 'Drugie ćwiczenie', position: 1, instructions_markdown: 'Wypisz drugi tekst.', starter_code: 'print("drugi")', runtime_type: 'python-console' },
     ]).select('id, position').order('position');
     if (exercises.error) throw exercises.error;
-    expect((await teacherClient.from('assignments').insert({ class_id: classId, lesson_id: lessonId })).error).toBeNull();
+    expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: lessonId })).error).toBeNull();
 
     await page.goto('/login');
     await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);

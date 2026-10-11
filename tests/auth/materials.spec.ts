@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { adminClient, SEED } from '../db/localSupabase';
 
-test('teacher creates an independent student and assigns a module; student keeps saved code across revocation', async ({ page, browser }) => {
+test('admin creates an independent student and assigns a module; student keeps saved code across revocation', async ({ page, browser }) => {
   const admin = adminClient();
   const suffix = Date.now().toString(36);
   const username = `material-${suffix}`;
@@ -12,13 +12,13 @@ test('teacher creates an independent student and assigns a module; student keeps
   const studentContext = await browser.newContext();
   try {
     await page.goto('/login');
-    await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
-    await page.getByLabel('Hasło').fill(SEED.teacher.password);
+    await page.getByLabel('Adres e-mail').fill(SEED.admin.email);
+    await page.getByLabel('Hasło').fill(SEED.admin.password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await expect(page).toHaveURL(/\/teacher$/);
-    await page.getByRole('link', { name: 'Uczniowie', exact: true }).click();
-    await page.getByLabel('Imię widoczne dla nauczyciela').fill(displayName);
-    await page.getByLabel('Nazwa użytkownika').fill(username);
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.getByRole('link', { name: 'Konta', exact: true }).click();
+    await page.getByLabel('Imię i nazwisko').fill(displayName);
+    await page.getByLabel('Nazwa użytkownika (3–30 znaków)').fill(username);
     await page.getByRole('button', { name: 'Utwórz konto' }).click();
     await expect(page.getByTestId('issued-password')).toBeVisible();
     const password = (await page.getByTestId('issued-password').textContent())!;
@@ -34,15 +34,15 @@ test('teacher creates an independent student and assigns a module; student keeps
     await studentPage.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
     await expect(studentPage.getByText('Nie masz jeszcze materiałów')).toBeVisible();
 
-    const lesson = await admin.from('lessons').insert({ teacher_id: profile.data.created_by!, slug: `module-${suffix}`, title: `Pierwsza lekcja ${suffix}` }).select('id').single();
+    const lesson = await admin.from('lessons').insert({ publication_status: 'approved', teacher_id: profile.data.created_by!, slug: `module-${suffix}`, title: `Pierwsza lekcja ${suffix}` }).select('id').single();
     if (lesson.error) throw lesson.error;
     lessonId = lesson.data.id;
     const exercise = await admin.from('exercises').insert({ lesson_id: lessonId, slug: 'hello', title: 'Powitanie', instructions_markdown: 'Napisz powitanie.', starter_code: 'print("Cześć")', runtime_type: 'python-console' }).select('id').single();
     if (exercise.error) throw exercise.error;
-    await page.getByRole('link', { name: 'Materiały', exact: true }).click();
+    await page.getByRole('link', { name: 'Moduły i dostęp', exact: true }).click();
     await page.getByLabel('Nazwa modułu').fill(title);
     await page.getByRole('button', { name: 'Utwórz moduł' }).click();
-    await expect(page).toHaveURL(/\/teacher\/materials\/[^/]+$/);
+    await expect(page).toHaveURL(/\/admin\/modules\/[^/]+$/);
     moduleId = new URL(page.url()).pathname.split('/').at(-1);
     await page.getByRole('checkbox', { name: `Pierwsza lekcja ${suffix}`, exact: true }).check();
     await expect(page.getByRole('checkbox', { name: `Pierwsza lekcja ${suffix}`, exact: true })).toBeEnabled();

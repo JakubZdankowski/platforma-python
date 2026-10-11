@@ -22,7 +22,7 @@ let classId: string;
 
 async function userId(client: AppSupabaseClient) { return (await client.auth.getUser()).data.user!.id; }
 async function lesson(owner: string, slug: string) {
-  const result = await admin.from('lessons').insert({ teacher_id: owner, slug: `${slug}-${run}`, title: slug }).select('id').single();
+  const result = await admin.from('lessons').insert({ teacher_id: owner, slug: `${slug}-${run}`, title: slug, publication_status: 'approved' }).select('id').single();
   if (result.error) throw result.error;
   return result.data.id;
 }
@@ -48,7 +48,7 @@ beforeAll(async () => {
   unassignedId = await lesson(teacherId, 'unassigned');
   otherLessonId = await lesson(otherTeacherId, 'other');
   exerciseId = await exercise(lessonId); unassignedExerciseId = await exercise(unassignedId);
-  expect((await teacher.from('assignments').insert({ class_id: classId, lesson_id: lessonId })).error).toBeNull();
+  expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: lessonId })).error).toBeNull();
   expect((await student.from('student_work').insert({ student_id: studentId, exercise_id: exerciseId, code: 'ania' })).error).toBeNull();
   expect((await classmate.from('student_work').insert({ student_id: classmateId, exercise_id: exerciseId, code: 'ola' })).error).toBeNull();
 });
@@ -84,13 +84,14 @@ describe('MVP lesson and work permissions', () => {
     expect(result.data).toEqual([{ code: 'ania' }, { code: 'ola' }]);
     expect((await teacher.from('student_work').update({ code: 'teacher edit' }).eq('exercise_id', exerciseId).select()).data).toEqual([]);
   });
-  it('only class owners assign lessons, and foreign content cannot be assigned even by service role', async () => {
+  it('only administrators assign approved lessons across authors', async () => {
     expect((await student.from('assignments').insert({ class_id: classId, lesson_id: unassignedId })).error).not.toBeNull();
     expect((await otherTeacher.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).not.toBeNull();
     expect((await teacher.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).not.toBeNull();
-    expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).not.toBeNull();
+    expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).toBeNull();
+    await admin.from('assignments').delete().eq('class_id',classId).eq('lesson_id',otherLessonId);
     expect((await student.from('lessons').insert({ teacher_id: studentId, slug: 'hack', title: 'hack' })).error).not.toBeNull();
-    expect((await teacher.from('exercises').update({ starter_code: 'hack' }).eq('id', exerciseId)).error).not.toBeNull();
+    expect((await teacher.from('exercises').update({ starter_code: 'hack' }).eq('id', exerciseId).select('id')).data).toEqual([]);
   });
   it('Realtime delivers saved work to its teacher but not to classmates or another teacher', async () => {
     const teacherEvents: string[] = [];
@@ -122,7 +123,7 @@ describe('MVP lesson and work permissions', () => {
     const result = await student.from('student_work').update({ code: 'print(1)', status: 'in_progress', last_run_at: new Date().toISOString(), last_run_success: false, last_error_type: 'SyntaxError', last_error_summary: 'invalid syntax' }).eq('exercise_id', exerciseId).select().single();
     expect(result.error).toBeNull();
     expect(result.data).toMatchObject({ code: 'print(1)', status: 'in_progress', last_run_success: false, last_error_type: 'SyntaxError' });
-    expect((await teacher.from('assignments').delete().eq('class_id', classId).eq('lesson_id', lessonId)).error).toBeNull();
+    expect((await admin.from('assignments').delete().eq('class_id', classId).eq('lesson_id', lessonId)).error).toBeNull();
     expect((await student.from('exercises').select('id').eq('id', exerciseId)).data).toEqual([]);
     expect((await student.from('student_work').update({ code: 'no access' }).eq('exercise_id', exerciseId).select()).data).toEqual([]);
     // Saved work is retained for reassignment and remains visible to its owner.

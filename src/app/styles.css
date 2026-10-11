@@ -475,3 +475,16 @@ a.brand { color: inherit; text-decoration: none; }
 
 .lesson-contents-list button > i.icon { flex-shrink: 0; margin: 0; }
 .lesson-contents-list button > span { min-width: 0; }
+
+/* Staff account management and Markdown authoring. */
+.staff-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: .75rem 0; }
+.staff-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.staff-stats strong { font-size: 2rem; }
+.markdown-editor-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; }
+.material-author textarea { width: 100%; resize: vertical; font: 14px/1.6 Consolas, monospace; padding: .8rem; color: var(--text); background: var(--surface-editor); border: 1px solid var(--border); border-radius: .5rem; }
+.markdown-preview { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: .5rem; overflow-wrap: anywhere; }
+.markdown-toolbar button { padding: .45rem .75rem; cursor: pointer; }
+@media (max-width: 900px) { .markdown-editor-grid { grid-template-columns: 1fr; } }
+
+.staff-table { overflow-x: auto; }
+.staff-table .data-table { min-width: 600px; }

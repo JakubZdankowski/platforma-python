@@ -54,7 +54,7 @@ beforeAll(async () => {
   const { data } = await seedTeacher.from('classes').select('id').eq('join_code', SEED.joinCode).single();
   seedClassId = data!.id;
   other = await createTeacher('other-teacher');
-  const created = await other.client.from('classes').insert({ name: 'Inna klasa' }).select('id, join_code').single();
+  const created = await admin.from('classes').insert({ name: 'Inna klasa', teacher_id: other.id }).select('id, join_code').single();
   expect(created.error).toBeNull();
   otherClassId = created.data!.id;
 });
@@ -184,8 +184,8 @@ describe('teachers', () => {
     const kuba = (await admin.from('profiles').select('id').eq('username', 'kuba').single()).data!;
     const { error } = await other.client.from('class_members').insert({ class_id: otherClassId, student_id: kuba.id });
     expect(error).not.toBeNull();
-    expect(await resetStudentPassword(other.client, kuba.id)).toEqual({ ok: false, error: 'not-found' });
-    expect(await createStudent(other.client, seedClassId, `x-${run}`, 'X')).toEqual({ ok: false, error: 'not-found' });
+    expect(await resetStudentPassword(other.client, kuba.id)).toEqual({ ok: false, error: 'forbidden' });
+    expect(await createStudent(other.client, seedClassId, `x-${run}`, 'X')).toEqual({ ok: false, error: 'forbidden' });
   });
 
   it('cannot choose the class owner or join code', async () => {
@@ -195,27 +195,10 @@ describe('teachers', () => {
     expect(stolen.error).not.toBeNull();
   });
 
-  it('create a student who can sign in, and reset the password', async () => {
-    const { data: classRow } = await other.client.from('classes').select('join_code').eq('id', otherClassId).single();
-    const username = `zosia-${run}`;
-    const created = await createStudent(other.client, otherClassId, username, 'Zosia');
-    expect(created.ok).toBe(true);
-    if (!created.ok) return;
-    expect(created.value.password).toMatch(/^[a-hjkmnp-z2-9]{8}$/);
-
-    const first = anonClient();
-    expect(await signInStudent(first, classRow!.join_code, username, created.value.password)).toBeNull();
-    expect((await first.from('classes').select('id')).data).toEqual([]);
-
-    expect(await createStudent(other.client, otherClassId, username, 'Zosia 2')).toEqual({ ok: false, error: 'username-taken' });
-
-    const reset = await resetStudentPassword(other.client, created.value.studentId);
-    expect(reset.ok).toBe(true);
-    if (!reset.ok) return;
-    expect(await signInStudent(anonClient(), classRow!.join_code, username, created.value.password)).toBe('invalid-credentials');
-    expect(await signInStudent(anonClient(), classRow!.join_code, username, reset.value.password)).toBeNull();
-    // The session opened with the old password cannot be refreshed any more.
-    expect((await first.auth.refreshSession()).error).not.toBeNull();
+  it('cannot create students or reset their passwords', async () => {
+    expect(await createStudent(other.client, otherClassId, `zosia-${run}`, 'Zosia')).toEqual({ ok: false, error: 'forbidden' });
+    const kuba = (await admin.from('profiles').select('id').eq('username','kuba').single()).data!;
+    expect(await resetStudentPassword(seedTeacher, kuba.id)).toEqual({ ok: false, error: 'forbidden' });
   });
 
   it('cannot end other users’ sessions', async () => {
@@ -224,12 +207,7 @@ describe('teachers', () => {
     expect((await anonClient().rpc('revoke_user_sessions', { p_user_id: kuba.id })).error).not.toBeNull();
   });
 
-  it('reject the same username for students of different teachers', async () => {
-    const created = await createStudent(other.client, otherClassId, 'kuba', 'Kuba z innej klasy');
-    expect(created).toEqual({ ok: false, error: 'username-taken' });
-    // The seed teacher's kuba still signs in with the seed password.
-    expect((await studentClient('kuba')).error).toBeNull();
-  });
+
 });
 
 describe('accounts without a classroom role', () => {

@@ -9,7 +9,7 @@
 import { randomBytes } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
-const [email, displayName] = process.argv.slice(2);
+const [email, displayName, requestedRole] = process.argv.slice(2);
 const url = process.env.SUPABASE_URL;
 const secretKey = process.env.SUPABASE_SECRET_KEY;
 
@@ -28,12 +28,12 @@ const { data, error } = await supabase.auth.admin.createUser({
   email,
   password,
   email_confirm: true,
-  app_metadata: { role: 'teacher', display_name: displayName.trim() },
+  app_metadata: { role: requestedRole === 'admin' ? 'admin' : 'teacher', display_name: displayName.trim() },
 });
 
 if (error) {
   console.error(`Could not create the teacher: ${error.message}`);
   process.exit(1);
 }
-console.log(`Teacher created: ${data.user.email}`);
+console.log(`${requestedRole === 'admin' ? 'Administrator' : 'Teacher'} created: ${data.user.email}`);
 console.log(`Password (shown once): ${password}`);

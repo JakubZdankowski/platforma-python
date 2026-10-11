@@ -1,4 +1,4 @@
-// Deno entry point for the teacher-students Edge Function.
+// Legacy endpoint name, now restricted to administrators.
 // The service role key is only available here, never in the browser.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import { handleRequest, type StudentAdmin } from './handler.ts';
@@ -29,12 +29,12 @@ const admin: StudentAdmin = {
     const profile = check(
       await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle(),
     );
-    return profile?.role === 'teacher' ? data.user.id : null;
+    return profile?.role === 'admin' ? data.user.id : null;
   },
 
-  async ownsClass(teacherId, classId) {
+  async ownsClass(_teacherId, classId) {
     const row = check(
-      await supabase.from('classes').select('id').eq('id', classId).eq('teacher_id', teacherId).maybeSingle(),
+      await supabase.from('classes').select('id').eq('id', classId).maybeSingle(),
     );
     return row !== null;
   },
@@ -66,14 +66,14 @@ const admin: StudentAdmin = {
     if (error) console.error('teacher-students cleanup failed', error.message);
   },
 
-  async isOwnStudent(teacherId, studentId) {
+  async isOwnStudent(_teacherId, studentId) {
     const row = check(
       await supabase
         .from('profiles')
         .select('id')
         .eq('id', studentId)
         .eq('role', 'student')
-        .eq('created_by', teacherId)
+
         .maybeSingle(),
     );
     return row !== null;

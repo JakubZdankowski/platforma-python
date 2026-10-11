@@ -5,10 +5,12 @@ Proste środowisko do nauki Pythona w przeglądarce, przeznaczone docelowo do le
 Obecny zakres: M1–M3 oraz kroki **A — lekcje i autosave**, **B — dashboard i podgląd pracy klasy**, **C — publikacja na GitHub Pages i hostowanym Supabase** z [planu MVP](docs/mvp-plan.md). Aplikacja: https://jakubzdankowski.github.io/platforma-python/.
 
 - Pod `/` działa strona startowa z wejściem dla ucznia i nauczyciela. Lekcje i ćwiczenia wymagają logowania. Python wykonuje się wyłącznie w przeglądarce, w Web Workerze.
-- Nauczyciel loguje się e-mailem pod `/login`. Tworzy klasy i zmienia ich nazwy, zakłada konta uczniów z wygenerowanym hasłem, resetuje hasła oraz dodaje uczniów do klas i usuwa z nich.
+- Administrator i nauczyciel logują się e-mailem pod `/login`. Administrator zarządza kontami i grupami; nauczyciel przegląda przypisane grupy i przygotowuje materiały do zatwierdzenia.
 - Ze strony klasy nauczyciel otwiera „Podgląd pracy klasy” (`/teacher/classes/:id/live`): bieżące ćwiczenie każdego ucznia, szacowaną aktywność, ostatni wynik i kod tylko do odczytu. Zmiany docierają przez Supabase Realtime po autosave.
 - Uczeń loguje się pod `/join` nazwą użytkownika i hasłem, bez kodu grupy i adresu e-mail. W Materiałach rozwija udostępnione moduły i ich lekcje. Ćwiczenia pod `/student/exercises/:id` zapisują kod i ostatni wynik uruchomienia na jego koncie.
-- Backend to Supabase: Postgres z RLS, Auth i jedna Edge Function.
+- Backend to Supabase: Postgres z RLS, Auth i funkcje kont sprawdzające rolę administratora.
+
+Podział na trzy role, edytor Markdown i procedura wdrożenia: [account-roles.md](docs/account-roles.md).
 
 ## Uruchomienie lokalne
 
@@ -56,6 +58,7 @@ Wyłącznie do lokalnego developmentu:
 
 | Konto | Logowanie |
 | --- | --- |
+| Administrator | `/login`: `admin@example.test` / `admin-dev-password` |
 | Nauczyciel | `/login`: `teacher@example.test` / `teacher-dev-password` |
 | Uczniowie klasy „Python 101” | `/join`: użytkownik `ania`, `kuba` lub `ola`, hasło `<użytkownik>-dev-pass` (np. `ania-dev-pass`) |
 
@@ -65,14 +68,14 @@ Seed nie tworzy lekcji. Przykładowe treści można zaimportować z `course-exam
 
 1. Utwórz projekt i połącz repozytorium: `pnpm exec supabase link --project-ref <ref>`.
 2. Wyślij migracje: `pnpm exec supabase db push`. Nie uruchamiaj `seed.sql` na produkcji, bo zawiera hasła deweloperskie.
-3. Wdróż funkcję: `pnpm exec supabase functions deploy teacher-students`.
+3. Wdróż funkcje: `pnpm exec supabase functions deploy teacher-students` oraz `pnpm exec supabase functions deploy admin-accounts`.
 4. W panelu Authentication wyłącz publiczną rejestrację i podnieś limit logowań na IP (cała klasa loguje się zza jednego adresu szkolnego), tak jak w `supabase/config.toml`.
-5. Utwórz nauczyciela. Klucz secret / service_role podaj tylko w bieżącej powłoce, nigdy w `.env` dla Vite:
+5. Utwórz pierwszego administratora. Klucz secret / service_role podaj tylko w bieżącej powłoce, nigdy w `.env` dla Vite:
 
    ```powershell
    $env:SUPABASE_URL = "https://<ref>.supabase.co"
    $env:SUPABASE_SECRET_KEY = "<secret key>"
-   pnpm teacher:create nauczyciel@szkola.example "Pani Anna"
+   pnpm admin:create admin@szkola.example "Administrator"
    ```
 
 6. Do builda produkcyjnego ustaw `VITE_SUPABASE_URL` i `VITE_SUPABASE_PUBLISHABLE_KEY`.
@@ -93,13 +96,13 @@ Katalog kursu zawiera podkatalogi lekcji, np. `01-pierwsza-lekcja/`. Każdy ma `
 
 Slug lekcji pochodzi z nazwy katalogu, slug ćwiczenia z nazwy pliku. Kolejność lekcji wynika z nazw katalogów, ćwiczeń z numerów plików. Ponowny import aktualizuje te same rekordy i zachowuje kod uczniów; zmiana slugu tworzy nowy rekord. Import nie usuwa treści, które zniknęły z plików, i nie jest transakcją całego kursu — po błędzie można go ponowić.
 
-Własny `course/` jest ignorowany przez Git. Przy publicznym repozytorium rzeczywiste materiały i rozwiązania trzymaj w ignorowanym katalogu lub prywatnym repozytorium. `course-example/` zawiera tylko publiczne przykłady bez rozwiązań. Po imporcie dodaj lekcję do modułu w Materiałach nauczyciela i udostępnij moduł grupie lub uczniowi. Uczeń zobaczy go pod `/student/materials`.
+Własny `course/` jest ignorowany przez Git. Przy publicznym repozytorium rzeczywiste materiały i rozwiązania trzymaj w ignorowanym katalogu lub prywatnym repozytorium. `course-example/` zawiera tylko publiczne przykłady bez rozwiązań. Po imporcie administrator dodaje lekcję do modułu w Modułach i dostępie i udostępnij moduł grupie lub uczniowi. Uczeń zobaczy go pod `/student/materials`.
 
 ## Konfiguracja i przykładowe dane
 
 Zmienne środowiskowe opisuje `.env.example`: tylko URL projektu i klucz publishable, bezpieczne dla przeglądarki. Klucza secret / service_role nie wolno umieszczać w zmiennych `VITE_*` ani commitować.
 
-Treść przykładowych ćwiczeń testowych i kod początkowy znajdują się w `src/exercises/sampleExercise.ts`. Izolowany ekran w `tests/fixtures/` służy testom runtime’u i nie trafia do buildu produkcyjnego. Pole `runtimeType` (`python-console` lub `python-turtle`) decyduje, czy ćwiczenie ma panel rysunku. Lekcje i ćwiczenia w bazie importuje skrypt `content:sync`.
+Treść przykładowych ćwiczeń testowych i kod początkowy znajdują się w `src/exercises/sampleExercise.ts`. Izolowany ekran w `tests/fixtures/` służy testom runtime’u i nie trafia do buildu produkcyjnego. Pole `runtimeType` (`python-console` lub `python-turtle`) decyduje, czy ćwiczenie ma panel rysunku. Lekcje i ćwiczenia powstają w edytorze na stronie lub przez zaufany import `content:sync`.
 
 Interfejs i treść ćwiczeń są po polsku. Przełącznik języka został usunięty.
 
@@ -117,7 +120,8 @@ Interfejs i treść ćwiczeń są po polsku. Przełącznik języka został usuni
 
 Konta:
 
-- **Nauczyciel** (`/login`, potem `/teacher`) ma Pulpit, Grupy, Uczniów i Materiały. Tworzy konta niezależnie od grup, resetuje hasła oraz zarządza członkostwami. W Materiałach tworzy moduły, ustawia kolejność modułów i lekcji oraz udostępnia moduły całym grupom albo indywidualnie. Treści lekcji nadal pochodzą z importu Markdown.
+- **Administrator** (`/login`, potem `/admin`) zarządza kontami uczniów i nauczycieli, przypisuje ich do grup, widzi statystyki oraz tworzy, zatwierdza i udostępnia materiały.
+- **Nauczyciel** (`/login`, potem `/teacher`) przegląda przypisane grupy i uczniów, tworzy lekcje w edytorze Markdown i wysyła je do zatwierdzenia. Podgląd kodu pozostaje tylko do odczytu.
 - **Uczeń** (`/join`, potem `/student`) wpisuje globalnie unikalną nazwę użytkownika i hasło. Konto bez grup i materiałów również może się zalogować. Moduły są widoczne jako pełnoszerokościowe wiersze; dopiero rozwinięcie pokazuje lekcje. Dane wewnętrznych grup nie są udostępniane uczniom.
 - Hasło nowego ucznia jest wyświetlane raz, razem z loginem. Kody klas i stare RPC logowania pozostają wyłącznie jako zgodność przejściowa, bez pola w interfejsie.
 - Podgląd pracy grupy nadal jest tylko do odczytu. Pokazuje zapisany kod, ostatnie uruchomienie oraz szacowaną aktywność. Cofnięcie dostępu nie usuwa zapisanych prac; inna grupa lub przypisanie indywidualne może nadal zapewniać dostęp.
@@ -221,7 +225,7 @@ Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy akt
 ## Ograniczenia
 
 - Podgląd pokazuje zapisany kod, z opóźnieniem autosave; bez rzeczywistego online/offline, historii wykonań, przejmowania sterowania i odtwarzania konsoli lub rysunku ucznia.
-- Nauczyciel nie zmieni w aplikacji imienia ani nazwy użytkownika ucznia, nie usunie konta ucznia ani klasy i nie zmieni własnego hasła. Te operacje są dostępne w Supabase Studio lub przez administratora.
+- Kontami uczniów i nauczycieli zarządza administrator w aplikacji. Zmiana własnego hasła nadal wymaga obsługi poza interfejsem.
 - Uczeń, którego nauczyciel ma kilka klas, może zalogować się kodem dowolnej klasy, do której należy.
 - Reset hasła kończy wszystkie sesje ucznia. Wydany już token dostępu działa jednak do wygaśnięcia, najdłużej godzinę (`jwt_expiry`).
 - Turtle obsługuje podzbiór poleceń z jednym żółwiem; `speed()` jest ignorowane, a duże rysunki nie są automatycznie przyspieszane. Szczegóły w [docs/turtle.md](docs/turtle.md).

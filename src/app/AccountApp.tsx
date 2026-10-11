@@ -9,12 +9,14 @@ import { getSupabase } from '../database/supabase';
 import type { Messages, Locale } from '../i18n/en';
 import { StudentExercisePage } from '../student/StudentExercisePage';
 import { StudentHelpPage, StudentHomePage } from '../student/StudentHomePage';
-import { ClassPage } from '../teacher/ClassPage';
-import { TeacherClassesPage } from '../teacher/TeacherClassesPage';
+import { GroupPage, GroupsPage } from '../staff/GroupsPage';
+import { AccountsPage } from '../staff/AccountsPage';
+import { MaterialsPage } from '../staff/MaterialsPage';
+import { MaterialEditorPage } from '../staff/MaterialEditorPage';
+import { AdminDashboardPage } from '../staff/AdminDashboardPage';
 import { TeacherLivePage } from '../teacher/TeacherLivePage';
 import { DashboardLayout } from './DashboardLayout';
 import { TeacherDashboardPage } from '../teacher/TeacherDashboardPage';
-import { TeacherStudentsPage } from '../teacher/TeacherStudentsPage';
 import { TeacherModulesPage } from '../teacher/TeacherModulesPage';
 import { TeacherModulePage } from '../teacher/TeacherModulePage';
 
@@ -42,12 +44,23 @@ export default function AccountApp({ messages: t, locale, headerTarget }: { mess
       <Route path="student/exercises/:exerciseId" element={<RequireRole role="student" messages={t}><StudentExercisePage messages={t} locale={locale} /></RequireRole>} />
       <Route path="teacher" element={<RequireRole role="teacher" messages={t}><DashboardLayout /></RequireRole>}>
         <Route index element={<TeacherDashboardPage />} />
-        <Route path="groups" element={<TeacherClassesPage messages={t} />} />
-        <Route path="students" element={<TeacherStudentsPage messages={t} />} />
-        <Route path="materials" element={<TeacherModulesPage messages={t} />} />
-        <Route path="materials/:moduleId" element={<TeacherModulePage messages={t} />} />
-        <Route path="classes/:classId" element={<ClassPage messages={t} />} />
+        <Route path="groups" element={<GroupsPage />} />
+        <Route path="students" element={<AccountsPage />} />
+        <Route path="materials" element={<MaterialsPage />} />
+        <Route path="materials/:lessonId" element={<MaterialEditorPage />} />
+        <Route path="classes/:classId" element={<GroupPage />} />
       </Route>
+      <Route path="admin" element={<RequireRole role="admin" messages={t}><DashboardLayout /></RequireRole>}>
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="groups" element={<GroupsPage />} />
+        <Route path="students" element={<AccountsPage />} />
+        <Route path="materials" element={<MaterialsPage />} />
+        <Route path="materials/:lessonId" element={<MaterialEditorPage />} />
+        <Route path="modules" element={<TeacherModulesPage messages={t} />} />
+        <Route path="modules/:moduleId" element={<TeacherModulePage messages={t} />} />
+        <Route path="classes/:classId" element={<GroupPage />} />
+      </Route>
+      <Route path="admin/classes/:classId/live" element={<RequireRole role="admin" messages={t}><TeacherLivePage messages={t} locale={locale} /></RequireRole>} />
       <Route path="teacher/classes/:classId/live" element={<RequireRole role="teacher" messages={t}><TeacherLivePage messages={t} locale={locale} /></RequireRole>} />
       <Route path="*" element={<NotFound messages={t} />} />
     </Routes>

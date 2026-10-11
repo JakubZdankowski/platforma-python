@@ -30,7 +30,7 @@ export function TeacherLoginPage({ messages: t }: { messages: Messages }) {
   };
 
   return <main className="account-page account-narrow">
-    <h1>{t.teacherLoginTitle}</h1>
+    <h1>Logowanie nauczyciela i administratora</h1>
     <form className="form" onSubmit={(event) => void submit(event)} noValidate>
       <label className="field">
         <span>{t.email}</span>
