@@ -6,6 +6,7 @@ test('sidebar switches content, collapses into the rail and supports direct sele
   const instructions = page.getByRole('button', { name: 'Twoje zadanie', exact: true });
   const contents = page.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true });
   await expect(panel).toBeVisible();
+  await expect(panel.locator('.panel-heading')).toHaveCount(0);
   await expect(instructions).toHaveAttribute('aria-expanded', 'true');
   const editorBefore = await page.locator('.editor-panel').boundingBox();
   await instructions.click();
@@ -14,9 +15,11 @@ test('sidebar switches content, collapses into the rail and supports direct sele
   expect(editorAfter!.x).toBeLessThan(editorBefore!.x);
   await contents.click();
   await expect(panel.getByRole('list')).toBeVisible();
+  await expect(panel.locator('.panel-heading')).toBeVisible();
   await expect(contents).toHaveAttribute('aria-expanded', 'true');
   await instructions.click();
   await expect(panel.locator('.markdown')).toBeVisible();
+  await expect(panel.locator('.panel-heading')).toHaveCount(0);
   await expect(panel.getByRole('list')).toBeHidden();
   await contents.click();
   const last = panel.getByRole('button').last();

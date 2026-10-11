@@ -101,7 +101,9 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
           </Button>
         </nav>
         <aside id="lesson-side-panel" className="instructions-panel" aria-labelledby="instructions-title" hidden={instructionsCollapsed}>
-          <div className="panel-heading"><h2 id="instructions-title">{activePanel === 'contents' ? lessonTitle ?? t.lessonExercises : t.instructions}</h2></div>
+          {activePanel === 'contents'
+            ? <div className="panel-heading"><h2 id="instructions-title">{lessonTitle ?? t.lessonExercises}</h2></div>
+            : <h2 id="instructions-title" className="sr-only">{exercise.title}</h2>}
           <div className="instructions-content">
             {activePanel === 'contents' ? <ol className="lesson-contents-list">{exercises.map((item, index) => <li key={item.id}><Button unstyled type="button" aria-current={index === exerciseIndex ? 'step' : undefined} disabled={runner.isBusy || preparing} onClick={() => selectExercise(index)}><Icon kind="code" /><span>{item.title}</span></Button></li>)}</ol> : <>
               <span className="exercise-number">{exercise.title}</span>
