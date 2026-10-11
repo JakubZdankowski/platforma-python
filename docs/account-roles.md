@@ -38,6 +38,6 @@ Uprawnienia egzekwują RLS, granty kolumn, integralność bazy i funkcje sprawdz
 
 W podglądzie pracy grupy administrator i przypisany nauczyciel mogą wybrać dowolne ćwiczenie dostępne danemu uczniowi. Lista obejmuje zatwierdzone lekcje z modułów udostępnionych indywidualnie i przez wszystkie grupy ucznia. Pokazuje status pracy; nierozpoczęte zadanie wyświetla kod początkowy, a pozostałe zapisany kod. Treść zadania można rozwinąć. Podgląd pozostaje tylko do odczytu.
 
-Wybór konkretnego ćwiczenia pozostaje stały podczas aktualizacji kodu. Opcja „Na żywo — ostatnia aktywność” przywraca śledzenie ostatnio edytowanego ćwiczenia. Zmiany dostępności są odświeżane również co 15 sekund.
+Wybór konkretnego ćwiczenia pozostaje stały podczas aktualizacji kodu. Opcja „Podgląd na żywo” przywraca śledzenie ostatnio edytowanego ćwiczenia. Statusy w nawiasach mają kolory: ukończone — zielony, w trakcie — żółty, nierozpoczęte — szary. Zmiany dostępności są odświeżane również co 15 sekund.
 
 Przed publikacją tej funkcji zastosuj migrację `20261011140000_student_exercise_preview.sql` poleceniem `pnpm exec supabase db push`, a następnie opublikuj frontend. Funkcja bazy sprawdza aktywną sesję i dostęp do grupy; nie wymaga aktualizacji Edge Functions.

@@ -82,9 +82,9 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
       <div className="live-viewer-heading"><h2 id="student-live-title">{t.watchStudent(selected.displayName)}</h2>
         <span className="live-readonly">{t.readOnlyCode}</span>
         <button type="button" className="button button-secondary button-small" onClick={() => setSelectedId(null)}>{t.closeLiveView}</button></div>
-      <label className="live-exercise-picker"><span>Ćwiczenie ucznia</span><select value={exerciseId} onChange={event => setExerciseId(event.target.value)}>
-        <option value="">Na żywo — ostatnia aktywność</option>
-        {studentExercises.map(e => { const saved = work.find(w => w.student_id === selected.id && w.exercise_id === e.id); return <option key={e.id} value={e.id}>{e.lesson_title} — {e.title} · {saved?.status === 'completed' ? 'Ukończone' : saved && saved.status !== 'not_started' ? 'W trakcie' : 'Nierozpoczęte'}</option>; })}
+      <label className="live-exercise-picker"><span>Ćwiczenie ucznia</span><select value={exerciseId} data-work-status={exerciseId ? selectedWork?.status ?? 'not_started' : undefined} onChange={event => setExerciseId(event.target.value)}>
+        <option value="">Podgląd na żywo</option>
+        {studentExercises.map(e => { const saved = work.find(w => w.student_id === selected.id && w.exercise_id === e.id); return <option key={e.id} value={e.id} data-work-status={saved?.status ?? 'not_started'}>{e.lesson_title} — {e.title} ({saved?.status === 'completed' ? 'Ukończone' : saved && saved.status !== 'not_started' ? 'W trakcie' : 'Nierozpoczęte'})</option>; })}
       </select></label>
       {!studentExercises.length && <p className="account-muted live-exercise-notice">Uczeń nie ma obecnie dostępnych ćwiczeń.</p>}
       {exerciseId && !selectedExercise && <p className="account-muted live-exercise-notice">To ćwiczenie nie jest już dostępne uczniowi. Wybierz inne ćwiczenie.</p>}

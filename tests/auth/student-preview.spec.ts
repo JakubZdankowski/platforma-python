@@ -16,7 +16,10 @@ for (const role of ['teacher', 'admin'] as const) test(`${role} browses unstarte
     await page.getByRole('button', { name: 'Podgląd: Uczeń sesji', exact: true }).click();
     const picker = page.getByLabel('Ćwiczenie ucznia'), editor = page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' });
     await expect(picker.locator('option')).toHaveCount(3);
+    await expect(picker.locator('option').first()).toHaveText('Podgląd na żywo');
     await picker.selectOption(second.data!.id);
+    await expect(picker.locator('option:checked')).toContainText('(Nierozpoczęte)');
+    await expect(picker).toHaveCSS('color', 'rgb(163, 177, 198)');
     await expect(editor).toHaveText('print("drugie")');
     await expect(page.getByText('Uczeń nie rozpoczął tego ćwiczenia. Poniżej kod początkowy.')).toBeVisible();
     await page.getByText('Treść ćwiczenia', { exact: true }).click();
@@ -24,9 +27,14 @@ for (const role of ['teacher', 'admin'] as const) test(`${role} browses unstarte
     await page.getByText('Treść ćwiczenia', { exact: true }).click();
     await f.admin.from('student_work').insert({ student_id: f.studentId, exercise_id: second.data!.id, code: 'print("zapisane drugie")', status: 'completed' });
     await expect(editor).toHaveText('print("zapisane drugie")');
+    await expect(picker.locator('option:checked')).toContainText('(Ukończone)');
+    await expect(picker).toHaveCSS('color', 'rgb(156, 219, 173)');
     await f.admin.from('student_work').insert({ student_id: f.studentId, exercise_id: f.exerciseId, code: 'print("ostatnia aktywność")', status: 'in_progress' });
     await expect(page.getByTestId(`live-student-${f.studentId}`)).toContainText('Kod sesji');
     await expect(editor).toHaveText('print("zapisane drugie")');
+    await picker.selectOption(f.exerciseId);
+    await expect(picker.locator('option:checked')).toContainText('(W trakcie)');
+    await expect(picker).toHaveCSS('color', 'rgb(240, 206, 117)');
     await picker.selectOption('');
     await expect(editor).toHaveText('print("ostatnia aktywność")');
     await expect(editor).toHaveAttribute('aria-readonly', 'true');
