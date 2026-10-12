@@ -7,8 +7,8 @@ import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
 import { publicationLabels } from './MaterialsPage';
 import type { Json } from '../database/database.types';
 
-interface ExerciseDraft { id?: string; title: string; markdown: string; code: string; runtime: string }
-const emptyExercise = (): ExerciseDraft => ({ title: 'Nowe ćwiczenie', markdown: '## Zadanie\n\nNapisz program, który wypisze Twoje imię.\n\n> Wskazówka: użyj `print()`.', code: 'print("Cześć!")', runtime: 'python-console' });
+interface ExerciseDraft { id?: string; title: string; markdown: string; code: string; runtime: string; hidden: boolean }
+const emptyExercise = (): ExerciseDraft => ({ title: 'Nowe ćwiczenie', markdown: '## Zadanie\n\nNapisz program, który wypisze Twoje imię.\n\n> Wskazówka: użyj `print()`.', code: 'print("Cześć!")', runtime: 'python-console', hidden: false });
 export function MaterialEditorPage() {
   const { lessonId = 'new' } = useParams();
   return <MaterialEditor key={lessonId} lessonId={lessonId} />;
@@ -38,7 +38,7 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
       if (l.error || e.error || !l.data) throw new Error('unavailable');
       if (!active) return;
       setTitle(l.data.title); setStatus(l.data.publication_status); setOwner(l.data.teacher_id);
-      setExercises(e.data.map(x => ({ id: x.id, title: x.title, markdown: x.instructions_markdown, code: x.starter_code, runtime: x.runtime_type })));
+      setExercises(e.data.map(x => ({ id: x.id, title: x.title, markdown: x.instructions_markdown, code: x.starter_code, runtime: x.runtime_type, hidden: x.is_hidden })));
       setSelected(0);
       setDirty(false);
     })().catch(() => { if (active) setError('Nie udało się wczytać lekcji lub nie masz do niej dostępu.'); }).finally(() => { if (active) setLoading(false); });
@@ -66,6 +66,12 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
     setSelected(target);
     setDirty(true);
     setNotice(`Ćwiczenie „${reordered[target]!.title}” przeniesiono na pozycję ${target + 1} z ${exercises.length}. Kolejność zostanie zapisana razem z lekcją.`);
+  }
+  function toggleHidden() {
+    if (!editable || busy || !exercises[selected]) return;
+    const hidden = !exercises[selected]!.hidden;
+    update({ hidden });
+    setNotice(hidden ? 'Ćwiczenie będzie ukryte dla uczniów po zapisaniu lekcji. Treść i prace pozostaną zachowane.' : 'Ćwiczenie będzie widoczne dla uczniów po zapisaniu lekcji.');
   }
   function removeExercise() {
     const exercise = exercises[selected];
@@ -95,7 +101,7 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
     if (!title.trim() || exercises.some(x => !x.title.trim() || !x.markdown.trim())) { setNotice('Uzupełnij tytuł lekcji, tytuły ćwiczeń i instrukcje.'); return; }
     setBusy(true); setNotice('');
     try {
-      const payload = exercises.map(x => ({ id: x.id ?? null, title: x.title.trim(), markdown: x.markdown, code: x.code, runtime: x.runtime })) as Json;
+      const payload = exercises.map(x => ({ id: x.id ?? null, title: x.title.trim(), markdown: x.markdown, code: x.code, runtime: x.runtime, hidden: x.hidden })) as Json;
       const r = await client.rpc('save_material', { p_lesson_id: id, p_title: title.trim(), p_exercises: payload, p_status: nextStatus });
       if (r.error) throw r.error;
       setDirty(false); setId(r.data); setStatus(nextStatus); setNotice(nextStatus === 'pending' ? 'Wysłano do zatwierdzenia.' : nextStatus === 'approved' ? 'Lekcja zatwierdzona. Możesz dodać ją do modułu.' : 'Zapisano szkic.');
@@ -112,11 +118,12 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
       {!admin && status === 'approved' && <p>Zatwierdzona lekcja jest dostępna do odczytu. Możesz utworzyć nową lekcję na jej podstawie.</p>}
       <fieldset disabled={busy} className="module-editor-fields">
         <label className="field">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={e => { setTitle(e.target.value); setDirty(true); }} /></label>
-        <div className="staff-actions">{exercises.map((x,i) => <Button variant="secondary" type="button" className="exercise-tab" key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}</Button>)}{editable && <Button variant="secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</Button>}</div>
+        <div className="staff-actions">{exercises.map((x,i) => <Button variant="secondary" type="button" className={`exercise-tab${x.hidden ? ' is-hidden' : ''}`} key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}{x.hidden && <span className="exercise-hidden-label"> — Ukryte</span>}</Button>)}{editable && <Button variant="secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</Button>}</div>
         {exercises[selected] && <>
           {editable && <div className="staff-actions" role="group" aria-label="Kolejność wybranego ćwiczenia">
             <Button type="button" size="compact" disabled={selected === 0} onClick={() => moveExercise(-1)}>Przesuń wcześniej</Button>
             <Button type="button" size="compact" disabled={selected === exercises.length - 1} onClick={() => moveExercise(1)}>Przesuń później</Button>
+            <Button type="button" size="compact" onClick={toggleHidden}>{exercises[selected]!.hidden ? 'Pokaż uczniom' : 'Ukryj'}</Button>
             <Button type="button" variant="danger" size="compact" onClick={removeExercise}>Usuń ćwiczenie</Button>
           </div>}
           <label className="field">Tytuł ćwiczenia<input maxLength={200} readOnly={!editable} value={exercises[selected]!.title} onChange={e => update({ title: e.target.value })} /></label>

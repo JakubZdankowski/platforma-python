@@ -51,7 +51,7 @@ test('offline edits are protected, downloadable and retained after access is rev
     await expect(page.locator('.save-status')).toHaveText('Nie zapisano — ponawiam…');
     const removed = await admin.from('assignments').delete().eq('class_id', classroom.id).eq('lesson_id', lessonId);
     if (removed.error) throw removed.error;
-    await expect(page.getByRole('alert')).toContainText('Dostęp do tej lekcji został odebrany');
+    await expect(page.getByRole('alert')).toContainText('To ćwiczenie jest obecnie niedostępne');
     await expect(editor).toHaveText('print("Niezapisane zmiany")');
     await expect(editor).toHaveAttribute('aria-readonly', 'true');
     await expect(page.getByRole('button', { name: 'Uruchom', exact: true })).toBeDisabled();

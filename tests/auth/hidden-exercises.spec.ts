@@ -1,0 +1,71 @@
+import { expect, test } from '@playwright/test';
+import { sessionFixture } from '../db/sessionFixture';
+
+test('admin hides and restores exercises; students cannot open hidden exercises and keep their work', async ({ page, browser }) => {
+  const f = await sessionFixture('admin');
+  const studentContext = await browser.newContext();
+  try {
+    const exercise = await f.admin.from('exercises').select('lesson_id').eq('id', f.exerciseId).single();
+    if (exercise.error) throw exercise.error;
+    const lessonId = exercise.data.lesson_id;
+    const next = await f.admin.from('exercises').insert({ lesson_id: lessonId, slug: 'visible', title: 'Widoczne ćwiczenie', position: 2,
+      instructions_markdown: 'Widoczna instrukcja', starter_code: 'print("widoczne")', runtime_type: 'python-console' }).select('id').single();
+    if (next.error) throw next.error;
+    await page.goto('/login');
+    await page.getByLabel('Adres e-mail').fill(f.teacherEmail);
+    await page.getByLabel('Hasło').fill(f.password);
+    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.goto(`/admin/materials/${lessonId}`);
+    await expect(page.getByLabel('Tytuł ćwiczenia', { exact: true })).toHaveValue('Kod sesji');
+    const student = await studentContext.newPage();
+    await student.goto('/join');
+    await student.getByLabel('Nazwa użytkownika').fill(f.username);
+    await student.getByLabel('Hasło').fill(f.password);
+    await student.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(student).toHaveURL(/\/student$/);
+    await student.goto(`/student/exercises/${f.exerciseId}`);
+    const editor = student.getByRole('textbox', { name: 'Edytor kodu Python' });
+    await editor.fill('# zachowana praca');
+    await expect(student.locator('.save-status')).toHaveText('Zapisano');
+    await page.getByRole('button', { name: 'Ukryj', exact: true }).click();
+    const hiddenTab = page.getByRole('button', { name: /Kod sesji — Ukryte/ });
+    await expect(hiddenTab).toHaveClass(/is-hidden/);
+    expect(await hiddenTab.evaluate(el => Number(getComputedStyle(el).opacity))).toBeLessThan(1);
+    await expect(page.getByRole('button', { name: 'Pokaż uczniom', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Przesuń później', exact: true }).click();
+    await expect(page.locator('.exercise-tab')).toHaveText(['1. Widoczne ćwiczenie', '2. Kod sesji — Ukryte']);
+    await expect(page.getByLabel('Tytuł ćwiczenia', { exact: true })).toHaveValue('Kod sesji');
+    await page.getByRole('button', { name: 'Zatwierdź i zapisz', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Lekcja zatwierdzona');
+    await page.reload();
+    await expect(hiddenTab).toHaveClass(/is-hidden/);
+    await hiddenTab.click();
+    await expect(page.getByRole('button', { name: 'Pokaż uczniom', exact: true })).toBeVisible();
+    await page.screenshot({ path: 'test-results/hidden-exercise-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: 'test-results/hidden-exercise-mobile.png', fullPage: true });
+    await expect(student.getByRole('button', { name: 'Uruchom', exact: true })).toBeDisabled();
+    await expect(editor).toContainText('# zachowana praca');
+    await expect(student.getByRole('alert')).toContainText('To ćwiczenie jest obecnie niedostępne');
+    await student.reload();
+    await expect(student.getByRole('alert')).toContainText('To ćwiczenie nie jest dostępne');
+    await student.goto('/student/materials');
+    await student.getByRole('button', { name: 'Test sesji', exact: true }).click();
+    await student.getByRole('link', { name: /Lekcja sesji/ }).click();
+    await expect(student).toHaveURL(new RegExp(`/student/exercises/${next.data.id}$`));
+    await student.getByRole('button', { name: 'Ćwiczenia w tej lekcji', exact: true }).click();
+    await expect(student.getByRole('button', { name: /Kod sesji/ })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Pokaż uczniom', exact: true }).click();
+    await expect(page.getByRole('button', { name: '2. Kod sesji', exact: true })).not.toHaveClass(/is-hidden/);
+    await page.getByRole('button', { name: 'Zatwierdź i zapisz', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Lekcja zatwierdzona');
+    await student.goto(`/student/exercises/${f.exerciseId}`);
+    await expect(editor).toContainText('# zachowana praca');
+    await expect(student.getByRole('button', { name: 'Uruchom', exact: true })).toBeEnabled();
+  } finally {
+    await studentContext.close();
+    await f.cleanup();
+  }
+});

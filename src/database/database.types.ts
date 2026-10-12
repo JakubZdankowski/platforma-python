@@ -82,13 +82,13 @@ isOneToOne: false
                   ]
                 },"exercises": {
                   Row: {
-                    "id": string,"instructions_markdown": string,"lesson_id": string,"position": number,"runtime_type": string,"slug": string,"starter_code": string,"title": string
+                    "id": string,"instructions_markdown": string,"is_hidden": boolean,"lesson_id": string,"position": number,"runtime_type": string,"slug": string,"starter_code": string,"title": string
                   }
                   Insert: {
-                    "id"?: string,"instructions_markdown": string,"lesson_id": string,"position"?: number,"runtime_type": string,"slug": string,"starter_code": string,"title": string
+                    "id"?: string,"instructions_markdown": string,"is_hidden"?: boolean,"lesson_id": string,"position"?: number,"runtime_type": string,"slug": string,"starter_code": string,"title": string
                   }
                   Update: {
-                    "id"?: string,"instructions_markdown"?: string,"lesson_id"?: string,"position"?: number,"runtime_type"?: string,"slug"?: string,"starter_code"?: string,"title"?: string
+                    "id"?: string,"instructions_markdown"?: string,"is_hidden"?: boolean,"lesson_id"?: string,"position"?: number,"runtime_type"?: string,"slug"?: string,"starter_code"?: string,"title"?: string
                   }
                   Relationships: [
                     {

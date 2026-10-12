@@ -63,7 +63,7 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
     completed={work.state.completed} onCompletedChange={work.setCompleted}
     readOnly={work.accessLost}
     warning={switchError ? t.dataUnavailable : work.accessLost
-      ? 'Dostęp do tej lekcji został odebrany. Twój kod pozostał na ekranie. Skopiuj go lub pobierz plik .py przed opuszczeniem strony. Zapis jest niedostępny.'
+      ? 'To ćwiczenie jest obecnie niedostępne. Twój kod pozostał na ekranie. Skopiuj go lub pobierz plik .py przed opuszczeniem strony. Zapis jest niedostępny.'
       : work.offline
         ? work.state.save === 'saved' ? 'Brak połączenia — dalsze zmiany nie będą zapisywane do czasu odzyskania połączenia.' : 'Brak połączenia — zmiany nie zostały zapisane. Zachowaj otwartą kartę lub pobierz kod .py.'
         : work.state.save === 'error' ? 'Zmiany nie zostały zapisane — ponawiam zapis. Zachowaj otwartą kartę lub pobierz kod .py.' : undefined}

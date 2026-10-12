@@ -594,3 +594,7 @@ a.brand { color: inherit; text-decoration: none; }
 .console-input label { display: block; margin-bottom: var(--space-2); font-size: var(--font-control); }
 .console-input-row { display: flex; gap: var(--space-2); }
 .console-input-row input { min-width: 0; flex: 1; padding: var(--space-2); border: 1px solid var(--border-control); border-radius: var(--control-radius); background: var(--surface); color: var(--text); font: inherit; }
+
+.exercise-tab.is-hidden { opacity: .55; }
+.exercise-tab.is-hidden:hover, .exercise-tab.is-hidden:focus-visible { opacity: .8; }
+.exercise-hidden-label { font-size: var(--font-meta); }

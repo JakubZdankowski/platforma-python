@@ -129,3 +129,11 @@ Testy uprawnień: `tests/db/permissions.test.ts` i `tests/db/lessons.test.ts` (`
 `student_work` jest już w publikacji `supabase_realtime` z migracji kroku A. Nie ma nowych tabel ani zmian uprawnień. Nauczyciel subskrybuje Postgres Changes; RLS filtruje zdarzenia do jego uczniów. Po zdarzeniu dashboard ponownie czyta przez Data API wyłącznie pracę członków wskazanej klasy. Tabela i podgląd używają tej samej subskrypcji. Kod ucznia pozostaje tylko do odczytu; RLS nadal odrzuca zapis przez nauczyciela.
 
 Kanał czeka na potwierdzenie gotowości Postgres Changes (`postgres_changes_options.wait`). Po połączeniu lub odzyskaniu połączenia pobierany jest nowy snapshot, aby uwzględnić zdarzenia pominięte podczas przerwy. Test bazy potwierdza, że zapis trafia do nauczyciela, a nie do kolegi z klasy ani innego nauczyciela.
+
+## Ukrywanie ćwiczeń
+
+`exercises.is_hidden` (domyślnie `false`) przechowuje widoczność ćwiczenia. Kreator przesyła `hidden` w każdym elemencie `save_material`; zmiana stosuje się przy zapisie lekcji i zachowuje ID, pozycję, treść oraz prace uczniów. Pominięcie pola przez starszy frontend zachowuje dotychczasową widoczność istniejącego ćwiczenia.
+
+Ukryte ćwiczenia są widoczne dla uprawnionego personelu, przyciemnione i oznaczone „Ukryte” w kreatorze. Uczniowie nie odczytują ich przez RLS, również przez bezpośredni link i zagnieżdżone zapytania lekcji. `can_work_exercise` blokuje zapis prac w ukrytym ćwiczeniu; `class_student_exercises` pomija je w podglądzie materiałów dostępnych uczniowi. Dotychczasowe prace nie są usuwane. Po ponownym pokazaniu uczeń odzyskuje dostęp do swojej pracy. Otwarty edytor wykrywa utratę dostępu dotychczasowym mechanizmem kontroli, zachowując kod na ekranie.
+
+Migracja: `20261012120000_hidden_exercises.sql`. Wdrożyć ją przed publikacją frontendu korzystającego z pola `is_hidden`.
