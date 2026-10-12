@@ -5,6 +5,7 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import { bracketMatching, indentOnInput, indentUnit, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { python } from '@codemirror/lang-python';
 import { tags } from '@lezer/highlight';
+import { indentGuides } from './indentGuides';
 
 interface Props {
   value: string;
@@ -21,6 +22,12 @@ const editorTheme = EditorView.theme({
   '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--font-mono)', lineHeight: '1.7' },
   '.cm-content': { padding: '20px 0', minHeight: '100%' },
   '.cm-line': { padding: '0 20px 0 12px' },
+  '.cm-line.cm-indent-guides': {
+    backgroundImage: 'repeating-linear-gradient(to right, rgba(163, 177, 198, 0.16) 0, rgba(163, 177, 198, 0.16) 1px, transparent 1px, transparent 4ch)',
+    backgroundSize: 'var(--indent-guide-width) 100%',
+    backgroundPosition: '12px 0',
+    backgroundRepeat: 'no-repeat',
+  },
   '.cm-gutters': { backgroundColor: 'var(--surface-editor)', color: 'var(--text-subtle)', border: 'none', paddingLeft: '12px' },
   '.cm-lineNumbers .cm-gutterElement': { minWidth: '30px', paddingRight: '12px' },
   // drawSelection paints behind the line, so its tint must remain translucent.
@@ -63,6 +70,7 @@ export function CodeEditor({ value, onChange, onRun, label, helpId, readOnly = f
           lineNumbers(), highlightActiveLineGutter(), history(), drawSelection(),
           indentOnInput(), bracketMatching(), python(), highlightActiveLine(),
           indentUnit.of('    '), EditorState.tabSize.of(4),
+          indentGuides,
           syntaxHighlighting(highlighting), editorTheme,
           editing.current.of([EditorState.readOnly.of(initial.current.readOnly), EditorView.editable.of(!initial.current.readOnly)]),
           accessibility.current.of(EditorView.contentAttributes.of({

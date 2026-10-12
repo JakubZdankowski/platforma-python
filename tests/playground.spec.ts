@@ -11,6 +11,19 @@ async function run(page: Page, code: string) {
 
 test.beforeEach(async ({ page }) => { await page.goto('/tests/fixtures/playground.html'); });
 
+test('indent guides follow nested blocks and clear when code is replaced', async ({ page }) => {
+  await setCode(page, 'if True:\n    for i in range(2):\n        print(i)\n\n        print("dalej")\nprint("koniec")');
+  const lines = page.locator('.cm-line');
+  await expect(lines.nth(0)).not.toHaveClass(/cm-indent-guides/);
+  await expect(lines.nth(1)).toHaveCSS('--indent-guide-width', '4ch');
+  await expect(lines.nth(2)).toHaveCSS('--indent-guide-width', '8ch');
+  await expect(lines.nth(3)).toHaveCSS('--indent-guide-width', '8ch');
+  await expect(lines.nth(5)).not.toHaveClass(/cm-indent-guides/);
+  await page.screenshot({ path: 'test-results/indent-guides.png', fullPage: true });
+  await setCode(page, 'print("bez wcięcia")');
+  await expect(page.locator('.cm-indent-guides')).toHaveCount(0);
+});
+
 test('Python indentation uses four spaces for Enter and Tab', async ({ page }) => {
   const editor = page.getByRole('textbox', { name: 'Edytor kodu Python' });
   await editor.fill('if True:');
