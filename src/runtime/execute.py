@@ -1,6 +1,6 @@
 """Small execution wrapper; the student's globals never become wrapper locals."""
 
-def _execute_student(source, input_message, turtle_source, turtle_send, turtle_limit):
+def _execute_student(source, input_message, turtle_source, turtle_send, turtle_limit, input_read, input_supported):
     import builtins
     import json
     import sys
@@ -9,11 +9,17 @@ def _execute_student(source, input_message, turtle_source, turtle_send, turtle_l
 
     stdout, stderr = sys.stdout, sys.stderr
 
-    def unavailable_input(prompt=""):
-        raise NotImplementedError(input_message)
+    def interactive_input(prompt="", /):
+        if not input_supported:
+            raise NotImplementedError(input_message)
+        from pyodide.ffi import run_sync
+        stdout.write(str(prompt))
+        stdout.flush()
+        stderr.flush()
+        return str(run_sync(input_read()))
 
     student_builtins = dict(vars(builtins))
-    student_builtins["input"] = unavailable_input
+    student_builtins["input"] = interactive_input
     namespace = {"__name__": "__main__", "__builtins__": student_builtins}
 
     # A fresh Turtle module per run, so state never leaks between executions.
@@ -45,4 +51,4 @@ def _execute_student(source, input_message, turtle_source, turtle_send, turtle_l
         stderr.flush()
     return json.dumps(result)
 
-_execute_student(_source, _input_message, _turtle_source, _turtle_send, _turtle_limit)
+_execute_student(_source, _input_message, _turtle_source, _turtle_send, _turtle_limit, _input_read, _input_supported)

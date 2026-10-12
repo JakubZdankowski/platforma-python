@@ -229,8 +229,8 @@ Pliki w `assets/` mają hashe. Pliki `pyodide/` zachowują nazwy, więc przy akt
 - Uczeń, którego nauczyciel ma kilka klas, może zalogować się kodem dowolnej klasy, do której należy.
 - Reset hasła kończy wszystkie sesje ucznia. Wydany już token dostępu działa jednak do wygaśnięcia, najdłużej godzinę (`jwt_expiry`).
 - Turtle obsługuje podzbiór poleceń z jednym żółwiem; `speed()` jest ignorowane, a duże rysunki nie są automatycznie przyspieszane. Szczegóły w [docs/turtle.md](docs/turtle.md).
-- `input()` zwraca czytelny komunikat o braku obsługi. Interaktywne wejście wymaga osobnego kroku projektowego.
-- Maksymalny czas programu to 10 sekund; inicjalizacji interpretera — 60 sekund. Stop i timeout usuwają stan interpretera, ale pozostawiają kod w edytorze.
+- `input()` przyjmuje odpowiedź w konsoli (Enter lub Wyślij), także pusty wiersz. Wymaga WebAssembly JSPI; brak wsparcia daje czytelny komunikat, a programy bez wejścia działają nadal. Odpowiedzi nie są zapisywane na koncie ani dodawane do stdout wyniku.
+- Maksymalny łączny czas aktywnego wykonania programu to 10 sekund (bez oczekiwania na odpowiedź); inicjalizacji interpretera — 60 sekund. Stop i timeout usuwają stan interpretera, ale pozostawiają kod w edytorze.
 - Wynik stdout i stderr jest ograniczony łącznie do 50 000 znaków. Przy Stop część jeszcze zbuforowanego wyjścia może nie zdążyć dotrzeć do UI.
 - Nowa przestrzeń nazw usuwa zwykłe zmienne między uruchomieniami, ale nie resetuje wszystkich zaimportowanych modułów i wirtualnego systemu plików. Pełny reset następuje po odtworzeniu workera.
 - Surowy HTML w Markdown jest pomijany; `<details>` nie jest jeszcze obsługiwane.

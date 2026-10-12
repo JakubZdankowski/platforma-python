@@ -25,7 +25,9 @@ interface PendingRun {
   code: string;
   options: RunOptions;
   resolve: (result: ExecutionResult) => void;
-  startedAt?: number;
+  activeStartedAt?: number;
+  elapsedMs: number;
+  input?: { requestId: number; turtleIndex: number };
   stdout: string;
   stderr: string;
   outputTruncated: boolean;
@@ -58,7 +60,7 @@ export class PythonRunner {
   run(code: string, options: RunOptions): Promise<ExecutionResult> {
     if (this.pending) return Promise.reject(new Error('A program is already running.'));
     return new Promise((resolve) => {
-      this.pending = { id: ++this.nextId, code, options, resolve, stdout: '', stderr: '', outputTruncated: false, turtleCommands: 0, turtleTruncated: false };
+      this.pending = { id: ++this.nextId, code, options, resolve, elapsedMs: 0, stdout: '', stderr: '', outputTruncated: false, turtleCommands: 0, turtleTruncated: false };
       if (this.worker && this.status === 'ready') {
         this.startExecution();
         return;
@@ -91,6 +93,23 @@ export class PythonRunner {
     });
   }
 
+  submitInput(requestId: number, value: string): boolean {
+    const pending = this.pending;
+    if (!pending?.input || pending.input.requestId !== requestId || this.status !== 'waiting-input' || /[\r\n]/.test(value)) return false;
+    pending.input = undefined;
+    this.setStatus('running');
+    this.resumeTimer(pending);
+    try {
+      this.worker!.postMessage({ type: 'input-response', runId: pending.id, requestId, value });
+      return true;
+    } catch { this.abort('runtime-error'); return false; }
+  }
+
+  private resumeTimer(pending: PendingRun): void {
+    pending.activeStartedAt = performance.now();
+    this.timer = setTimeout(() => this.abort('timeout'), Math.max(0, (pending.options.timeoutMs ?? DEFAULT_TIMEOUT_MS) - pending.elapsedMs));
+  }
+
   stop(): void {
     if (this.pending) this.abort('stopped');
   }
@@ -111,9 +130,8 @@ export class PythonRunner {
     const pending = this.pending;
     if (!pending || !this.worker) return;
     clearTimeout(this.timer);
-    pending.startedAt = performance.now();
     this.setStatus('running');
-    this.timer = setTimeout(() => this.abort('timeout'), pending.options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+    this.resumeTimer(pending);
     try {
       this.worker.postMessage({ type: 'run', runId: pending.id, code: pending.code, inputUnavailableMessage: pending.options.inputUnavailableMessage, turtle: pending.options.turtle ?? false });
     } catch {
@@ -131,8 +149,16 @@ export class PythonRunner {
       return;
     }
     const pending = this.pending;
-    if (!pending || message.runId !== pending.id || this.status !== 'running') return;
-    if (message.type === 'output') {
+    if (!pending || message.runId !== pending.id || (this.status !== 'running' && this.status !== 'waiting-input')) return;
+    if (message.type === 'input-request') {
+      if (pending.input) return;
+      clearTimeout(this.timer);
+      pending.elapsedMs += performance.now() - pending.activeStartedAt!;
+      pending.activeStartedAt = undefined;
+      pending.input = { requestId: message.requestId, turtleIndex: message.turtleIndex };
+      this.setStatus('waiting-input');
+      this.emit({ type: 'input-request', ...pending.input });
+    } else if (message.type === 'output') {
       const remaining = MAX_OUTPUT_CHARS - pending.stdout.length - pending.stderr.length;
       const text = message.text.slice(0, remaining);
       pending[message.stream] += text;
@@ -184,7 +210,7 @@ export class PythonRunner {
     this.finish({
       success: false, outcome, stdout: pending.stdout, stderr: pending.stderr,
       outputTruncated: pending.outputTruncated,
-      durationMs: pending.startedAt === undefined ? 0 : performance.now() - pending.startedAt,
+      durationMs: pending.elapsedMs + (pending.activeStartedAt === undefined ? 0 : performance.now() - pending.activeStartedAt),
     }, status);
   }
 

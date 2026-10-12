@@ -33,6 +33,24 @@ function setup() {
 }
 
 describe('TurtlePlayback', () => {
+  it('reveals input after preceding drawing, supports skip and clears it on Stop', () => {
+    const { frames, playback, view } = setup();
+    playback.addCommands([{ type: 'forward', distance: 4 }], false);
+    playback.addOutput('stdout', 'Dane: ', 1);
+    playback.requestInput({ requestId: 1, turtleIndex: 1 });
+    expect(view().input).toBeNull();
+    frames.run(4);
+    expect(view()).toMatchObject({ stdout: 'Dane: ', input: { requestId: 1 } });
+    playback.reset();
+    playback.addCommands([{ type: 'forward', distance: 100 }], false);
+    playback.requestInput({ requestId: 2, turtleIndex: 1 });
+    expect(view().input).toBeNull();
+    playback.skip();
+    expect(view().input?.requestId).toBe(2);
+    playback.stop();
+    expect(view().input).toBeNull();
+  });
+
   it('shows console output only when the turtle reaches the matching command', () => {
     const { frames, playback, view } = setup();
     playback.addOutput('stdout', 'start\n', 0);

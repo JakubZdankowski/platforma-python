@@ -190,3 +190,19 @@ test('Turtle layout fits laptop, tablet and phone widths', async ({ page }) => {
   await expect(page.getByTestId('turtle-canvas')).toHaveAttribute('data-segments', '4');
   await page.screenshot({ path: 'test-results/turtle-mobile.png', fullPage: true });
 });
+
+test('input follows preceding drawing and skip reveals its form', async ({ page }) => {
+  await openTurtleExercise(page);
+  await setSpeed(page, 1);
+  await run(page, 'forward(200)\nprint(input("Dalej: "))\nleft(90)\nforward(10)');
+  const answer = page.getByRole('textbox', { name: 'Twoja odpowiedź', exact: true });
+  await expect(page.getByRole('status')).toHaveText('Żółw rysuje…');
+  await expect(answer).toHaveCount(0);
+  await page.getByRole('button', { name: 'Pomiń animację', exact: true }).click();
+  await expect(answer).toBeFocused();
+  await expect(page.getByTestId('stdout')).toHaveText('Dalej: ');
+  await answer.fill('tak');
+  await answer.press('Enter');
+  await expect(page.getByRole('status')).toHaveText('Program zakończony');
+  await expect(page.getByTestId('turtle-canvas')).toHaveAttribute('data-segments', '2');
+});

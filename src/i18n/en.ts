@@ -72,7 +72,11 @@ export const en = {
   lessonExercises: 'Exercises in this lesson',
   savedNotice: 'Your code is saved automatically to your account.',
   exerciseNotFound: 'This exercise is not available. Ask your teacher to assign the lesson.',
-  inputUnavailable: 'input() is not available in this playground yet. Assign a value directly to a variable.',
+  inputUnavailable: 'This browser does not support interactive input(). Open this page in a browser with WebAssembly JSPI support.',
+  'waiting-input': 'Program is waiting for input',
+  inputLabel: 'Your answer',
+  inputSend: 'Send',
+  inputSingleLine: 'Enter a single line.',
 
   // Accounts (Milestone 3)
   signIn: 'Sign in',

@@ -67,7 +67,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
     void onSelect(index);
     runner.clear();
   }, [exerciseIndex, exercises.length, onSelect, runner.clear]);
-  const output = <OutputPanel messages={t} locale={locale} status={runner.status} result={runner.result} stdout={runner.output.stdout} stderr={runner.output.stderr} truncated={runner.truncated} drawing={runner.drawing} />;
+  const output = <OutputPanel messages={t} locale={locale} status={runner.status} result={runner.result} stdout={runner.output.stdout} stderr={runner.output.stderr} truncated={runner.truncated} drawing={runner.drawing} input={runner.input} onSubmitInput={runner.submitInput} />;
   const runtimeLabel = runner.drawing ? t.turtleDrawing : runner.status === 'error' ? t.pythonError : t[runner.status];
 
   return (

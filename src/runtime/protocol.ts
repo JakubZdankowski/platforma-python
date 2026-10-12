@@ -4,7 +4,7 @@ export const DEFAULT_TIMEOUT_MS = 10_000;
 export const INITIALIZATION_TIMEOUT_MS = 60_000;
 export const MAX_OUTPUT_CHARS = 50_000;
 
-export type RunnerStatus = 'idle' | 'loading' | 'running' | 'ready' | 'error';
+export type RunnerStatus = 'idle' | 'loading' | 'running' | 'waiting-input' | 'ready' | 'error';
 export type ExecutionOutcome = 'success' | 'python-error' | 'stopped' | 'timeout' | 'runtime-error';
 export type OutputStream = 'stdout' | 'stderr';
 
@@ -20,12 +20,16 @@ export interface ExecutionResult {
   traceback?: string;
 }
 
+export interface InputRequest { requestId: number; turtleIndex: number }
+
 export type WorkerRequest =
   | { type: 'initialize'; indexURL: string }
+  | { type: 'input-response'; runId: number; requestId: number; value: string }
   | { type: 'run'; runId: number; code: string; inputUnavailableMessage: string; turtle: boolean };
 
 export type WorkerResponse =
-  | { type: 'ready' }
+  | { type: 'ready'; inputSupported?: boolean }
+  | ({ type: 'input-request'; runId: number } & InputRequest)
   | { type: 'fatal' }
   /** `turtleIndex`: Turtle commands emitted before this text; keeps the console in sync with the drawing. */
   | { type: 'output'; runId: number; stream: OutputStream; text: string; turtleIndex?: number }
@@ -43,6 +47,7 @@ export type WorkerResponse =
 
 export type RunnerEvent =
   | { type: 'status'; status: RunnerStatus }
+  | ({ type: 'input-request' } & InputRequest)
   | { type: 'output'; stream: OutputStream; text: string; turtleIndex: number }
   | { type: 'output-truncated'; turtleIndex: number }
   | { type: 'turtle'; commands: TurtleCommand[]; truncated: boolean };

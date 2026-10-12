@@ -74,7 +74,11 @@ export const pl: Messages = {
   lessonExercises: 'Ćwiczenia w tej lekcji',
   savedNotice: 'Twój kod jest automatycznie zapisywany na Twoim koncie.',
   exerciseNotFound: 'To ćwiczenie nie jest dostępne. Poproś nauczyciela o przypisanie lekcji.',
-  inputUnavailable: 'input() nie jest jeszcze dostępne w tym edytorze. Przypisz wartość bezpośrednio do zmiennej.',
+  inputUnavailable: 'Ta przeglądarka nie obsługuje interaktywnego input(). Otwórz stronę w przeglądarce z obsługą WebAssembly JSPI.',
+  'waiting-input': 'Program czeka na dane',
+  inputLabel: 'Twoja odpowiedź',
+  inputSend: 'Wyślij',
+  inputSingleLine: 'Wpisz odpowiedź w jednym wierszu.',
 
   // Konta (Milestone 3)
   signIn: 'Zaloguj się',

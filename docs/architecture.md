@@ -67,11 +67,13 @@ Model danych, adres techniczny ucznia i polityki RLS: [database.md](database.md)
 Polecenia do workera:
 
 - `initialize(indexURL)`;
-- `run(runId, code, inputUnavailableMessage, turtle)`.
+- `run(runId, code, inputUnavailableMessage, turtle)`;
+- `input-response(runId, requestId, value)`.
 
 Odpowiedzi:
 
-- `ready`;
+- `ready(inputSupported)`;
+- `input-request(runId, requestId, turtleIndex)`;
 - `output(runId, stream, text, turtleIndex?)` — `turtleIndex` to liczba poleceń Turtle wydanych przed tekstem;
 - `output-truncated(runId, turtleIndex?)`;
 - `turtle(runId, commands, truncated)` — zwalidowana paczka poleceń rysowania;
@@ -102,7 +104,11 @@ Twarde zakończenie może zgubić końcówkę jeszcze niewysłanego stdout. Zapi
 
 Każde uruchomienie dostaje nowy słownik zmiennych oraz kopię słownika builtins. Moduł `turtle` jest tworzony od nowa przy każdym uruchomieniu ćwiczenia Turtle i usuwany z `sys.modules` w pozostałych. Zwykłe zmienne i funkcje ucznia nie przechodzą do kolejnego wykonania. Interpreter, cache importów i jego wirtualny system plików są współdzielone między zwykłymi uruchomieniami w tej samej karcie. Ten kompromis skraca oczekiwanie na kolejne uruchomienie. Pełne odtworzenie workera usuwa również ten stan.
 
-`input()` jest zastąpione funkcją zgłaszającą `NotImplementedError` z przetłumaczoną wskazówką. Dodatkowo standardowe wejście interpretera zwraca EOF, co zapobiega domyślnemu promptowi. Terminalowe wejście odroczono poza M1; nie używamy blokującego okna przeglądarki ani automatycznego przepisywania kodu ucznia.
+`input()` zapisuje prompt do stdout i oczekuje przez eksperymentalne `pyodide.ffi.run_sync()` na Promise z mostu workera. Wykonanie wchodzi przez `runPythonAsync()`. Inicjalizacja sprawdza JSPI przez rzeczywiste wznowienie Promise; bez wsparcia tylko `input()` zgłasza przetłumaczony `NotImplementedError`. Nie wymaga SharedArrayBuffer ani nagłówków izolacji.
+
+Worker wysyła `input-request(runId, requestId, turtleIndex)`, a runner odpowiada `input-response(runId, requestId, value)`. Stan `waiting-input` pozostaje zajęty i zatrzymuje licznik czasu; odpowiedź wznawia pozostały budżet 10 sekund. Czas wyniku wyklucza oczekiwanie. Nieaktualne odpowiedzi są ignorowane. Stop kończy worker również podczas oczekiwania.
+
+Formularz w konsoli pojawia się po odtworzeniu poleceń Turtle poprzedzających pytanie. Odpowiedzi mają echo tylko w widoku konsoli, nie w stdout wyniku. Wartość jest pojedynczym wierszem, bez usuwania spacji; pusta odpowiedź jest poprawna. Wejście pozostaje w pamięci bieżącego uruchomienia.
 
 ## Dostarczanie runtime’u
 

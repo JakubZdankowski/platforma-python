@@ -589,3 +589,8 @@ a.brand { color: inherit; text-decoration: none; }
 }
 
 .data-table th { white-space: nowrap; }
+
+.console-input { margin-top: var(--space-4); }
+.console-input label { display: block; margin-bottom: var(--space-2); font-size: var(--font-control); }
+.console-input-row { display: flex; gap: var(--space-2); }
+.console-input-row input { min-width: 0; flex: 1; padding: var(--space-2); border: 1px solid var(--border-control); border-radius: var(--control-radius); background: var(--surface); color: var(--text); font: inherit; }

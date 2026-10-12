@@ -9,6 +9,10 @@ import { MAX_TURTLE_COMMANDS } from '../turtle/turtleTypes';
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 let python: PyodideAPI | undefined;
+let inputSupported = false;
+let active = false;
+let nextRequestId = 0;
+let waiting: { runId: number; requestId: number; resolve: (value: string) => void } | undefined;
 
 function send(message: WorkerResponse): void {
   scope.postMessage(message);
@@ -27,10 +31,13 @@ async function initialize(indexURL: string): Promise<void> {
   const { loadPyodide } = (await import(/* @vite-ignore */ loaderURL)) as typeof import('pyodide');
   python = await loadPyodide({ indexURL, stdout: () => {}, stderr: () => {} });
   python.setStdin({ stdin: () => null });
-  send({ type: 'ready' });
+  try {
+    inputSupported = await python.runPythonAsync('from pyodide.ffi import run_sync\nfrom js import Promise\nrun_sync(Promise.resolve(True))') === true;
+  } catch { inputSupported = false; }
+  send({ type: 'ready', inputSupported });
 }
 
-function execute(request: Extract<WorkerRequest, { type: 'run' }>): void {
+async function execute(request: Extract<WorkerRequest, { type: 'run' }>): Promise<void> {
   if (!python) throw new Error('Python worker is not initialized.');
   const { runId, code, inputUnavailableMessage, turtle } = request;
   // Buffered text always shares one turtleIndex: it is flushed before each new command is counted.
@@ -53,6 +60,7 @@ function execute(request: Extract<WorkerRequest, { type: 'run' }>): void {
 
   const globals = python.toPy({
     _source: code,
+    _input_supported: inputSupported,
     _input_message: inputUnavailableMessage,
     _turtle_source: turtle ? turtleSource : '',
     _turtle_limit: MAX_TURTLE_COMMANDS,
@@ -66,17 +74,32 @@ function execute(request: Extract<WorkerRequest, { type: 'run' }>): void {
       turtleBatch.add(message);
     }
   });
+  let waitingMs = 0;
+  globals.set('_input_read', () => {
+    output.flush();
+    turtleBatch.flush();
+    const requestId = ++nextRequestId;
+    const waitStarted = performance.now();
+    return new Promise<string>((resolve) => {
+      waiting = { runId, requestId, resolve: (value) => {
+        waitingMs += performance.now() - waitStarted;
+        resolve(value);
+      } };
+      send({ type: 'input-request', runId, requestId, turtleIndex: turtleCount });
+    });
+  });
   const startedAt = performance.now();
   try {
-    const serialized: unknown = python.runPython(executeSource, { globals });
+    const serialized: unknown = await python.runPythonAsync(executeSource, { globals });
     if (typeof serialized !== 'string') throw new Error('Invalid execution result.');
     const result = JSON.parse(serialized) as PythonResult;
     output.append('stdout', stdoutDecoder.decode());
     output.append('stderr', stderrDecoder.decode());
     output.flush();
     turtleBatch.flush();
-    send({ type: 'finished', runId, durationMs: performance.now() - startedAt, ...result });
+    send({ type: 'finished', runId, durationMs: performance.now() - startedAt - waitingMs, ...result });
   } finally {
+    waiting = undefined;
     globals.destroy();
   }
 }
@@ -88,12 +111,16 @@ scope.onmessage = (event: MessageEvent<WorkerRequest>) => {
       console.error('[python-worker] Initialization failed', error);
       send({ type: 'fatal' });
     });
-  } else {
-    try {
-      execute(request);
-    } catch (error: unknown) {
+  } else if (request.type === 'input-response') {
+    if (!waiting || waiting.runId !== request.runId || waiting.requestId !== request.requestId || /[\r\n]/.test(request.value)) return;
+    const pending = waiting;
+    waiting = undefined;
+    pending.resolve(request.value);
+  } else if (!active) {
+    active = true;
+    void execute(request).catch((error: unknown) => {
       console.error('[python-worker] Execution infrastructure failed', error);
       send({ type: 'fatal' });
-    }
+    }).finally(() => { active = false; });
   }
 };

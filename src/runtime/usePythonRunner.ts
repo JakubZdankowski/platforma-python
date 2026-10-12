@@ -19,7 +19,11 @@ export function usePythonRunner() {
     mounted.current = true;
     const unsubscribePlayback = playback.subscribe(setView);
     const unsubscribe = runner.subscribe((event) => {
-      if (event.type === 'status') setStatus(event.status);
+      if (event.type === 'status') {
+        setStatus(event.status);
+        if (event.status !== 'waiting-input') playback.requestInput(null);
+      }
+      else if (event.type === 'input-request') playback.requestInput(event);
       else if (event.type === 'output-truncated') playback.markOutputTruncated(event.turtleIndex);
       else if (event.type === 'turtle') playback.addCommands(event.commands, event.truncated);
       else playback.addOutput(event.stream, event.text, event.turtleIndex);
@@ -52,14 +56,22 @@ export function usePythonRunner() {
     playback.stop();
   }, [runner, playback]);
 
+  const submitInput = useCallback((requestId: number, value: string) => {
+    if (!runner.submitInput(requestId, value)) return false;
+    // Terminal echo belongs to the display, not the program's stdout result.
+    playback.addOutput('stdout', value + '\n');
+    return true;
+  }, [runner, playback]);
+
   const skipAnimation = useCallback(() => playback.skip(), [playback]);
   const setTurtleSpeed = useCallback((speed: number) => {
     setTurtleSpeedState(speed);
     playback.setSpeed(speed);
   }, [playback]);
 
-  const runnerBusy = status === 'loading' || status === 'running';
+  const runnerBusy = status === 'loading' || status === 'running' || status === 'waiting-input';
   return {
+    input: view.input, submitInput,
     run, stop, clear, skipAnimation, setTurtleSpeed, turtleSpeed, status, result,
     output: { stdout: view.stdout, stderr: view.stderr },
     truncated: view.outputTruncated,

@@ -119,10 +119,41 @@ test('Stop cancels initialization and a later run succeeds', async ({ page }) =>
   await expect(page.getByTestId('stdout')).toHaveText('gotowe\n');
 });
 
-test('input has a readable unsupported message without a browser prompt', async ({ page }) => {
+test('input accepts sequential answers, empty lines and Unicode without a browser prompt', async ({ page }) => {
   page.on('dialog', () => { throw new Error('Unexpected blocking prompt'); });
-  await run(page, 'name = input("Imię: ")');
-  await expect(page.getByTestId('python-error')).toContainText('input() nie jest jeszcze dostępne');
+  await run(page, 'def ask():\n    return input("Imię: ")\nname = ask()\nprint(repr(name))\nfor i in range(2):\n    print(repr(input()))');
+  const answer = page.getByRole('textbox', { name: 'Twoja odpowiedź', exact: true });
+  await expect(answer).toBeFocused();
+  await expect(page.getByTestId('stdout')).toHaveText('Imię: ');
+  await page.screenshot({ path: 'test-results/input-console.png', fullPage: true });
+  await answer.fill('  Łucja  ');
+  await answer.press('Enter');
+  await expect(answer).toBeFocused();
+  await answer.press('Enter');
+  await expect(answer).toBeFocused();
+  await answer.fill('żółw');
+  await page.getByRole('button', { name: 'Wyślij', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Program zakończony');
+  await expect(page.getByTestId('stdout')).toContainText("'  Łucja  '");
+  await expect(page.getByTestId('stdout')).toContainText("''");
+  await expect(page.getByTestId('stdout')).toContainText("'żółw'");
+  await expect(answer).toHaveCount(0);
+});
+
+test('input waiting does not consume timeout and Stop permits another run', async ({ page }) => {
+  await run(page, 'print(input("Dane: "))');
+  const answer = page.getByRole('textbox', { name: 'Twoja odpowiedź', exact: true });
+  await expect(answer).toBeVisible();
+  await page.waitForTimeout(10_500);
+  await expect(answer).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Uruchom', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Zatrzymaj', exact: true }).click();
+  await expect(answer).toHaveCount(0);
+  await run(page, 'print(int(input()) + 1)');
+  await answer.fill('41');
+  await answer.press('Enter');
+  await expect(page.getByRole('status')).toHaveText('Program zakończony');
+  await expect(page.getByTestId('stdout')).toHaveText('41\n42\n');
 });
 
 test('keyboard run keeps the code in the Polish interface', async ({ page }) => {
@@ -167,4 +198,27 @@ test('layout fits a classroom laptop and reflows on a small screen', async ({ pa
   await run(page, 'print("telefon")');
   await expect(page.getByTestId('stdout')).toHaveText('telefon\n');
   await page.screenshot({ path: 'test-results/playground-mobile.png', fullPage: true });
+});
+
+test('input conversion errors recover and execution still times out after an answer', async ({ page }) => {
+  await run(page, 'int(input("Liczba: "))');
+  const answer = page.getByRole('textbox', { name: 'Twoja odpowiedź', exact: true });
+  await answer.fill('abc');
+  await answer.press('Enter');
+  await expect(page.getByTestId('python-error')).toContainText('ValueError');
+  await run(page, 'input()\nwhile True: pass');
+  await answer.press('Enter');
+  await expect(page.getByRole('status')).toContainText('po 10 sekundach', { timeout: 30_000 });
+});
+
+test('without JSPI ordinary code works and input explains browser requirements', async ({ page }) => {
+  await page.route('**/pyodide/pyodide.mjs', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, body: 'delete WebAssembly.Suspending; delete WebAssembly.promising;\n' + await response.text() });
+  });
+  await run(page, 'print("działa")');
+  await expect(page.getByRole('status')).toHaveText('Program zakończony');
+  await run(page, 'input()');
+  await expect(page.getByTestId('python-error')).toContainText('WebAssembly JSPI');
+  await expect(page.getByRole('textbox', { name: 'Twoja odpowiedź', exact: true })).toHaveCount(0);
 });

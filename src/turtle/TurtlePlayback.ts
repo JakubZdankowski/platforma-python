@@ -1,9 +1,10 @@
-import type { ExecutionResult, OutputStream } from '../runtime/protocol';
+import type { ExecutionResult, OutputStream, InputRequest } from '../runtime/protocol';
 import { TurtleAnimator } from './TurtleAnimator';
 import { TURTLE_SPEED_DEFAULT, type TurtleCommand, type TurtleDrawing } from './turtleTypes';
 
 export interface PlaybackView {
   drawing: TurtleDrawing;
+  input: InputRequest | null;
   stdout: string;
   stderr: string;
   outputTruncated: boolean;
@@ -38,6 +39,7 @@ export class TurtlePlayback {
   private readonly listeners = new Set<(view: PlaybackView) => void>();
   private outputs: OutputEntry[] = [];
   private nextOutput = 0;
+  private pendingInput: InputRequest | null = null;
   private stdout = '';
   private stderr = '';
   private outputTruncated = false;
@@ -61,6 +63,7 @@ export class TurtlePlayback {
   view(): PlaybackView {
     return {
       drawing: this.animator.snapshot(),
+      input: this.pendingInput && this.pendingInput.turtleIndex <= this.animator.completed ? this.pendingInput : null,
       stdout: this.stdout,
       stderr: this.stderr,
       outputTruncated: this.outputTruncated,
@@ -76,6 +79,7 @@ export class TurtlePlayback {
   reset(): void {
     this.cancelFrame();
     this.animator.reset();
+    this.pendingInput = null;
     this.outputs = [];
     this.nextOutput = 0;
     this.stdout = '';
@@ -84,6 +88,11 @@ export class TurtlePlayback {
     this.instant = false;
     this.pendingResult = undefined;
     this.emit();
+  }
+
+  requestInput(input: InputRequest | null): void {
+    this.pendingInput = input;
+    this.update();
   }
 
   addCommands(commands: readonly TurtleCommand[], truncated: boolean): void {
@@ -118,6 +127,7 @@ export class TurtlePlayback {
   stop(): void {
     this.cancelFrame();
     this.animator.reset();
+    this.pendingInput = null;
     this.outputs = [];
     this.nextOutput = 0;
     const pending = this.pendingResult;

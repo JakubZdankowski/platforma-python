@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '../app/ui/Button';
 import type { Messages, Locale } from '../i18n/en';
-import type { ExecutionResult, RunnerStatus } from '../runtime/protocol';
+import type { ExecutionResult, RunnerStatus, InputRequest } from '../runtime/protocol';
 
 interface Props {
   messages: Messages;
@@ -11,10 +13,12 @@ interface Props {
   truncated: boolean;
   /** The turtle is still drawing; the result is shown once it finishes. */
   drawing?: boolean;
+  input?: InputRequest | null;
+  onSubmitInput?: (requestId: number, value: string) => boolean;
 }
 
-export function OutputPanel({ messages: t, locale, status, result, stdout, stderr, truncated, drawing = false }: Props) {
-  const runnerBusy = status === 'loading' || status === 'running';
+export function OutputPanel({ messages: t, locale, status, result, stdout, stderr, truncated, drawing = false, input, onSubmitInput }: Props) {
+  const runnerBusy = status === 'loading' || status === 'running' || status === 'waiting-input';
   const busy = runnerBusy || drawing;
   const resultText = result ? {
     success: t.success,
@@ -43,6 +47,7 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
           <p>{t.pythonErrorHint}</p>
           <pre data-testid="python-error">{result.traceback ?? `${result.errorType}: ${result.errorMessage}`}</pre>
         </div>}
+        {input && onSubmitInput && <InputForm key={input.requestId} messages={t} onSubmit={(value) => onSubmitInput(input.requestId, value)} />}
         {truncated && <p className="output-notice">{t.outputTruncated}</p>}
         {!result && !busy && !stdout && !stderr && <div className="output-placeholder">
           <span className="console-symbol" aria-hidden="true">&gt;_</span>
@@ -52,4 +57,29 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
       </div>
     </section>
   );
+}
+
+function InputForm({ messages: t, onSubmit }: { messages: Messages; onSubmit: (value: string) => boolean }) {
+  const [value, setValue] = useState('');
+  const [sent, setSent] = useState(false);
+  const [invalid, setInvalid] = useState(false);
+  const field = useRef<HTMLInputElement>(null);
+  useEffect(() => { field.current?.focus(); }, []);
+  return <form className="console-input" onSubmit={(event) => {
+    event.preventDefault();
+    if (!sent && !invalid && onSubmit(value)) setSent(true);
+  }}>
+    <label htmlFor="console-answer">{t.inputLabel}</label>
+    <div className="console-input-row">
+      <input id="console-answer" ref={field} value={value} disabled={sent} autoComplete="off"
+        aria-invalid={invalid}
+        aria-describedby={invalid ? 'console-input-error' : undefined}
+        onPaste={(event) => {
+          if (/[\r\n]/.test(event.clipboardData.getData('text'))) { event.preventDefault(); setInvalid(true); }
+        }}
+        onChange={(event) => { setValue(event.target.value); setInvalid(false); }} />
+      <Button type="submit" disabled={sent || invalid}>{t.inputSend}</Button>
+    </div>
+    {invalid && <p id="console-input-error" role="alert">{t.inputSingleLine}</p>}
+  </form>;
 }

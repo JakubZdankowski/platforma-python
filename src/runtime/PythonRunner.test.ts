@@ -80,6 +80,40 @@ describe('PythonRunner', () => {
     expect(latest().terminate).toHaveBeenCalledOnce();
   });
 
+  it('pauses the cumulative timeout, rejects stale answers and keeps input out of stdout', async () => {
+    const result = runner.run('input()', { ...options, timeoutMs: 100 });
+    latest().send({ type: 'ready', inputSupported: true });
+    vi.advanceTimersByTime(40);
+    latest().send({ type: 'input-request', runId: latest().runId, requestId: 1, turtleIndex: 0 });
+    vi.advanceTimersByTime(20_000);
+    expect(latest().terminate).not.toHaveBeenCalled();
+    expect(runner.submitInput(2, 'stale')).toBe(false);
+    expect(runner.submitInput(1, 'a\nb')).toBe(false);
+    expect(runner.submitInput(1, '')).toBe(true);
+    expect(runner.submitInput(1, 'duplicate')).toBe(false);
+    vi.advanceTimersByTime(20);
+    latest().send({ type: 'input-request', runId: latest().runId, requestId: 2, turtleIndex: 0 });
+    vi.advanceTimersByTime(20_000);
+    expect(runner.submitInput(2, 'Łucja')).toBe(true);
+    vi.advanceTimersByTime(39);
+    expect(latest().terminate).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(await result).toMatchObject({ outcome: 'timeout', stdout: '', durationMs: 100 });
+  });
+
+  it('settles Stop while waiting and ignores the previous input request after restart', async () => {
+    const first = runner.run('input()', options);
+    latest().send({ type: 'ready' });
+    latest().send({ type: 'input-request', runId: latest().runId, requestId: 7, turtleIndex: 0 });
+    runner.stop();
+    expect((await first).outcome).toBe('stopped');
+    expect(runner.submitInput(7, 'late')).toBe(false);
+    const second = runner.run('print(1)', options);
+    latest().send({ type: 'ready' });
+    finish(latest());
+    expect((await second).success).toBe(true);
+  });
+
   it('starts the execution timeout only after initialization', async () => {
     const result = runner.run('while True: pass', { ...options, timeoutMs: 100 });
     vi.advanceTimersByTime(400);
