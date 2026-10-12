@@ -1,6 +1,6 @@
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { Locale, Messages } from '../i18n/en';
@@ -8,7 +8,7 @@ import { currentWork, workActivity, type StudentWork } from './liveWorkService';
 import { useLiveClass } from './useLiveClass';
 import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
 
-const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })));
+import { StudentCodePreview } from './StudentCodePreview';
 
 function runLabel(work: StudentWork | undefined, t: Messages) {
   if (!work?.last_run_at) return t.noLastRun;
@@ -95,10 +95,9 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
         </div>
         {selectedWork.last_error_summary && <p className="form-error">{selectedWork.last_error_summary}</p>}
         </> : <p className="account-muted live-exercise-notice">Uczeń nie rozpoczął tego ćwiczenia. Poniżej kod początkowy.</p>}
-        <div className="live-code-container"><Suspense fallback={<p role="status">{t.loadingEditor}</p>}>
-          <CodeEditor key={`${selected.id}-${selectedWork?.exercise_id ?? selectedExercise?.id}`} value={selectedWork?.code ?? selectedExercise?.starter_code ?? ''} readOnly label={t.studentCodeLabel} helpId="live-editor-help" />
-        </Suspense></div>
-        <p id="live-editor-help" className="sr-only">{t.readOnlyHelp}</p>
+        <StudentCodePreview key={`${selected.id}-${selectedWork?.exercise_id ?? selectedExercise?.id}`}
+          code={selectedWork?.code ?? selectedExercise?.starter_code ?? ''}
+          turtleEnabled={exercises.find(e => e.id === (selectedWork?.exercise_id ?? selectedExercise?.id))?.runtimeType === 'python-turtle'} messages={t} locale={locale} />
       </> : <p className="account-muted live-empty">{t.studentHasNotStarted}</p>}
     </> : <><h2 id="student-live-title" className="live-viewer-heading">{t.studentCodeLabel}</h2><p className="account-muted live-empty">{t.chooseLiveStudent}</p></>}
     </section>

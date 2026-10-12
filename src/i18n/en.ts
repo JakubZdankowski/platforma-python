@@ -168,7 +168,7 @@ export const en = {
   closeLiveView: 'Close view',
   chooseLiveStudent: 'Select a student from the list to view their code.',
   readOnlyCode: 'Student code — read only',
-  readOnlyHelp: 'You can select and copy the code. This view cannot edit or run it.',
+  readOnlyHelp: 'You can select and copy the code and run it in the preview console. Running it does not change the student’s work.',
   studentCodeLabel: 'Student Python code (read only)',
   studentHasNotStarted: 'This student has not opened an exercise yet.',
   unavailableExercise: 'Exercise unavailable',

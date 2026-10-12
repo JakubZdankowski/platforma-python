@@ -21,6 +21,12 @@ for (const role of ['teacher', 'admin'] as const) test(`${role} browses unstarte
     await expect(picker.locator('option:checked')).toContainText('(Nierozpoczęte)');
     await expect(picker).toHaveCSS('color', 'rgb(163, 177, 198)');
     await expect(editor).toHaveText('print("drugie")');
+    await expect(page.getByRole('heading', { name: 'Konsola', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Uruchom', exact: true }).click();
+    await expect(page.getByTestId('stdout')).toHaveText('drugie\n');
+    const untouched = await f.admin.from('student_work').select('*').eq('student_id', f.studentId).eq('exercise_id', second.data!.id);
+    expect(untouched.error).toBeNull();
+    expect(untouched.data).toEqual([]);
     await expect(page.getByText('Uczeń nie rozpoczął tego ćwiczenia. Poniżej kod początkowy.')).toBeVisible();
     await page.getByText('Treść ćwiczenia', { exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Instrukcja drugiego zadania' })).toBeVisible();
@@ -33,6 +39,7 @@ for (const role of ['teacher', 'admin'] as const) test(`${role} browses unstarte
     await expect(page.getByTestId(`live-student-${f.studentId}`)).toContainText('Kod sesji');
     await expect(editor).toHaveText('print("zapisane drugie")');
     await picker.selectOption(f.exerciseId);
+    await expect(page.getByTestId('stdout')).toHaveCount(0);
     await expect(picker.locator('option:checked')).toContainText('(W trakcie)');
     await expect(picker).toHaveCSS('color', 'rgb(240, 206, 117)');
     await picker.selectOption('');

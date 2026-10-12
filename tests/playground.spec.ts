@@ -11,6 +11,19 @@ async function run(page: Page, code: string) {
 
 test.beforeEach(async ({ page }) => { await page.goto('/tests/fixtures/playground.html'); });
 
+test('Python indentation uses four spaces for Enter and Tab', async ({ page }) => {
+  const editor = page.getByRole('textbox', { name: 'Edytor kodu Python' });
+  await editor.fill('if True:');
+  await editor.press('Control+End');
+  await editor.press('Enter');
+  await page.keyboard.type('print("indent")');
+  await expect(editor).toHaveText('if True:    print("indent")');
+  await editor.fill('');
+  await editor.press('Tab');
+  await page.keyboard.type('print("tab")');
+  await expect(editor).toHaveText('    print("tab")');
+});
+
 test('the general hint opens on request and closes when changing exercises', async ({ page }) => {
   const hint = page.locator('details.tip');
   await expect(hint).not.toHaveAttribute('open');

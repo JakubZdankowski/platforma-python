@@ -3,7 +3,7 @@ import type { Database } from '../database/database.types';
 import type { AppSupabaseClient } from '../database/supabase';
 
 export type StudentWork = Database['public']['Tables']['student_work']['Row'];
-export interface LiveExercise { id: string; title: string; lessonTitle: string }
+export interface LiveExercise { id: string; title: string; lessonTitle: string; runtimeType?: string }
 export interface ClassSnapshot {
   details: ClassDetails;
   students: Student[];
@@ -22,7 +22,7 @@ export async function loadClassSnapshot(client: AppSupabaseClient, classId: stri
   }
   const [members, exercises, available] = await Promise.all([
     listClassStudents(client, classId),
-    client.from('exercises').select('id, title, lessons(title)'),
+    client.from('exercises').select('id, title, runtime_type, lessons(title)'),
     client.rpc('class_student_exercises', { p_class_id: classId }),
   ]);
   if (!members.ok || exercises.error || available.error) throw new Error('Class data unavailable');
@@ -30,7 +30,7 @@ export async function loadClassSnapshot(client: AppSupabaseClient, classId: stri
   const work = ids.length ? await client.from('student_work').select('*').in('student_id', ids) : { data: [], error: null };
   if (work.error) throw work.error;
   return { details: details.value, students: members.value, work: work.data, availableExercises: available.data,
-    exercises: exercises.data.map((e) => ({ id: e.id, title: e.title, lessonTitle: e.lessons?.title ?? '' })) };
+    exercises: exercises.data.map((e) => ({ id: e.id, title: e.title, lessonTitle: e.lessons?.title ?? '', runtimeType: e.runtime_type })) };
 }
 
 export function currentWork(rows: readonly StudentWork[], studentId: string): StudentWork | undefined {

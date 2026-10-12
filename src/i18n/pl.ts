@@ -170,7 +170,7 @@ export const pl: Messages = {
   closeLiveView: 'Zamknij podgląd',
   chooseLiveStudent: 'Wybierz ucznia z listy, aby zobaczyć jego kod.',
   readOnlyCode: 'Kod ucznia — tylko do odczytu',
-  readOnlyHelp: 'Możesz zaznaczać i kopiować kod. Ten podgląd nie pozwala go edytować ani uruchamiać.',
+  readOnlyHelp: 'Możesz zaznaczać i kopiować kod oraz uruchomić go w konsoli podglądu. Uruchomienie nie zmienia pracy ucznia.',
   studentCodeLabel: 'Kod Python ucznia (tylko do odczytu)',
   studentHasNotStarted: 'Uczeń nie otworzył jeszcze żadnego ćwiczenia.',
   unavailableExercise: 'Ćwiczenie niedostępne',

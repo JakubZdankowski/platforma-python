@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView, drawSelection, highlightActiveLine, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { bracketMatching, indentOnInput, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
+import { bracketMatching, indentOnInput, indentUnit, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { python } from '@codemirror/lang-python';
 import { tags } from '@lezer/highlight';
 
@@ -62,6 +62,7 @@ export function CodeEditor({ value, onChange, onRun, label, helpId, readOnly = f
         extensions: [
           lineNumbers(), highlightActiveLineGutter(), history(), drawSelection(),
           indentOnInput(), bracketMatching(), python(), highlightActiveLine(),
+          indentUnit.of('    '), EditorState.tabSize.of(4),
           syntaxHighlighting(highlighting), editorTheme,
           editing.current.of([EditorState.readOnly.of(initial.current.readOnly), EditorView.editable.of(!initial.current.readOnly)]),
           accessibility.current.of(EditorView.contentAttributes.of({
