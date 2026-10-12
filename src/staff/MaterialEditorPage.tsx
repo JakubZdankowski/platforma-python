@@ -57,6 +57,16 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
   }, [dirty]);
   const editable = !loading && !error && (admin || owner === profile.id && status === 'draft');
   function update(patch: Partial<ExerciseDraft>) { setDirty(true); setNotice(''); setExercises(prev => prev.map((x,i) => i === selected ? { ...x,...patch } : x)); }
+  function moveExercise(direction: -1 | 1) {
+    const target = selected + direction;
+    if (!editable || busy || target < 0 || target >= exercises.length) return;
+    const reordered = [...exercises];
+    [reordered[selected], reordered[target]] = [reordered[target]!, reordered[selected]!];
+    setExercises(reordered);
+    setSelected(target);
+    setDirty(true);
+    setNotice(`Ćwiczenie „${reordered[target]!.title}” przeniesiono na pozycję ${target + 1} z ${exercises.length}. Kolejność zostanie zapisana razem z lekcją.`);
+  }
   function removeExercise() {
     const exercise = exercises[selected];
     if (!editable || !exercise || !window.confirm(`Usunąć ćwiczenie „${exercise.title}”? Po zapisaniu lekcji jego prace uczniów zostaną trwale usunięte.`)) return;
@@ -104,7 +114,11 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
         <label className="field">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={e => { setTitle(e.target.value); setDirty(true); }} /></label>
         <div className="staff-actions">{exercises.map((x,i) => <Button variant="secondary" type="button" className="exercise-tab" key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}</Button>)}{editable && <Button variant="secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</Button>}</div>
         {exercises[selected] && <>
-          {editable && <div className="staff-actions"><Button variant="danger" size="compact" onClick={removeExercise}>Usuń ćwiczenie</Button></div>}
+          {editable && <div className="staff-actions" role="group" aria-label="Kolejność wybranego ćwiczenia">
+            <Button type="button" size="compact" disabled={selected === 0} onClick={() => moveExercise(-1)}>Przesuń wcześniej</Button>
+            <Button type="button" size="compact" disabled={selected === exercises.length - 1} onClick={() => moveExercise(1)}>Przesuń później</Button>
+            <Button type="button" variant="danger" size="compact" onClick={removeExercise}>Usuń ćwiczenie</Button>
+          </div>}
           <label className="field">Tytuł ćwiczenia<input maxLength={200} readOnly={!editable} value={exercises[selected]!.title} onChange={e => update({ title: e.target.value })} /></label>
           <label className="field">Środowisko<select disabled={!editable} value={exercises[selected]!.runtime} onChange={e => update({ runtime: e.target.value })}><option value="python-console">Python — konsola</option><option value="python-turtle">Python — żółw</option></select></label>
           <p className="account-muted">Markdown: nagłówki, listy, linki i bloki kodu. Podgląd aktualizuje się podczas pisania.</p>
