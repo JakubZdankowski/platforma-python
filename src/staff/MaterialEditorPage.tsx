@@ -1,143 +1,82 @@
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
-import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
-import { useAuth, useProfile } from '../auth/AuthProvider';
+import { useRef } from 'react';
+import { Link, useParams } from 'react-router';
 import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
 import { publicationLabels } from './MaterialsPage';
-import type { Json } from '../database/database.types';
+import { useMaterialEditor } from './useMaterialEditor';
+import './material-authoring.css';
 
-interface ExerciseDraft { id?: string; title: string; markdown: string; code: string; runtime: string; hidden: boolean }
-const emptyExercise = (): ExerciseDraft => ({ title: 'Nowe ćwiczenie', markdown: '## Zadanie\n\nNapisz program, który wypisze Twoje imię.\n\n> Wskazówka: użyj `print()`.', code: 'print("Cześć!")', runtime: 'python-console', hidden: false });
 export function MaterialEditorPage() {
   const { lessonId = 'new' } = useParams();
   return <MaterialEditor key={lessonId} lessonId={lessonId} />;
 }
 function MaterialEditor({ lessonId }: { lessonId: string }) {
-  const { client } = useAuth(), profile = useProfile(), navigate = useNavigate();
-  const admin = profile.role === 'admin', base = admin ? '/admin' : '/teacher';
-  const [id, setId] = useState(lessonId === 'new' ? null : lessonId);
-  const [title, setTitle] = useState('');
-  const [exercises, setExercises] = useState<ExerciseDraft[]>([emptyExercise()]);
-  const [selected, setSelected] = useState(0);
-  const [status, setStatus] = useState('draft');
-  const [owner, setOwner] = useState(profile.id);
-  const [loading, setLoading] = useState(lessonId !== 'new');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const [dirty, setDirty] = useState(false);
-  const [attempt, setAttempt] = useState(0);
+  const { state, actions } = useMaterialEditor(lessonId);
+  const { id, title, exercises, selected, status, admin, base, loading, busy, error, notice, dirty, editable } = state;
+  const exercise = exercises[selected];
   const textarea = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
-    if (lessonId === 'new') return;
-    let active = true;
-    setLoading(true); setError('');
-    void (async () => {
-      const [l,e] = await Promise.all([client.from('lessons').select('*').eq('id', lessonId).maybeSingle(), client.from('exercises').select('*').eq('lesson_id', lessonId).order('position')]);
-      if (l.error || e.error || !l.data) throw new Error('unavailable');
-      if (!active) return;
-      setTitle(l.data.title); setStatus(l.data.publication_status); setOwner(l.data.teacher_id);
-      setExercises(e.data.map(x => ({ id: x.id, title: x.title, markdown: x.instructions_markdown, code: x.starter_code, runtime: x.runtime_type, hidden: x.is_hidden })));
-      setSelected(0);
-      setDirty(false);
-    })().catch(() => { if (active) setError('Nie udało się wczytać lekcji lub nie masz do niej dostępu.'); }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [client, lessonId, attempt]);
-  useEffect(() => {
-    const leaving = (e: BeforeUnloadEvent) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } };
-    const navigation = (event: MouseEvent) => {
-      const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
-      if (dirty && anchor instanceof HTMLAnchorElement && anchor.target !== '_blank' && anchor.href !== window.location.href
-        && !window.confirm('Opuścić edytor bez zapisania zmian?')) { event.preventDefault(); event.stopPropagation(); }
-    };
-    window.addEventListener('click', navigation, true);
-    window.addEventListener('beforeunload', leaving);
-    return () => { window.removeEventListener('beforeunload', leaving); window.removeEventListener('click', navigation, true); };
-  }, [dirty]);
-  const editable = !loading && !error && (admin || owner === profile.id && status === 'draft');
-  function update(patch: Partial<ExerciseDraft>) { setDirty(true); setNotice(''); setExercises(prev => prev.map((x,i) => i === selected ? { ...x,...patch } : x)); }
-  function moveExercise(direction: -1 | 1) {
-    const target = selected + direction;
-    if (!editable || busy || target < 0 || target >= exercises.length) return;
-    const reordered = [...exercises];
-    [reordered[selected], reordered[target]] = [reordered[target]!, reordered[selected]!];
-    setExercises(reordered);
-    setSelected(target);
-    setDirty(true);
-    setNotice(`Ćwiczenie „${reordered[target]!.title}” przeniesiono na pozycję ${target + 1} z ${exercises.length}. Kolejność zostanie zapisana razem z lekcją.`);
-  }
-  function toggleHidden() {
-    if (!editable || busy || !exercises[selected]) return;
-    const hidden = !exercises[selected]!.hidden;
-    update({ hidden });
-    setNotice(hidden ? 'Ćwiczenie będzie ukryte dla uczniów po zapisaniu lekcji. Treść i prace pozostaną zachowane.' : 'Ćwiczenie będzie widoczne dla uczniów po zapisaniu lekcji.');
-  }
-  function removeExercise() {
-    const exercise = exercises[selected];
-    if (!editable || !exercise || !window.confirm(`Usunąć ćwiczenie „${exercise.title}”? Po zapisaniu lekcji jego prace uczniów zostaną trwale usunięte.`)) return;
-    setExercises(prev => prev.filter((_, i) => i !== selected));
-    setSelected(Math.max(0, selected - 1)); setDirty(true); setNotice('Usunięcie ćwiczenia zostanie zastosowane po zapisaniu lekcji.');
-  }
-  async function removeLesson() {
-    if (!id || !editable || busy || !window.confirm(`Trwale usunąć lekcję „${title}”, wszystkie jej ćwiczenia i prace uczniów? Tej operacji nie można cofnąć.`)) return;
-    setBusy(true); setNotice('');
-    try {
-      const result = await client.from('lessons').delete().eq('id', id).select('id').single();
-      if (result.error) throw result.error;
-      setDirty(false); void navigate(`${base}/materials`);
-    } catch { setNotice('Nie udało się usunąć lekcji.'); }
-    finally { setBusy(false); }
-  }
   function insert(before: string, after = '') {
     const input = textarea.current;
-    if (!input) return;
-    const start = input.selectionStart, end = input.selectionEnd, markdown = exercises[selected]!.markdown;
-    update({ markdown: markdown.slice(0,start) + before + markdown.slice(start,end) + after + markdown.slice(end) });
+    if (!input || !exercise) return;
+    const start = input.selectionStart, end = input.selectionEnd;
+    actions.updateExercise({ markdown: exercise.markdown.slice(0, start) + before + exercise.markdown.slice(start, end) + after + exercise.markdown.slice(end) });
     requestAnimationFrame(() => { input.focus(); input.setSelectionRange(start + before.length, end + before.length); });
   }
-  async function save(nextStatus: string) {
-    if (status === 'approved' && nextStatus === 'draft' && !window.confirm('Przywrócić lekcję do szkicu? Uczniowie stracą dostęp do ponownego zatwierdzenia.')) return;
-    if (!title.trim() || exercises.some(x => !x.title.trim() || !x.markdown.trim())) { setNotice('Uzupełnij tytuł lekcji, tytuły ćwiczeń i instrukcje.'); return; }
-    setBusy(true); setNotice('');
-    try {
-      const payload = exercises.map(x => ({ id: x.id ?? null, title: x.title.trim(), markdown: x.markdown, code: x.code, runtime: x.runtime, hidden: x.hidden })) as Json;
-      const r = await client.rpc('save_material', { p_lesson_id: id, p_title: title.trim(), p_exercises: payload, p_status: nextStatus });
-      if (r.error) throw r.error;
-      setDirty(false); setId(r.data); setStatus(nextStatus); setNotice(nextStatus === 'pending' ? 'Wysłano do zatwierdzenia.' : nextStatus === 'approved' ? 'Lekcja zatwierdzona. Możesz dodać ją do modułu.' : 'Zapisano szkic.');
-      if (lessonId !== r.data) void navigate(`${base}/materials/${r.data}`, { replace: true });
-      else setAttempt(v => v + 1);
-    } catch { setNotice('Nie udało się zapisać lekcji. Twoje zmiany pozostały w edytorze.'); }
-    finally { setBusy(false); }
-  }
-  return <main className="account-page material-author"><Link to={`${base}/materials`}>← Materiały</Link><h1>{lessonId === 'new' ? 'Nowa lekcja' : title}</h1>
+  return <main className="account-page material-author authoring-workspace">
+    <nav className="authoring-breadcrumb" aria-label="Ścieżka nawigacji"><Link to={`${base}/materials`}>← Materiały</Link><span aria-hidden="true">/</span><span>Edytor lekcji</span></nav>
+    <header className="authoring-header"><div><p className="authoring-eyebrow">PRACOWNIA NAUCZYCIELA</p><h1>{lessonId === 'new' ? 'Nowa lekcja' : title}</h1><p className="authoring-intro">Wszystko pod ręką. Pisz, sprawdzaj i układaj ćwiczenia.</p></div>
+      {!loading && !error && <p className={`authoring-status authoring-status-${status}`}><span className="sr-only">Status: </span><strong>{publicationLabels[status]}</strong></p>}
+    </header>
     {loading && <Notice>Wczytywanie…</Notice>}
-    {error && <Notice tone="error">{error}<Button onClick={() => setAttempt(v => v + 1)}>Ponów</Button></Notice>}
-    {!loading && !error && <><p>Status: <strong>{publicationLabels[status]}</strong></p>
-      {!admin && status === 'pending' && <p>Materiał czeka na decyzję administratora. Edycja będzie dostępna po zwrocie do poprawy.</p>}
-      {!admin && status === 'approved' && <p>Zatwierdzona lekcja jest dostępna do odczytu. Możesz utworzyć nową lekcję na jej podstawie.</p>}
-      <fieldset disabled={busy} className="module-editor-fields">
-        <label className="field">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={e => { setTitle(e.target.value); setDirty(true); }} /></label>
-        <div className="staff-actions">{exercises.map((x,i) => <Button variant="secondary" type="button" className={`exercise-tab${x.hidden ? ' is-hidden' : ''}`} key={i} onClick={() => setSelected(i)} aria-pressed={selected === i}>{i+1}. {x.title}{x.hidden && <span className="exercise-hidden-label"> — Ukryte</span>}</Button>)}{editable && <Button variant="secondary" onClick={() => { setExercises(prev => [...prev,emptyExercise()]); setSelected(exercises.length); setDirty(true); }}>+ Ćwiczenie</Button>}</div>
-        {exercises[selected] && <>
-          {editable && <div className="staff-actions" role="group" aria-label="Kolejność wybranego ćwiczenia">
-            <Button type="button" size="compact" disabled={selected === 0} onClick={() => moveExercise(-1)}>Przesuń wcześniej</Button>
-            <Button type="button" size="compact" disabled={selected === exercises.length - 1} onClick={() => moveExercise(1)}>Przesuń później</Button>
-            <Button type="button" size="compact" onClick={toggleHidden}>{exercises[selected]!.hidden ? 'Pokaż uczniom' : 'Ukryj'}</Button>
-            <Button type="button" variant="danger" size="compact" onClick={removeExercise}>Usuń ćwiczenie</Button>
-          </div>}
-          <label className="field">Tytuł ćwiczenia<input maxLength={200} readOnly={!editable} value={exercises[selected]!.title} onChange={e => update({ title: e.target.value })} /></label>
-          <label className="field">Środowisko<select disabled={!editable} value={exercises[selected]!.runtime} onChange={e => update({ runtime: e.target.value })}><option value="python-console">Python — konsola</option><option value="python-turtle">Python — żółw</option></select></label>
-          <p className="account-muted">Markdown: nagłówki, listy, linki i bloki kodu. Podgląd aktualizuje się podczas pisania.</p>
-          {editable && <div className="staff-actions markdown-toolbar" aria-label="Formatowanie Markdown"><Button size="compact" onClick={() => insert('## ')}>Nagłówek</Button><Button size="compact" onClick={() => insert('**','**')}>Pogrubienie</Button><Button size="compact" onClick={() => insert('- ')}>Lista</Button><Button size="compact" onClick={() => insert('```python\n','\n```')}>Kod Python</Button><Button size="compact" onClick={() => insert('> ')}>Wskazówka</Button></div>}
-          <div className="markdown-editor-grid"><label className="field">Instrukcja Markdown<textarea ref={textarea} readOnly={!editable} rows={18} value={exercises[selected]!.markdown} onChange={e => update({ markdown: e.target.value })} /></label><section className="markdown-preview" aria-label="Podgląd instrukcji"><h2>Podgląd</h2><MarkdownInstructions markdown={exercises[selected]!.markdown} /></section></div>
-          <label className="field">Kod początkowy ucznia<textarea rows={5} readOnly={!editable} value={exercises[selected]!.code} onChange={e => update({ code: e.target.value })} /></label>
-        </>}
-        <div className="staff-actions">{editable && <><Button variant="secondary" onClick={() => void save('draft')}>Zapisz szkic</Button><Button variant="primary" onClick={() => void save(admin ? 'approved' : 'pending')}>{admin ? 'Zatwierdź i zapisz' : 'Wyślij do zatwierdzenia'}</Button></>}
-        {admin && status === 'pending' && <Button variant="secondary" onClick={() => void save('draft')}>Zwróć do poprawy</Button>}
-        {!admin && status === 'approved' && <Button variant="secondary" onClick={() => { setId(null); setStatus('draft'); setOwner(profile.id); setExercises(prev => prev.map(x => ({ ...x,id: undefined }))); setTitle(title + ' — kopia'); setDirty(true); }}>Utwórz kopię do edycji</Button>}</div>
-        {id && editable && <div className="staff-actions"><Button variant="danger" onClick={() => void removeLesson()}>Usuń lekcję</Button></div>}
-      </fieldset><p role="status">{busy ? 'Zapisywanie…' : notice}{dirty && !busy && ' Niezapisane zmiany.'}</p>
+    {error && <Notice tone="error">{error}<Button onClick={actions.retry}>Ponów</Button></Notice>}
+    {!loading && !error && <>
+      {!admin && status === 'pending' && <Notice>Materiał czeka na decyzję administratora. Edycja będzie dostępna po zwrocie do poprawy.</Notice>}
+      {!admin && status === 'approved' && <Notice>Zatwierdzona lekcja jest dostępna do odczytu. Możesz utworzyć nową lekcję na jej podstawie.</Notice>}
+      <fieldset disabled={busy} className="module-editor-fields authoring-fields"><legend className="sr-only">Edycja lekcji</legend>
+        <div className="authoring-topbar">
+          <label className="field authoring-lesson-title">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={event => actions.changeTitle(event.target.value)} /></label>
+          <div className="authoring-actions">
+            {editable && <><Button onClick={() => void actions.saveDraft()}>Zapisz szkic</Button><Button variant="primary" onClick={() => void (admin ? actions.approve() : actions.submitForApproval())}>{admin ? 'Zatwierdź i zapisz' : 'Wyślij do zatwierdzenia'}</Button></>}
+            {admin && status === 'pending' && <Button onClick={() => void actions.saveDraft()}>Zwróć do poprawy</Button>}
+            {!admin && status === 'approved' && <Button onClick={actions.copyToDraft}>Utwórz kopię do edycji</Button>}
+          </div>
+        </div>
+        <div className="authoring-studio">
+          <aside className="authoring-outline" aria-label="Ćwiczenia lekcji">
+            <h2 className="authoring-section-label">ĆWICZENIA <span>{String(exercises.length).padStart(2, '0')}</span></h2>
+            <div className="authoring-exercises">{exercises.map((item, index) => <Button unstyled type="button" key={item.id ?? index} className={`exercise-tab authoring-exercise${item.hidden ? ' is-hidden' : ''}`} onClick={() => actions.selectExercise(index)} aria-pressed={selected === index}>
+              <span className="authoring-number">{index + 1}. </span><span className="authoring-exercise-text">{item.title}{item.hidden && <span className="exercise-hidden-label"> — Ukryte</span>}<span className="authoring-runtime" aria-hidden="true" data-label={item.runtime === 'python-turtle' ? 'Żółw' : 'Konsola'} /></span>
+            </Button>)}</div>
+            {editable && <Button variant="quiet" className="authoring-add" onClick={actions.addExercise}>+ Ćwiczenie</Button>}
+          </aside>
+          <div className="authoring-editor">{exercise ? <>
+            <div className="authoring-exercise-controls"><span>Ćwiczenie {selected + 1} z {exercises.length}</span>
+              {editable && <div className="authoring-exercise-actions" role="group" aria-label="Kolejność wybranego ćwiczenia">
+                <Button size="compact" disabled={selected === 0} onClick={() => actions.moveExercise(-1)} aria-label="Przesuń wcześniej" title="Przesuń wcześniej">↑</Button>
+                <Button size="compact" disabled={selected === exercises.length - 1} onClick={() => actions.moveExercise(1)} aria-label="Przesuń później" title="Przesuń później">↓</Button>
+                <Button size="compact" onClick={actions.toggleHidden}>{exercise.hidden ? 'Pokaż uczniom' : 'Ukryj'}</Button><Button variant="quiet" size="compact" onClick={actions.removeExercise}>Usuń ćwiczenie</Button>
+              </div>}
+            </div>
+            <div className="authoring-details">
+              <label className="field">Tytuł ćwiczenia<input maxLength={200} readOnly={!editable} value={exercise.title} onChange={event => actions.updateExercise({ title: event.target.value })} /></label>
+              <label className="field">Środowisko<select disabled={!editable} value={exercise.runtime} onChange={event => actions.updateExercise({ runtime: event.target.value })}><option value="python-console">Python — konsola</option><option value="python-turtle">Python — żółw</option></select></label>
+            </div>
+            <div className="authoring-split">
+              <section className="authoring-write" aria-label="Redagowanie instrukcji"><h2 className="authoring-section-label">INSTRUKCJA <span>Markdown</span></h2>
+                {editable && <div className="authoring-format" role="group" aria-label="Formatowanie Markdown"><Button size="compact" onClick={() => insert('## ')} aria-label="Nagłówek" title="Nagłówek">H₂</Button><Button size="compact" onClick={() => insert('**', '**')} aria-label="Pogrubienie" title="Pogrubienie"><b>B</b></Button><Button size="compact" onClick={() => insert('- ')}>Lista</Button><Button size="compact" onClick={() => insert('```python\n', '\n```')}>Kod</Button><Button size="compact" onClick={() => insert('> ')}>Wskazówka</Button></div>}
+                <label className="field"><span className="sr-only">Instrukcja Markdown</span><textarea ref={textarea} readOnly={!editable} rows={18} value={exercise.markdown} onChange={event => actions.updateExercise({ markdown: event.target.value })} /></label>
+              </section>
+              <section className="authoring-preview" aria-label="Podgląd instrukcji"><h2 className="authoring-section-label">OKIEM UCZNIA <span>Podgląd na żywo</span></h2><MarkdownInstructions markdown={exercise.markdown} /></section>
+            </div>
+            <section className="authoring-code" aria-label="Przygotowanie kodu"><h2 className="authoring-section-label">KOD POCZĄTKOWY <span>Python</span></h2><p>Od tego kodu uczeń rozpocznie ćwiczenie.</p>
+              <label className="field"><span className="sr-only">Kod początkowy ucznia</span><textarea rows={5} readOnly={!editable} value={exercise.code} onChange={event => actions.updateExercise({ code: event.target.value })} spellCheck={false} /></label>
+            </section>
+          </> : <div className="authoring-empty"><h2>Dodaj pierwsze ćwiczenie</h2><p>Wybierz „+ Ćwiczenie”, aby uzupełnić treść lekcji.</p></div>}</div>
+        </div>
+        {id && editable && <div className="authoring-danger"><Button variant="danger" size="compact" onClick={() => void actions.removeLesson()}>Usuń lekcję</Button></div>}
+      </fieldset>
+      <p className="authoring-feedback" role="status">{busy ? 'Zapisywanie…' : notice}{dirty && !busy && ' Niezapisane zmiany.'}</p>
     </>}
   </main>;
 }

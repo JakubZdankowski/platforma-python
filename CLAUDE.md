@@ -71,8 +71,11 @@ The remaining spec milestones are regrouped into three steps
   + hosted Supabase
 
 MVP constraints:
-- Lessons are authored as Markdown files and uploaded with
-  `pnpm content:sync`; no in-app lesson editor (M8 deferred).
+- Lesson authoring uses the website editor; Markdown import via `pnpm content:sync` remains supported.
+- When changing lesson editing or publication, read `docs/account-roles.md`.
+  `src/staff/useMaterialEditor.ts` owns the browser draft workflow;
+  `MaterialEditorPage.tsx` handles rendering and textarea formatting.
+  The database enforces permissions and transactional saves.
 - Solutions are NOT stored in the database. Course content (`course/`)
   must never be committed to the public repo.
 - No Presence or keystroke Broadcast; activity derives from timestamps.

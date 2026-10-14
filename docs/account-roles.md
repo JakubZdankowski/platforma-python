@@ -13,6 +13,8 @@ Administrator i nauczyciel logują się e-mailem pod `/login`. Panel administrat
 
 ## Materiały
 
+Edytor korzysta z układu **Pracownia**: lista ćwiczeń po lewej, instrukcja Markdown i podgląd ucznia obok siebie, kod początkowy poniżej. Na wąskich ekranach panele układają się pionowo. Wybór projektu i archiwum wariantów opisuje [lesson-authoring-design.md](lesson-authoring-design.md).
+
 W **Materiałach** utwórz lekcję, wpisz instrukcje w Markdown, kod początkowy i rodzaj środowiska. Pasek formatowania wstawia nagłówki, pogrubienie, listy, kod i wskazówki; obok działa sanitizowany podgląd. Można dodać kilka ćwiczeń. Zapis całej lekcji odbywa się w jednej transakcji.
 
 Nauczyciel zapisuje szkic i wysyła go do zatwierdzenia. Zgłoszony materiał jest zablokowany do edycji. Administrator może go poprawić, zatwierdzić lub zwrócić do szkicu. Zatwierdzone materiały nauczyciel może skopiować do nowego szkicu, zachowując działającą wersję dla uczniów.
