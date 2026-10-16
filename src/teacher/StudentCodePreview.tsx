@@ -11,7 +11,7 @@ export function StudentCodePreview({ code, turtleEnabled, messages: t, locale }:
   code: string; turtleEnabled: boolean; messages: Messages; locale: Locale;
 }) {
   const runner = usePythonRunner();
-  const run = () => { if (!runner.isBusy) void runner.run(code, t.inputUnavailable, turtleEnabled); };
+  const run = () => { if (!runner.isBusy) void runner.run(code, t.inputUnavailable, turtleEnabled, t.inputInitializationFailed); };
   return <div className="live-code-preview">
     <div className="live-preview-editor">
       <div className="live-code-container"><Suspense fallback={<p role="status">{t.loadingEditor}</p>}>
