@@ -57,11 +57,11 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
     void (async () => {
       try {
         if (beforeRun && !await beforeRun()) return;
-        const result = await runner.run(code, t.inputUnavailable, turtleEnabled);
+        const result = await runner.run(code, t.inputUnavailable, turtleEnabled, t.inputInitializationFailed);
         if (result) onRunResult?.(result);
       } finally { preparingRef.current = false; setPreparing(false); }
     })();
-  }, [readOnly, switching, runner.run, runner.isBusy, code, t.inputUnavailable, turtleEnabled, beforeRun, onRunResult]);
+  }, [readOnly, switching, runner.run, runner.isBusy, code, t.inputUnavailable, t.inputInitializationFailed, turtleEnabled, beforeRun, onRunResult]);
   const selectExercise = useCallback((index: number) => {
     if (index < 0 || index >= exercises.length || index === exerciseIndex || preparingRef.current) return;
     void onSelect(index);
