@@ -70,3 +70,24 @@
   .authoring-workspace textarea { font-size: var(--font-body); }
   .authoring-write, .authoring-preview, .authoring-code { padding: 18px; }
 }
+
+/* Keep instructions, starter code and preview alongside each other. */
+@media (min-width: 1251px) {
+  .dashboard-content > .authoring-workspace { max-width: none; padding: 20px 18px; }
+  .authoring-header { margin-bottom: 16px; }
+  .authoring-eyebrow, .authoring-intro { display: none; }
+  .authoring-breadcrumb { margin-bottom: 20px; }
+  .authoring-topbar { padding-block: 16px; margin-bottom: 18px; }
+  .authoring-studio { grid-template-columns: 150px minmax(0, 1fr); gap: 18px; }
+  .authoring-outline { padding-right: 12px; }
+  .authoring-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+  .authoring-exercise-controls, .authoring-details { grid-column: 1 / -1; margin: 0; }
+  .authoring-split { display: contents; }
+  .authoring-write, .authoring-preview, .authoring-code { min-height: 55dvh; border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: var(--surface); }
+  .authoring-write { grid-column: 1; grid-row: 3; }
+  .authoring-code { grid-column: 2; grid-row: 3; margin: 0; display: flex; flex-direction: column; }
+  .authoring-preview { grid-column: 3; grid-row: 3; }
+  .authoring-code .field { flex: 1; }
+  .authoring-code textarea { flex: 1; min-height: 340px; }
+  .authoring-write textarea { min-height: 340px; height: 45dvh; }
+}

@@ -608,3 +608,58 @@ a.brand { color: inherit; text-decoration: none; }
 .exercise-tab.is-hidden { opacity: .55; }
 .exercise-tab.is-hidden:hover, .exercise-tab.is-hidden:focus-visible { opacity: .8; }
 .exercise-hidden-label { font-size: var(--font-meta); }
+
+/* Classroom reference: full-width teacher pages, retaining the platform palette. */
+.classroom-dashboard { display: flex; flex-direction: column; min-height: calc(100dvh - 80px); }
+.classroom-dashboard .dashboard-sidebar { position: static; height: auto; overflow: visible; padding: 8px 36px; border-right: 0; border-bottom: 1px solid var(--border); }
+.classroom-dashboard .dashboard-sidebar nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.classroom-dashboard .dashboard-nav { min-height: 38px; padding: 8px 14px; }
+.classroom-dashboard .dashboard-account { display: none; }
+.classroom-dashboard .dashboard-content { flex: 1; }
+.classroom-dashboard .dashboard-content > .account-page { padding: 36px; }
+.classroom-dashboard .dashboard-content > .classroom-home { padding: 0; }
+.classroom-dashboard .account-page > h1 { font-size: clamp(30px, 3vw, 44px); margin-block: 28px 36px; }
+.classroom-hero { background: var(--surface); padding: 32px 36px 38px; }
+.classroom-back { display: inline-flex; padding: 8px 16px; border-radius: 8px; background: var(--surface-raised); color: var(--text); font-weight: 600; text-decoration: none; }
+.classroom-title-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; margin-top: 28px; }
+.classroom-title-row h1 { font-size: clamp(30px, 3vw, 44px); }
+.classroom-title-row .account-lead { margin: 12px 0 0; }
+.classroom-body { padding: 36px; display: grid; gap: 28px; }
+.classroom-panel, .classroom-dashboard .account-section { padding: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.classroom-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+.classroom-panel-heading:last-child { margin-bottom: 0; }
+.classroom-panel-heading h2 { font-size: 26px; margin-bottom: 12px; }
+.classroom-panel-heading p { color: var(--text-muted); }
+.classroom-rows { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.classroom-rows li + li { border-top: 1px solid var(--border); }
+.classroom-rows a { display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 78px; padding: 20px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.classroom-rows a:hover { background: var(--surface-hover); }
+.classroom-rows a > span { color: var(--text-muted); white-space: nowrap; }
+.classroom-empty { padding: 32px; text-align: center; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-raised); color: var(--text-muted); }
+.classroom-dashboard .data-table { background: var(--surface); border: 1px solid var(--border); }
+.classroom-dashboard .data-table td, .classroom-dashboard .data-table th { padding: 24px 20px; }
+.classroom-dashboard .materials-list { gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.classroom-dashboard .material-link { border: 0; border-radius: 0; min-height: 78px; }
+.classroom-dashboard .material-link + .material-link { border-top: 1px solid var(--border); }
+@media (min-width: 1101px) {
+  .saved-exercise { max-width: none; padding-inline: 18px; }
+  .saved-exercise .lesson-workspace { --output-column: min(var(--output-width, 32vw), 45%); grid-template-columns: 58px min(var(--sidebar-width, 28vw), max(240px, calc(100% - 58px - 48px - var(--output-column) - 280px))) minmax(0, 1fr) var(--output-column); gap: 16px; }
+  .saved-exercise .lesson-workspace.lesson-panel-collapsed { grid-template-columns: 58px minmax(0, 1fr) var(--output-column); }
+  .saved-exercise .panel-heading { min-height: 42px; }
+  .saved-exercise .instructions-content { padding: 24px; }
+}
+@media (max-width: 760px) {
+  .classroom-dashboard .dashboard-sidebar { padding: 8px 12px; }
+  .classroom-dashboard .dashboard-content > .account-page, .classroom-hero, .classroom-body { padding: 24px 16px; }
+  .classroom-dashboard .dashboard-content > .classroom-home { padding: 0; }
+  .classroom-panel, .classroom-dashboard .account-section { padding: 20px 16px; }
+  .classroom-panel-heading { gap: 16px; }
+  .classroom-rows a { padding: 16px; gap: 12px; }
+}
+@media (min-width: 761px) {
+  .site-header:has(~ .classroom-dashboard) .site-header-inner { height: 54px; max-width: none; padding-inline: 36px; }
+  .site-header:has(~ .classroom-dashboard) .brand-logo { width: 48px; }
+  .site-header:has(~ .classroom-dashboard) .brand { gap: 12px; font-size: var(--font-control); }
+  .classroom-dashboard { min-height: calc(100dvh - 54px); }
+}
+.classroom-dashboard .dashboard-sidebar { align-self: stretch; }
