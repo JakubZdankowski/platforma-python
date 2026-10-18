@@ -315,7 +315,7 @@ a.brand { color: inherit; text-decoration: none; }
   .exercise-picker-button { min-height: 36px; }
   .exercise-picker-current { flex: 1; justify-content: center; min-width: 0; }
   /* Arrows only; the text remains the accessible name. */
-  .exercise-picker-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+  .exercise-picker-label { font-size: var(--font-meta); }
   .exercise-layout.has-turtle { grid-template-rows: auto 400px auto; }
   .output-column { flex-direction: column; }
   .output-column .turtle-panel { width: 100%; }

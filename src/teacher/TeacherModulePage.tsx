@@ -73,7 +73,7 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
     if (!title || !Number.isSafeInteger(position) || position < 0 || position > 1000000) return;
     void mutate(() => client.from('modules').update({ title, position }).eq('id', moduleId));
   }
-  return <main className="account-page"><p className="student-back"><Link to="/admin/modules">← Materiały</Link></p>
+  return <main className="account-page"><p className="student-back"><Link to="/admin/modules">Materiały</Link></p>
     {error && <div className="form-error" role="alert">{error}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
     {!data && !error && <Notice>{t.loadingData}</Notice>}
     {data && !data.module && <Notice tone="error">Ten moduł nie istnieje lub nie masz do niego dostępu.</Notice>}

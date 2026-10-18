@@ -61,7 +61,7 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
         {lesson.exercises.length ? <Link className="module-lesson-link" to={`/student/exercises/${lesson.exercises[0]!.id}`} state={{ moduleId }}>
           <span className="module-lesson-index">{String(index + 1).padStart(2, '0')}</span>
           <span className="module-lesson-title">{lesson.title}<small>{lesson.exercises.every((exercise) => data.completed.has(exercise.id)) ? t.completed : lesson.exercises.some((exercise) => data.started.has(exercise.id)) ? 'W trakcie' : 'Jeszcze nierozpoczęte'}</small></span>
-          <span aria-hidden="true">→</span>
+
         </Link> : <><h3>{lesson.title}</h3><p className="account-muted">{t.noClassExercises}</p></>}
       </li>)}</ol>}
   </div>;

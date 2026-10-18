@@ -33,7 +33,7 @@ export function TeacherModulesPage({ messages: t }: { messages: Messages }) {
   return <main className="account-page"><h1>Materiały</h1><p className="account-lead">Układaj lekcje w moduły i udostępniaj je grupom lub wybranym uczniom.</p>
     {error && <div className="form-error" role="alert">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
     {!modules && !error && <Notice>{t.loadingData}</Notice>}
-    {modules && <div className="materials-list">{modules.length ? modules.map((m) => <Link className="material-link" key={m.id} to={`/admin/modules/${m.id}`}><span>{m.title}</span><span aria-hidden="true">→</span></Link>) : <EmptyState title="Nie masz jeszcze modułów.">Utwórz pierwszy poniżej.</EmptyState>}</div>}
+    {modules && <div className="materials-list">{modules.length ? modules.map((m) => <Link className="material-link" key={m.id} to={`/admin/modules/${m.id}`}><span>{m.title}</span></Link>) : <EmptyState title="Nie masz jeszcze modułów.">Utwórz pierwszy poniżej.</EmptyState>}</div>}
     <section className="account-section"><h2>Nowy moduł</h2><form className="form form-inline" onSubmit={(e) => void create(e)}><label className="field">Nazwa modułu<input required maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="np. 1. Podstawy Pythona" /></label><Button variant="primary" disabled={busy || !modules}>Utwórz moduł</Button></form></section>
   </main>;
 }

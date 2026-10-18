@@ -23,7 +23,7 @@ export function StudentExercisePage({ messages: t, locale }: { messages: Message
     void (moduleId ? listModuleLessons(client, moduleId) : listLessons(client)).then((lessons) => { if (active) setContent({ lessons }); }).catch(() => { if (active) setContent('error'); });
     return () => { active = false; };
   }, [client, moduleId, attempt]);
-  const back = <p><Link to={home}>← {t.allLessons}</Link></p>;
+  const back = <p><Link to={home}>{t.allLessons}</Link></p>;
   if (editorLease !== 'owned') return <main className="account-page">{back}
     {editorLease === 'checking' ? <p role="status">{t.loadingData}</p>
       : <p role="alert">{editorLease === 'unsupported'
@@ -51,7 +51,7 @@ function SavedExercise({ lesson, exercise, index, messages: t, locale }: { lesso
   const [switchError, setSwitchError] = useState(false);
   const [switching, setSwitching] = useState(false);
   const work = useStudentWork(client, profile.id, exercise, prepared);
-  const backLink = <Link to={home} onClick={(event) => { event.preventDefault(); void work.flush().then((ok) => { if (ok || work.state.status !== 'ready') void navigate(home); }); }}>← {t.allLessons}</Link>;
+  const backLink = <Link to={home} onClick={(event) => { event.preventDefault(); void work.flush().then((ok) => { if (ok || work.state.status !== 'ready') void navigate(home); }); }}>{t.allLessons}</Link>;
   const back = <p>{backLink}</p>;
   if (work.state.status !== 'ready') return <main className="account-page">{back}
     {work.state.status === 'loading' ? <p role="status">{t.loadingData}</p> : <div role="alert"><p>{t.dataUnavailable}</p>

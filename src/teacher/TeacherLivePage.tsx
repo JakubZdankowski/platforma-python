@@ -31,7 +31,7 @@ function ClassLive({ classId, messages: t, locale }: { classId: string; messages
     const timer = setInterval(() => setNow(Date.now()), 5000);
     return () => clearInterval(timer);
   }, []);
-  const back = <p><Link to={`${base}/classes/${classId}`}>← {t.backToClass}</Link></p>;
+  const back = <p><Link to={`${base}/classes/${classId}`}>{t.backToClass}</Link></p>;
   if (live.state.status === 'loading') return <main className="account-page">{back}<Notice>{t.loadingData}</Notice></main>;
   if (live.state.status === 'not-found') return <main className="account-page">{back}<p role="alert" className="form-error">{t.classNotFound}</p></main>;
   if (live.state.status === 'error') return <main className="account-page">{back}<div className="form-error" role="alert">

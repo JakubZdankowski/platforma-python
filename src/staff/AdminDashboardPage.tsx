@@ -29,7 +29,7 @@ export function AdminDashboardPage() {
         <h2 id="admin-overview-title">Platforma w liczbach</h2>
         <dl className="admin-overview-grid">
           {[['Nauczyciele', data.teachers], ['Uczniowie', data.students], ['Grupy', data.groups]].map(([label, value]) => <div className="admin-stat" key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-          <div className={`admin-stat admin-stat-review${data.pending > 0 ? ' has-pending' : ''}`}><dt>Do zatwierdzenia</dt><dd>{data.pending}</dd><Link to="/admin/materials">Przejdź do materiałów <span aria-hidden="true">→</span></Link></div>
+          <div className={`admin-stat admin-stat-review${data.pending > 0 ? ' has-pending' : ''}`}><dt>Do zatwierdzenia</dt><dd>{data.pending}</dd><Link to="/admin/materials">Przejdź do materiałów </Link></div>
         </dl>
       </section>
       <section className="admin-dashboard-section" aria-labelledby="admin-progress-title">
@@ -44,9 +44,9 @@ export function AdminDashboardPage() {
     <section className="admin-dashboard-section" aria-labelledby="admin-actions-title">
       <h2 id="admin-actions-title">Zarządzanie</h2>
       <div className="admin-actions-grid">
-        <Link to="/admin/students"><div className="admin-action-title"><h3>Konta</h3><span aria-hidden="true">→</span></div><p>Twórz i edytuj konta nauczycieli oraz uczniów.</p></Link>
-        <Link to="/admin/groups"><div className="admin-action-title"><h3>Grupy</h3><span aria-hidden="true">→</span></div><p>Przypisuj uczniów i nauczycieli do grup.</p></Link>
-        <Link to="/admin/materials"><div className="admin-action-title"><h3>Materiały</h3><span aria-hidden="true">→</span></div><p>Twórz lekcje i zatwierdzaj zgłoszenia.</p></Link>
+        <Link to="/admin/students"><div className="admin-action-title"><h3>Konta</h3></div><p>Twórz i edytuj konta nauczycieli oraz uczniów.</p></Link>
+        <Link to="/admin/groups"><div className="admin-action-title"><h3>Grupy</h3></div><p>Przypisuj uczniów i nauczycieli do grup.</p></Link>
+        <Link to="/admin/materials"><div className="admin-action-title"><h3>Materiały</h3></div><p>Twórz lekcje i zatwierdzaj zgłoszenia.</p></Link>
       </div>
     </section>
   </main>;
