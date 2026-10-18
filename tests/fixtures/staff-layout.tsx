@@ -21,7 +21,7 @@ const client = {
     },
     getSession: async () => ({ data: { session: null } }),
   },
-  rpc: async () => ({ data: true, error: null }),
+  rpc: async (name: string) => name === 'group_module_catalog' ? ({ data: [], error: null }) : ({ data: true, error: null }),
   from(table: string) {
     const filters: Record<string, unknown> = {};
     const query = {

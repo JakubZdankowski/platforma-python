@@ -7,6 +7,7 @@
 | Użytkownicy i statystyki całej platformy | Tak | Nie | Nie |
 | Podgląd grup, uczniów i zapisanego kodu na żywo | Wszystkie grupy | Przypisane grupy | Własny kod |
 | Edytor lekcji Markdown, wiele ćwiczeń, kod początkowy, konsola i Turtle | Tak | Własne szkice | Nie |
+| Przypisywanie i odpinanie istniejących modułów od grup | Wszystkie grupy | Tylko przypisane grupy | Nie |
 | Zatwierdzanie i udostępnianie lekcji w modułach | Tak | Zgłoszenie do zatwierdzenia | Odczyt przypisanych materiałów |
 
 Administrator i nauczyciel logują się e-mailem pod `/login`. Panel administratora jest pod `/admin`; panel nauczyciela pod `/teacher`. Uczeń nadal loguje się pod `/join` nazwą użytkownika i hasłem. Jedna grupa może mieć wielu nauczycieli. Twórca konta ucznia nie decyduje o dostępie nauczyciela: decydują przypisania do grup.
@@ -15,7 +16,7 @@ Administrator i nauczyciel logują się e-mailem pod `/login`. Panel administrat
 
 Grupa to uczniowie uczący się razem w danym terminie. Administrator określa jej nazwę, dzień tygodnia i godzinę (czas polski), uczniów i nauczycieli. Istniejące grupy bez terminu pokazują „Termin nieustalony”.
 
-Moduł to uporządkowany zbiór lekcji, niezależny od nazwy, składu i terminu grupy. Ten sam moduł można przypisać do wielu grup, a grupa może realizować wiele modułów. Przypisania administrator zmienia w „Modułach grupy” lub w edytorze modułu. Nauczyciel przegląda przypisane moduły i ich lekcje w Materiałach. Uczeń nadal widzi moduły, do których ma dostęp.
+Moduł to uporządkowany zbiór lekcji, niezależny od nazwy, składu i terminu grupy. Ten sam moduł można przypisać do wielu grup, a grupa może realizować wiele modułów. Przypisania administrator zmienia w „Modułach grupy” lub w edytorze modułu. Przypisany nauczyciel może dodawać istniejące moduły i odpinać je na dashboardzie swojej grupy; nie edytuje zawartości modułu. Nauczyciel przegląda przypisane moduły i ich lekcje w Materiałach. Uczeń nadal widzi moduły, do których ma dostęp.
 
 Zmiana nazwy/terminu grupy nie zmienia modułu. Odpięcie modułu lub usunięcie grupy zachowuje lekcje i zapisane prace. Indywidualny dostęp pozostaje niezależny od członkostwa w grupie.
 
@@ -51,3 +52,5 @@ W podglądzie pracy grupy administrator i przypisany nauczyciel mogą wybrać do
 Wybór konkretnego ćwiczenia pozostaje stały podczas aktualizacji kodu. Opcja „Podgląd na żywo” przywraca śledzenie ostatnio edytowanego ćwiczenia. Statusy w nawiasach mają kolory: ukończone — zielony, w trakcie — żółty, nierozpoczęte — szary. Zmiany dostępności są odświeżane również co 15 sekund.
 
 Przed publikacją tej funkcji zastosuj migrację `20261011140000_student_exercise_preview.sql` poleceniem `pnpm exec supabase db push`, a następnie opublikuj frontend. Funkcja bazy sprawdza aktywną sesję i dostęp do grupy; nie wymaga aktualizacji Edge Functions.
+
+Migracja `20261018150000_teacher_group_modules.sql` dodaje uprawnienia nauczyciela do przypisań modułów w jego grupach oraz katalog nazw i liczby lekcji, bez ujawniania innych grup ani uczniów.

@@ -268,6 +268,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
+ group_module_catalog: { Args: { p_class_id: string }; Returns: { id: string; title: string; position: number; lesson_count: number }[] };
             class_student_exercises: { Args: { p_class_id: string }; Returns: { student_id: string; id: string; title: string; lesson_id: string; lesson_title: string; starter_code: string; instructions_markdown: string }[] };
             save_material: { Args: { p_lesson_id: string | null; p_title: string; p_exercises: Json; p_status: string }; Returns: string };
             admin_account_emails: { Args: Record<PropertyKey, never>; Returns: { id: string; email: string }[] };
