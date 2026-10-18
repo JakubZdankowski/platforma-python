@@ -17,8 +17,8 @@ export function TeacherDashboardPage() {
   return <main className="account-page classroom-home">
     <header className="classroom-hero">
       <Link className="classroom-back" to="/">‹ Strona główna</Link>
-      <div className="classroom-title-row"><div><h1>Cześć, {profile.displayName}!</h1><p className="account-lead">Twój panel nauczyciela</p></div>
-        <Link className="button button-primary" to="/teacher/students">Uczniowie →</Link>
+      <div className="classroom-title-row"><div><h1>Cześć, {profile.displayName}!</h1></div>
+
       </div>
     </header>
     <div className="classroom-body">
