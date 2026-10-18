@@ -15,6 +15,7 @@ export interface WorkerPort {
 
 interface RunOptions {
   inputUnavailableMessage: string;
+  inputInitializationFailedMessage?: string;
   timeoutMs?: number;
   /** Provides the Turtle module and its functions as globals. */
   turtle?: boolean;
@@ -133,7 +134,7 @@ export class PythonRunner {
     this.setStatus('running');
     this.resumeTimer(pending);
     try {
-      this.worker.postMessage({ type: 'run', runId: pending.id, code: pending.code, inputUnavailableMessage: pending.options.inputUnavailableMessage, turtle: pending.options.turtle ?? false });
+      this.worker.postMessage({ type: 'run', runId: pending.id, code: pending.code, inputUnavailableMessage: pending.options.inputUnavailableMessage, inputInitializationFailedMessage: pending.options.inputInitializationFailedMessage, turtle: pending.options.turtle ?? false });
     } catch {
       this.abort('runtime-error');
     }
