@@ -16,7 +16,7 @@ export function TeacherDashboardPage() {
   const { data, error, reload } = useStaffData(loadGroups);
   return <main className="account-page classroom-home">
     <header className="classroom-hero">
-      <Link className="classroom-back" to="/">‹ Strona główna</Link>
+
       <div className="classroom-title-row"><div><h1>Cześć, {profile.displayName}!</h1></div>
 
       </div>
