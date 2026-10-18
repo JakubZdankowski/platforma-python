@@ -25,7 +25,7 @@ export interface InputRequest { requestId: number; turtleIndex: number }
 export type WorkerRequest =
   | { type: 'initialize'; indexURL: string }
   | { type: 'input-response'; runId: number; requestId: number; value: string }
-  | { type: 'run'; runId: number; code: string; inputUnavailableMessage: string; turtle: boolean };
+  | { type: 'run'; runId: number; code: string; inputUnavailableMessage: string; inputInitializationFailedMessage?: string; turtle: boolean };
 
 export type WorkerResponse =
   | { type: 'ready'; inputSupported?: boolean }
