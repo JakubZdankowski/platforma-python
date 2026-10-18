@@ -36,12 +36,12 @@ export function usePythonRunner() {
     setResult(null);
   }, [playback]);
 
-  const run = useCallback(async (code: string, inputUnavailableMessage: string, turtleEnabled = false) => {
+  const run = useCallback(async (code: string, inputUnavailableMessage: string, turtleEnabled = false, inputInitializationFailedMessage?: string) => {
     if (busy.current || playback.animating) return;
     busy.current = true;
     clear();
     try {
-      const execution = await runner.run(code, { inputUnavailableMessage, turtle: turtleEnabled });
+      const execution = await runner.run(code, { inputUnavailableMessage, inputInitializationFailedMessage, turtle: turtleEnabled });
       // The result appears once the turtle has finished drawing everything the program sent.
       if (mounted.current) playback.finish(execution, (final) => { if (mounted.current) setResult(final); });
       return execution;
