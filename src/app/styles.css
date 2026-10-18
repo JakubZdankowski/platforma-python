@@ -666,3 +666,8 @@ a.brand { color: inherit; text-decoration: none; }
 
 .classroom-panel-link { display: block; color: var(--text); text-decoration: none; transition: background-color 150ms ease, border-color 150ms ease; }
 .classroom-panel-link:hover, .classroom-panel-link:focus-visible { background: var(--surface-hover); border-color: var(--accent); }
+
+@media (min-width: 900px) {
+  .teacher-home-panels { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+

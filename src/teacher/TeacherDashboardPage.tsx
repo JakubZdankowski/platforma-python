@@ -21,7 +21,7 @@ export function TeacherDashboardPage() {
 
       </div>
     </header>
-    <div className="classroom-body">
+    <div className="classroom-body teacher-home-panels">
       <section className="classroom-panel" aria-labelledby="dashboard-groups">
         <div className="classroom-panel-heading"><div><h2 id="dashboard-groups">Grupy</h2><p>Wybierz grupę, aby zobaczyć uczniów i obserwować ich pracę.</p></div></div>
         {error && <Notice tone="error">{error}<Button onClick={reload}>Ponów</Button></Notice>}
