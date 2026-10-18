@@ -14,7 +14,7 @@ export function DashboardLayout() {
   const base = student ? '/student' : profile.role === 'admin' ? '/admin' : '/teacher';
   const links = student
     ? [[base, 'Pulpit', 'home'], [`${base}/materials`, 'Materiały', 'book'], [`${base}/help`, 'Pomoc', 'help']]
-    : [[base, 'Pulpit', 'home'], [`${base}/groups`, 'Grupy', 'group'], [`${base}/students`, profile.role === 'admin' ? 'Konta' : 'Uczniowie', 'person'], [`${base}/materials`, 'Materiały', 'book'], ...(profile.role === 'admin' ? [[`${base}/modules`, 'Moduły i dostęp', 'book']] : [])];
+    : [[base, 'Pulpit', 'home'], [`${base}/groups`, 'Grupy', 'group'], ...(profile.role === 'admin' ? [[`${base}/students`, 'Konta', 'person']] : []), [`${base}/materials`, 'Materiały', 'book'], ...(profile.role === 'admin' ? [[`${base}/modules`, 'Moduły i dostęp', 'book']] : [])];
   return <div className={`dashboard-shell${!student ? ' classroom-dashboard' : ''}`}>
     <aside className="dashboard-sidebar">
       <nav aria-label={student ? 'Panel ucznia' : profile.role === 'admin' ? 'Panel administratora' : 'Panel nauczyciela'}>{links.map(([to, label, icon]) =>
