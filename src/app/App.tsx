@@ -20,7 +20,7 @@ export function App() {
 function SiteHeader({ setHeaderTarget }: { setHeaderTarget: (element: HTMLDivElement | null) => void }) {
   const { pathname } = useLocation();
   if (pathname === '/ui') return null;
-  if ((pathname.startsWith('/admin') && !pathname.endsWith('/live')) || ['/student', '/student/materials', '/student/help'].includes(pathname.replace(/\/$/, ''))) return null;
+  if (['/student', '/student/materials', '/student/help'].includes(pathname.replace(/\/$/, ''))) return null;
   return <header className="site-header">
       <div className="site-header-inner">
         <Link to="/" className="brand">

@@ -16,11 +16,11 @@ export function GroupsPage() {
   const { client, data, error, busy, mutate, reload } = useStaffData(loadGroups);
   const [name, setName] = useState('');
   async function create(e: FormEvent) { e.preventDefault(); if (await mutate(() => client.from('classes').insert({ name: name.trim() }))) setName(''); }
-  return <main className="account-page"><h1>Grupy</h1>{error && <Notice tone="error">{error}<Button onClick={reload}>Ponów</Button></Notice>}
+  return <main className="account-page classroom-home"><header className="classroom-hero"><Link className="classroom-back" to={base}>‹ Pulpit</Link><div className="classroom-title-row"><div><h1>Grupy</h1><p className="account-lead">Grupy uczniów i podgląd ich pracy.</p></div><Link className="button button-primary" to={`${base}/students`}>{admin ? 'Zarządzaj kontami' : 'Uczniowie'} →</Link></div></header><div className="classroom-body"><section className="classroom-panel" aria-labelledby="groups-list-title"><div className="classroom-panel-heading"><div><h2 id="groups-list-title">Twoje grupy</h2><p>Wybierz grupę, aby zobaczyć jej uczniów i materiały.</p></div>{admin && <a className="button button-primary" href="#new-group">Utwórz grupę +</a>}</div>{error && <Notice tone="error">{error}<Button onClick={reload}>Ponów</Button></Notice>}
     {!data && !error && <Notice>Wczytywanie…</Notice>}
-    {data && <table className="data-table"><thead><tr><th>Grupa</th><th>Uczniowie</th></tr></thead><tbody>{data.map(g => <tr key={g.id}><td><Link to={`${base}/classes/${g.id}`}>{g.name}</Link></td><td>{g.class_members[0]?.count ?? 0}</td></tr>)}</tbody></table>}
+    {!!data?.length && <ul className="classroom-rows">{data.map(g => <li key={g.id}><Link to={`${base}/classes/${g.id}`}><strong>{g.name}</strong><span>Uczniowie: {g.class_members[0]?.count ?? 0} <span aria-hidden="true">›</span></span></Link></li>)}</ul>}
     {data?.length === 0 && <EmptyState title="Brak przypisanych grup." />}
-    {admin && <section className="account-section"><h2>Nowa grupa</h2><form className="form form-inline" onSubmit={e => void create(e)}><label className="field">Nazwa grupy<input required maxLength={80} value={name} onChange={e => setName(e.target.value)} /></label><Button variant="primary" disabled={busy}>Utwórz grupę</Button></form></section>}
+    </section>{admin && <section className="classroom-panel" id="new-group"><h2>Nowa grupa</h2><form className="form form-inline" onSubmit={e => void create(e)}><label className="field">Nazwa grupy<input required maxLength={80} value={name} onChange={e => setName(e.target.value)} /></label><Button variant="primary" disabled={busy}>Utwórz grupę</Button></form></section>}</div>
   </main>;
 }
 export function GroupPage() {
