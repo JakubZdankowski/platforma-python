@@ -1,3 +1,4 @@
+import { assignLessonModule } from '../db/moduleFixture';
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import { adminClient, SEED } from '../db/localSupabase';
@@ -11,8 +12,7 @@ test('offline edits are protected, downloadable and retained after access is rev
   try {
     const exercise = await admin.from('exercises').insert({ lesson_id: lessonId, slug: 'test', title: 'Kod ucznia', position: 1, instructions_markdown: 'Test', starter_code: 'print("start")', runtime_type: 'python-console' }).select('id').single();
     if (exercise.error) throw exercise.error;
-    const assigned = await admin.from('assignments').insert({ class_id: classroom.id, lesson_id: lessonId });
-    if (assigned.error) throw assigned.error;
+    const moduleId = await assignLessonModule(admin, classroom.id, lessonId);
     await page.goto('/join');
     await page.getByLabel('Nazwa użytkownika').fill('ania');
     await page.getByLabel('Hasło').fill(SEED.password('ania'));
@@ -49,7 +49,7 @@ test('offline edits are protected, downloadable and retained after access is rev
     });
     await editor.fill('print("Niezapisane zmiany")');
     await expect(page.locator('.save-status')).toHaveText('Nie zapisano — ponawiam…');
-    const removed = await admin.from('assignments').delete().eq('class_id', classroom.id).eq('lesson_id', lessonId);
+    const removed = await admin.from('group_module_assignments').delete().eq('class_id', classroom.id).eq('module_id', moduleId);
     if (removed.error) throw removed.error;
     await expect(page.getByRole('alert')).toContainText('To ćwiczenie jest obecnie niedostępne');
     await expect(editor).toHaveText('print("Niezapisane zmiany")');
@@ -57,7 +57,7 @@ test('offline edits are protected, downloadable and retained after access is rev
     await expect(page.getByRole('button', { name: 'Uruchom', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Pobierz kod .py' })).toBeEnabled();
     await page.unroute('**/rest/v1/student_work?*');
-    await admin.from('assignments').insert({ class_id: classroom.id, lesson_id: lessonId });
+    await admin.from('group_module_assignments').insert({ class_id: classroom.id, module_id: moduleId });
     await expect(editor).toHaveAttribute('aria-readonly', 'false');
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.locator('.save-status')).toHaveText('Zapisano');

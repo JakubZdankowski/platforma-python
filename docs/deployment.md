@@ -91,3 +91,7 @@ danych logowania; zapisuje pracę wyłącznie ucznia testowego):
 $env:PRODUCTION_SMOKE = "1"
 node scripts/smoke-production.mjs
 ```
+
+## Rozdzielenie grup i modułów (2026-10-18)
+
+Przed frontendem zastosuj `20261018140000_separate_groups_and_modules.sql`. Migracja dodaje opcjonalny dzień i godzinę do istniejących grup i wyłącza dawny most z bezpośrednich przypisań lekcji. Istniejące moduły, przypisania, uczniowie i prace pozostają zachowane. `legacy_class_id` zachowuje jedynie pochodzenie historycznej migracji; bieżąca aplikacja nie używa go do organizacji materiałów. Nowe przypisania korzystają z `group_module_assignments` i `module_lessons`.

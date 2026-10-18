@@ -28,9 +28,9 @@ const client = {
       select() { return query; }, order() { return query; },
       eq(key: string, value: unknown) { filters[key] = value; return query; },
       in(key: string, value: unknown) { filters[key] = value; return query; },
-      maybeSingle() { return Promise.resolve({ data: table === 'classes' ? { id: 'python', name: 'Python 101' } : { id: 'student', role, display_name: 'Administrator', username: 'ania' }, error: null }); },
+      maybeSingle() { return Promise.resolve({ data: table === 'classes' ? { id: 'python', name: 'Python 101', meeting_day: 2, meeting_time: '17:30:00' } : { id: 'student', role, display_name: 'Administrator', username: 'ania' }, error: null }); },
       then(resolve: (value: unknown) => void) {
-        let data: unknown = []; if (table === 'profiles') data = [{ id: 'ania', display_name: 'Anna Testowa', username: 'ania', role: 'student' }]; if (table === 'class_members') data = [{ student_id: 'ania' }]; if (table === 'classes') data = [{ id: 'python', name: 'Python 101', class_members: [{ count: 10 }] }];
+        let data: unknown = []; if (table === 'profiles') data = [{ id: 'ania', display_name: 'Anna Testowa', username: 'ania', role: 'student' }]; if (table === 'class_members') data = [{ student_id: 'ania' }]; if (table === 'classes') data = [{ id: 'python', name: 'Python 101', meeting_day: 2, meeting_time: '17:30:00', class_members: [{ count: 10 }] }];
         if (table === 'modules') data = mode === 'empty' ? [] : [{ id: 'a', title: '1. Podstawy Pythona', position: 0 }, { id: 'b', title: '2. Programowanie obiektowe', position: 1 }];
         if (table === 'module_lessons') data = filters.module_id === 'a' ? [{ lesson_id: 'first', position: 0 }] : [];
         if (table === 'lessons') {

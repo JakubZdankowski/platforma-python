@@ -1,3 +1,4 @@
+import { useProfile } from '../auth/AuthProvider';
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
@@ -7,6 +8,8 @@ import type { Messages } from '../i18n/en';
 import { listModules, type ModuleSummary } from '../modules/moduleService';
 
 export function GroupModules({ client, classId, messages: t }: { client: AppSupabaseClient; classId: string; messages: Messages }) {
+  const admin = useProfile().role === 'admin';
+  const base = admin ? '/admin' : '/teacher';
   const [data, setData] = useState<{ modules: ModuleSummary[]; assigned: Set<string> } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -31,9 +34,17 @@ export function GroupModules({ client, classId, messages: t }: { client: AppSupa
       setData((prev) => { if (!prev) return prev; const assigned = new Set(prev.assigned); if (checked) assigned.add(moduleId); else assigned.delete(moduleId); return { ...prev, assigned }; });
     } catch { setData(previous); setError(true); } finally { setBusy(false); }
   }
-  return <section className="account-section"><h2>Materiały grupy</h2>
-    {error && <div className="form-error" role="alert">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
+  return <section className="account-section"><h2>Moduły grupy</h2>
+    <p className="account-muted">Moduły zawierają lekcje. Przypisany moduł jest dostępny obecnym i przyszłym uczniom tej grupy.</p>
+    {error && <div className="form-error" role="alert">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt(v => v + 1)}>{t.retry}</Button></div>}
     {!data && !error && <Notice>{t.loadingData}</Notice>}
-    {data && (data.modules.length ? <ul className="module-checklist">{data.modules.map((m) => <li key={m.id}><label><input type="checkbox" checked={data.assigned.has(m.id)} disabled={busy} onChange={(e) => void toggle(m.id, e.target.checked)} />{m.title}</label><Link to={`/teacher/materials/${m.id}`}>Edytuj moduł</Link></li>)}</ul> : <p>Brak modułów. <Link to="/teacher/materials">Przejdź do materiałów</Link></p>)}
+    {data && <>
+      {!data.assigned.size && <p className="account-muted">Nie przypisano jeszcze modułów do tej grupy.</p>}
+      <ul className="module-checklist">{data.modules.filter(m => admin || data.assigned.has(m.id)).map(m => <li key={m.id}>
+        {admin ? <label><input type="checkbox" checked={data.assigned.has(m.id)} disabled={busy} onChange={e => void toggle(m.id, e.target.checked)} />{m.title}</label> : <span>{m.title}</span>}
+        <Link to={`${base}/modules/${m.id}`}>{admin ? 'Edytuj moduł' : 'Zobacz lekcje'}</Link>
+      </li>)}</ul>
+      {admin && <p><Link to="/admin/modules">Zarządzaj modułami</Link></p>}
+    </>}
   </section>;
 }

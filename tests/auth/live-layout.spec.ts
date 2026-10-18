@@ -1,3 +1,4 @@
+import { assignLessonModule } from '../db/moduleFixture';
 import { expect, test } from '@playwright/test';
 import { signInTeacher } from '../../src/auth/authService';
 import { studentAuthEmail } from '../../supabase/functions/teacher-students/handler';
@@ -20,8 +21,7 @@ test('four students remain visible beside a tall read-only editor without scroll
     const exercise = await admin.from('exercises').insert({ lesson_id: lessonId, slug: 'exercise-01', title: 'Ćwiczenie testowe', position: 0, instructions_markdown: 'Test', starter_code: '', runtime_type: 'python-console' }).select('id').single();
     if (exercise.error) throw exercise.error;
     await admin.from('class_teachers').insert({ class_id: classId, teacher_id: teacherId });
-    const assignment = await admin.from('assignments').insert({ class_id: classId, lesson_id: lessonId });
-    if (assignment.error) throw assignment.error;
+    await assignLessonModule(admin, classId, lessonId);
     for (let i = 1; i <= 4; i++) {
       const username = `layout-${Date.now()}-${i}`;
       const user = await admin.auth.admin.createUser({ email: studentAuthEmail(teacherId, username), password: 'layout-test-password', email_confirm: true, app_metadata: { role: 'student', created_by: teacherId, username, display_name: `Uczeń układu ${i}` } });

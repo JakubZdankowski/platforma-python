@@ -11,6 +11,14 @@
 
 Administrator i nauczyciel logują się e-mailem pod `/login`. Panel administratora jest pod `/admin`; panel nauczyciela pod `/teacher`. Uczeń nadal loguje się pod `/join` nazwą użytkownika i hasłem. Jedna grupa może mieć wielu nauczycieli. Twórca konta ucznia nie decyduje o dostępie nauczyciela: decydują przypisania do grup.
 
+## Grupy i moduły
+
+Grupa to uczniowie uczący się razem w danym terminie. Administrator określa jej nazwę, dzień tygodnia i godzinę (czas polski), uczniów i nauczycieli. Istniejące grupy bez terminu pokazują „Termin nieustalony”.
+
+Moduł to uporządkowany zbiór lekcji, niezależny od nazwy, składu i terminu grupy. Ten sam moduł można przypisać do wielu grup, a grupa może realizować wiele modułów. Przypisania administrator zmienia w „Modułach grupy” lub w edytorze modułu. Nauczyciel przegląda przypisane moduły i ich lekcje w Materiałach. Uczeń nadal widzi moduły, do których ma dostęp.
+
+Zmiana nazwy/terminu grupy nie zmienia modułu. Odpięcie modułu lub usunięcie grupy zachowuje lekcje i zapisane prace. Indywidualny dostęp pozostaje niezależny od członkostwa w grupie.
+
 ## Materiały
 
 Edytor korzysta z układu **Pracownia**: lista ćwiczeń po lewej, instrukcja Markdown i podgląd ucznia obok siebie, kod początkowy poniżej. Na wąskich ekranach panele układają się pionowo. Wybór projektu i archiwum wariantów opisuje [lesson-authoring-design.md](lesson-authoring-design.md).
@@ -19,7 +27,7 @@ W **Materiałach** utwórz lekcję, wpisz instrukcje w Markdown, kod początkowy
 
 Nauczyciel zapisuje szkic i wysyła go do zatwierdzenia. Zgłoszony materiał jest zablokowany do edycji. Administrator może go poprawić, zatwierdzić lub zwrócić do szkicu. Zatwierdzone materiały nauczyciel może skopiować do nowego szkicu, zachowując działającą wersję dla uczniów.
 
-Zatwierdzenie nie przydziela lekcji automatycznie. Administrator dodaje ją do modułu w **Modułach i dostępie**, a następnie udostępnia moduł grupie albo uczniowi. Szkice i zgłoszenia nigdy nie są widoczne uczniom, również gdy ich identyfikator jest znany. Kod uczniów pozostaje tylko do odczytu dla administratora i nauczyciela. Podgląd na żywo korzysta z istniejącego autosave i Realtime.
+Zatwierdzenie nie przydziela lekcji automatycznie. Administrator dodaje ją do modułu w **Modułach**, a następnie udostępnia moduł grupie albo uczniowi. Szkice i zgłoszenia nigdy nie są widoczne uczniom, również gdy ich identyfikator jest znany. Kod uczniów pozostaje tylko do odczytu dla administratora i nauczyciela. Podgląd na żywo korzysta z istniejącego autosave i Realtime.
 
 ## Wdrożenie
 

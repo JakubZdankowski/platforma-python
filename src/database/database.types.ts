@@ -63,13 +63,13 @@ isOneToOne: false
                   ]
                 },"classes": {
                   Row: {
-                    "created_at": string,"id": string,"join_code": string,"name": string,"teacher_id": string
+                    "created_at": string,"id": string,"join_code": string,"meeting_day": number | null,"meeting_time": string | null,"name": string,"teacher_id": string
                   }
                   Insert: {
-                    "created_at"?: string,"id"?: string,"join_code"?: string,"name": string,"teacher_id"?: string
+                    "created_at"?: string,"id"?: string,"join_code"?: string,"meeting_day"?: number | null,"meeting_time"?: string | null,"name": string,"teacher_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"join_code"?: string,"name"?: string,"teacher_id"?: string
+                    "created_at"?: string,"id"?: string,"join_code"?: string,"meeting_day"?: number | null,"meeting_time"?: string | null,"name"?: string,"teacher_id"?: string
                   }
                   Relationships: [
                     {

@@ -1,3 +1,4 @@
+import { assignLessonModule } from '../db/moduleFixture';
 import { expect, test } from '@playwright/test';
 import { signInTeacher } from '../../src/auth/authService';
 import { createStudent } from '../../src/classes/classService';
@@ -35,7 +36,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
       { lesson_id: lessonId, slug: 'exercise-02', title: 'Drugie ćwiczenie', position: 1, instructions_markdown: 'Wypisz drugi tekst.', starter_code: 'print("drugi")', runtime_type: 'python-console' },
     ]).select('id, position').order('position');
     if (exercises.error) throw exercises.error;
-    expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: lessonId })).error).toBeNull();
+    await assignLessonModule(admin, classId, lessonId);
 
     await page.goto('/login');
     await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
@@ -43,7 +44,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
     await page.getByRole('link', { name: 'Grupy', exact: true }).click();
     await page.getByRole('link', { name: className, exact: true }).click();
-    await page.getByRole('link', { name: 'Podgląd pracy klasy' }).click();
+    await page.getByRole('link', { name: 'Podgląd pracy uczniów' }).click();
     await expect(page).toHaveURL(new RegExp(`/teacher/classes/${classId}/live$`));
     const connection = page.getByTestId('live-connection');
     await expect(connection).toHaveText('Na żywo');

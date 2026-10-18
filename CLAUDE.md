@@ -2,6 +2,8 @@
 
 Browser-based platform for teaching beginner Python to children.
 
+Terminologia grup, modułów i lekcji: `GLOSSARY.md`. Przy zmianach przypisań lub terminów zajęć zachowuj te rozróżnienia.
+
 ## Source of truth
 
 Full product specification:
