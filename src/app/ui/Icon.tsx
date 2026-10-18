@@ -1,5 +1,6 @@
 export function Icon({ kind, size = 20 }: { kind: string; size?: number }) {
   const paths: Record<string, string> = {
+    eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
     file: 'M14 2H5v20h14V7ZM14 2v5h5M8 12h8M8 16h6',
     list: 'M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1',
     code: 'm8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14',

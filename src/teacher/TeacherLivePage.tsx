@@ -1,7 +1,7 @@
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { useAuth, useProfile } from '../auth/AuthProvider';
 import type { Locale, Messages } from '../i18n/en';
 import { currentWork, workActivity, type StudentWork } from './liveWorkService';
@@ -17,14 +17,16 @@ function runLabel(work: StudentWork | undefined, t: Messages) {
 
 export function TeacherLivePage({ messages, locale }: { messages: Messages; locale: Locale }) {
   const { classId = '' } = useParams();
-  return <ClassLive key={classId} classId={classId} messages={messages} locale={locale} />;
+  const [params] = useSearchParams();
+  const studentId = params.get('student');
+  return <ClassLive key={`${classId}-${studentId ?? ''}`} initialStudentId={studentId} classId={classId} messages={messages} locale={locale} />;
 }
 
-function ClassLive({ classId, messages: t, locale }: { classId: string; messages: Messages; locale: Locale }) {
+function ClassLive({ classId, initialStudentId, messages: t, locale }: { classId: string; initialStudentId: string | null; messages: Messages; locale: Locale }) {
   const { client } = useAuth();
   const base = useProfile().role === 'admin' ? '/admin' : '/teacher';
   const live = useLiveClass(client, classId);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialStudentId);
   const [exerciseId, setExerciseId] = useState<string>('');
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
