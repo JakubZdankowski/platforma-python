@@ -24,7 +24,7 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
     requestAnimationFrame(() => { input.focus(); input.setSelectionRange(start + before.length, end + before.length); });
   }
   return <main className="account-page material-author authoring-workspace">
-    <nav className="authoring-breadcrumb" aria-label="Ścieżka nawigacji"><Link to={`${base}/materials`}>← Materiały</Link><span aria-hidden="true">/</span><span>Edytor lekcji</span></nav>
+    <nav className="authoring-breadcrumb" aria-label="Ścieżka nawigacji"><Link to={`${base}/materials`}>Materiały</Link><span aria-hidden="true">/</span><span>Edytor lekcji</span></nav>
     <header className="authoring-header"><div><p className="authoring-eyebrow">PRACOWNIA NAUCZYCIELA</p><h1>{lessonId === 'new' ? 'Nowa lekcja' : title}</h1><p className="authoring-intro">Wszystko pod ręką. Pisz, sprawdzaj i układaj ćwiczenia.</p></div>
       {!loading && !error && <p className={`authoring-status authoring-status-${status}`}><span className="sr-only">Status: </span><strong>{publicationLabels[status]}</strong></p>}
     </header>
@@ -53,8 +53,8 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
           <div className="authoring-editor">{exercise ? <>
             <div className="authoring-exercise-controls"><span>Ćwiczenie {selected + 1} z {exercises.length}</span>
               {editable && <div className="authoring-exercise-actions" role="group" aria-label="Kolejność wybranego ćwiczenia">
-                <Button size="compact" disabled={selected === 0} onClick={() => actions.moveExercise(-1)} aria-label="Przesuń wcześniej" title="Przesuń wcześniej">↑</Button>
-                <Button size="compact" disabled={selected === exercises.length - 1} onClick={() => actions.moveExercise(1)} aria-label="Przesuń później" title="Przesuń później">↓</Button>
+                <Button size="compact" disabled={selected === 0} onClick={() => actions.moveExercise(-1)} aria-label="Przesuń wcześniej" title="Przesuń wcześniej">Wcześniej</Button>
+                <Button size="compact" disabled={selected === exercises.length - 1} onClick={() => actions.moveExercise(1)} aria-label="Przesuń później" title="Przesuń później">Później</Button>
                 <Button size="compact" onClick={actions.toggleHidden}>{exercise.hidden ? 'Pokaż uczniom' : 'Ukryj'}</Button><Button variant="quiet" size="compact" onClick={actions.removeExercise}>Usuń ćwiczenie</Button>
               </div>}
             </div>

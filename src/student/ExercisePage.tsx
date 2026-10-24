@@ -1,6 +1,6 @@
 import { Button } from '../app/ui/Button';
 import { Icon } from '../app/ui/Icon';
-import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Exercise } from '../exercises/types';
 import type { ExecutionResult } from '../runtime/protocol';
 import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
@@ -9,7 +9,6 @@ import { usePythonRunner } from '../runtime/usePythonRunner';
 import { TurtlePanel } from '../turtle/TurtlePanel';
 import { PanelResizer } from './PanelResizer';
 import { SampleExercisePicker } from './SampleExercisePicker';
-import { downloadCode } from './downloadCode';
 import type { Messages, Locale } from '../i18n/en';
 
 const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })));
@@ -40,8 +39,9 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
   onSelect, lessonTitle, saveStatus, beforeRun, onRunResult, onReset, backLink, warning, readOnly = false, completed, onCompletedChange, switching = false }: Props) {
   const turtleEnabled = exercise.runtimeType === 'python-turtle';
   const [activePanel, setActivePanel] = useState<'instructions' | 'contents' | null>('instructions');
+  useEffect(() => { setActivePanel('instructions'); }, [exercise.id]);
   const instructionsCollapsed = activePanel === null;
-  // Width of the output column chosen with the resizer; null means the default responsive width.
+  // Width of the drawing column chosen with the resizer; null uses the responsive default.
   const [outputWidth, setOutputWidth] = useState<number | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -57,18 +57,17 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
     void (async () => {
       try {
         if (beforeRun && !await beforeRun()) return;
-        const result = await runner.run(code, t.inputUnavailable, turtleEnabled);
+        const result = await runner.run(code, t.inputUnavailable, turtleEnabled, t.inputInitializationFailed);
         if (result) onRunResult?.(result);
       } finally { preparingRef.current = false; setPreparing(false); }
     })();
-  }, [readOnly, switching, runner.run, runner.isBusy, code, t.inputUnavailable, turtleEnabled, beforeRun, onRunResult]);
+  }, [readOnly, switching, runner.run, runner.isBusy, code, t.inputUnavailable, t.inputInitializationFailed, turtleEnabled, beforeRun, onRunResult]);
   const selectExercise = useCallback((index: number) => {
     if (index < 0 || index >= exercises.length || index === exerciseIndex || preparingRef.current) return;
     void onSelect(index);
     runner.clear();
   }, [exerciseIndex, exercises.length, onSelect, runner.clear]);
   const output = <OutputPanel messages={t} locale={locale} status={runner.status} result={runner.result} stdout={runner.output.stdout} stderr={runner.output.stderr} truncated={runner.truncated} drawing={runner.drawing} input={runner.input} onSubmitInput={runner.submitInput} />;
-  const runtimeLabel = runner.drawing ? t.turtleDrawing : runner.status === 'error' ? t.pythonError : t[runner.status];
 
   return (
     <main className={`page${saveStatus ? ' saved-exercise' : ''}`}>
@@ -92,7 +91,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
       </header>
       {warning && <div className="work-warning" role="alert">{warning}</div>}
       <div
-        className={`exercise-layout lesson-workspace${instructionsCollapsed ? ' lesson-panel-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
+        className={`exercise-layout lesson-workspace console-below${instructionsCollapsed ? ' lesson-panel-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
         style={{ ...(outputWidth === null ? {} : { '--output-width': `${outputWidth}px` }), ...(sidebarWidth === null ? {} : { '--sidebar-width': `${sidebarWidth}px` }) } as CSSProperties}
       >
         <nav className="lesson-tool-rail" aria-label={t.lessonPanels}>
@@ -115,46 +114,42 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             </>}
           </div>
         </aside>
-        <section ref={editorRef} className="editor-panel" aria-labelledby="editor-title">
-          <div className="panel-heading">
-            <h2 id="editor-title">{t.editorTitle}</h2>
-            {saveStatus && <span className="save-status" role="status" aria-live="polite">{saveStatus}</span>}
-            <span className="language-badge">Python</span>
-          </div>
-          <Suspense fallback={<div className="code-editor editor-loading" role="status">{t.loadingEditor}</div>}>
-            <CodeEditor key={exercise.id} value={code} onChange={setCode} onRun={run} label={t.editorLabel} helpId="editor-help" readOnly={readOnly} />
-          </Suspense>
-          <p id="editor-help" className="sr-only">{t.editorHelp}</p>
-          <div className="editor-toolbar">
-            <div className="run-controls">
-              <Button type="button" variant="primary" onClick={run} disabled={readOnly || runner.isBusy || preparing || switching} aria-keyshortcuts="Control+Enter Meta+Enter">
-                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5 13 8l-9 5.5z" fill="currentColor" /></svg>
-                {runner.status === 'error' ? t.retry : t.run}
-              </Button>
-              {runner.isBusy
-                ? <Button type="button" variant="danger" onClick={runner.stop}><span className="stop-symbol" aria-hidden="true" />{t.stop}</Button>
-                : <span className="shortcut">{t.shortcut}</span>}
-              {onReset && <Button type="button" variant="secondary" size="compact" disabled={readOnly || runner.isBusy || preparing}
-                onClick={() => { if (window.confirm(t.confirmResetCode)) { onReset(); runner.clear(); } }}>{t.resetCode}</Button>}
-              <Button type="button" variant="secondary" size="compact" onClick={() => downloadCode(code, exercise.title)}>Pobierz kod .py</Button>
+        <div className="coding-workspace">
+          <section ref={editorRef} className="editor-panel" aria-labelledby="editor-title">
+            <div className="panel-heading">
+              <h2 id="editor-title">{t.editorTitle}</h2>
+              <div className="editor-toolbar editor-header-actions">
+                <div className="run-controls">
+                  <Button type="button" variant="primary" onClick={run} disabled={readOnly || runner.isBusy || preparing || switching} aria-keyshortcuts="Control+Enter Meta+Enter">
+                    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5 13 8l-9 5.5z" fill="currentColor" /></svg>
+                    {runner.status === 'error' ? t.retry : t.run}
+                  </Button>
+                  {runner.isBusy
+                    ? <Button type="button" variant="danger" onClick={runner.stop}><span className="stop-symbol" aria-hidden="true" />{t.stop}</Button>
+                    : <span className="shortcut">{t.shortcut}</span>}
+                  {onReset && <Button type="button" variant="secondary" size="compact" className="reset-code-button" aria-label={t.resetCode} title={t.resetCode} disabled={readOnly || runner.isBusy || preparing}
+                    onClick={() => { if (window.confirm(t.confirmResetCode)) { onReset(); runner.clear(); } }}><Icon kind="refresh" size={18} /></Button>}
+                </div>
+              </div>
             </div>
-            <span className="runtime-status"><span className={`status-dot ${runner.isBusy ? 'is-busy' : ''}`} aria-hidden="true" />{runtimeLabel}</span>
-          </div>
-        </section>
-        <div ref={outputRef} className="output-column">
-          <PanelResizer label={t.resizePanels} editorRef={editorRef} outputRef={outputRef} onResize={setOutputWidth} />
-          {turtleEnabled && (
-            <TurtlePanel
-              messages={t}
-              drawing={runner.turtle}
-              speed={runner.turtleSpeed}
-              onSpeedChange={runner.setTurtleSpeed}
-              canSkip={runner.isBusy}
-              onSkip={runner.skipAnimation}
-            />
-          )}
+            <Suspense fallback={<div className="code-editor editor-loading" role="status">{t.loadingEditor}</div>}>
+              <CodeEditor key={exercise.id} value={code} onChange={setCode} onRun={run} label={t.editorLabel} helpId="editor-help" readOnly={readOnly} />
+            </Suspense>
+            <p id="editor-help" className="sr-only">{t.editorHelp}</p>
+          </section>
           {output}
         </div>
+        {turtleEnabled && <div ref={outputRef} className="output-column">
+          <PanelResizer label={t.resizePanels} editorRef={editorRef} outputRef={outputRef} onResize={setOutputWidth} />
+          <TurtlePanel
+            messages={t}
+            drawing={runner.turtle}
+            speed={runner.turtleSpeed}
+            onSpeedChange={runner.setTurtleSpeed}
+            canSkip={runner.isBusy}
+            onSkip={runner.skipAnimation}
+          />
+        </div>}
       </div>
       <footer className="page-footer">{saveStatus ? t.savedNotice : t.localNotice}</footer>
     </main>

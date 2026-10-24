@@ -14,11 +14,11 @@ export function DashboardLayout() {
   const base = student ? '/student' : profile.role === 'admin' ? '/admin' : '/teacher';
   const links = student
     ? [[base, 'Pulpit', 'home'], [`${base}/materials`, 'Materiały', 'book'], [`${base}/help`, 'Pomoc', 'help']]
-    : [[base, 'Pulpit', 'home'], [`${base}/groups`, 'Grupy', 'group'], [`${base}/students`, profile.role === 'admin' ? 'Konta' : 'Uczniowie', 'person'], [`${base}/materials`, 'Materiały', 'book'], ...(profile.role === 'admin' ? [[`${base}/modules`, 'Moduły i dostęp', 'book']] : [])];
+    : [[base, 'Pulpit', 'home'], [`${base}/groups`, 'Grupy', 'group'], ...(profile.role === 'admin' ? [[`${base}/students`, 'Konta', 'person']] : []), [`${base}/materials`, 'Materiały', 'book'], ...(profile.role === 'admin' ? [[`${base}/modules`, 'Moduły', 'book']] : [])];
   return <div className={`dashboard-shell${!student ? ' classroom-dashboard' : ''}`}>
     <aside className="dashboard-sidebar">
       <nav aria-label={student ? 'Panel ucznia' : profile.role === 'admin' ? 'Panel administratora' : 'Panel nauczyciela'}>{links.map(([to, label, icon]) =>
-        <Link key={to} to={to!} aria-current={(to === base ? pathname === base : pathname.startsWith(to!) || to === `${base}/groups` && pathname.startsWith(`${base}/classes/`)) ? 'page' : undefined} className="dashboard-nav">
+        <Link key={to} to={to!} aria-current={(to === base ? pathname === base : pathname.startsWith(to!) || profile.role === 'teacher' && to === `${base}/materials` && pathname.startsWith(`${base}/modules`) || to === `${base}/groups` && pathname.startsWith(`${base}/classes/`)) ? 'page' : undefined} className="dashboard-nav">
           <Icon kind={icon!} /><span>{label}</span>
         </Link>)}</nav>
       <div className="dashboard-account"><p><strong>{profile.displayName}</strong></p><p className="account-muted">{student ? profile.username : profile.role === 'admin' ? 'Administrator' : 'Nauczyciel'}</p>

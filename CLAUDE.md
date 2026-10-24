@@ -2,6 +2,8 @@
 
 Browser-based platform for teaching beginner Python to children.
 
+Terminologia grup, modułów i lekcji: `GLOSSARY.md`. Przy zmianach przypisań lub terminów zajęć zachowuj te rozróżnienia.
+
 ## Source of truth
 
 Full product specification:
@@ -91,6 +93,10 @@ explicit request).
 - `pnpm check:db` — needs `pnpm db:start` (Docker running): resets the DB,
   runs `tests/db` permission tests and `tests/auth` browser tests
 - After schema changes: `pnpm db:reset`, then `pnpm db:types`
+
+## UI conventions
+
+- Use text labels in buttons and links without arrow characters or arrow/chevron icons, including navigation, back links, dropdowns, and list rows. Keep previous/next and reorder controls readable with explicit text labels; use plus/minus for expand/collapse indicators.
 
 ## Development rules
 

@@ -1,3 +1,4 @@
+import { assignLessonModule } from './moduleFixture';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { signInStudent, signInTeacher } from '../../src/auth/authService';
 import type { AppSupabaseClient } from '../../src/database/supabase';
@@ -19,6 +20,7 @@ let otherLessonId: string;
 let exerciseId: string;
 let unassignedExerciseId: string;
 let classId: string;
+let moduleId: string;
 
 async function userId(client: AppSupabaseClient) { return (await client.auth.getUser()).data.user!.id; }
 async function lesson(owner: string, slug: string) {
@@ -48,12 +50,13 @@ beforeAll(async () => {
   unassignedId = await lesson(teacherId, 'unassigned');
   otherLessonId = await lesson(otherTeacherId, 'other');
   exerciseId = await exercise(lessonId); unassignedExerciseId = await exercise(unassignedId);
-  expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: lessonId })).error).toBeNull();
+  moduleId = await assignLessonModule(admin, classId, lessonId);
   expect((await student.from('student_work').insert({ student_id: studentId, exercise_id: exerciseId, code: 'ania' })).error).toBeNull();
   expect((await classmate.from('student_work').insert({ student_id: classmateId, exercise_id: exerciseId, code: 'ola' })).error).toBeNull();
 });
 afterAll(async () => {
   await admin.from('lessons').delete().in('id', [lessonId, unassignedId, otherLessonId].filter(Boolean));
+  if (moduleId) await admin.from('modules').delete().eq('id', moduleId);
   if (otherTeacherId) await admin.auth.admin.deleteUser(otherTeacherId);
 });
 
@@ -85,11 +88,11 @@ describe('MVP lesson and work permissions', () => {
     expect((await teacher.from('student_work').update({ code: 'teacher edit' }).eq('exercise_id', exerciseId).select()).data).toEqual([]);
   });
   it('only administrators assign approved lessons across authors', async () => {
-    expect((await student.from('assignments').insert({ class_id: classId, lesson_id: unassignedId })).error).not.toBeNull();
-    expect((await otherTeacher.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).not.toBeNull();
-    expect((await teacher.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).not.toBeNull();
-    expect((await admin.from('assignments').insert({ class_id: classId, lesson_id: otherLessonId })).error).toBeNull();
-    await admin.from('assignments').delete().eq('class_id',classId).eq('lesson_id',otherLessonId);
+    expect((await student.from('module_lessons').insert({ module_id: moduleId, lesson_id: unassignedId })).error).not.toBeNull();
+    expect((await otherTeacher.from('module_lessons').insert({ module_id: moduleId, lesson_id: otherLessonId })).error).not.toBeNull();
+    expect((await teacher.from('module_lessons').insert({ module_id: moduleId, lesson_id: otherLessonId })).error).not.toBeNull();
+    expect((await admin.from('module_lessons').insert({ module_id: moduleId, lesson_id: otherLessonId })).error).toBeNull();
+    await admin.from('module_lessons').delete().eq('module_id',moduleId).eq('lesson_id',otherLessonId);
     expect((await student.from('lessons').insert({ teacher_id: studentId, slug: 'hack', title: 'hack' })).error).not.toBeNull();
     expect((await teacher.from('exercises').update({ starter_code: 'hack' }).eq('id', exerciseId).select('id')).data).toEqual([]);
   });
@@ -123,7 +126,7 @@ describe('MVP lesson and work permissions', () => {
     const result = await student.from('student_work').update({ code: 'print(1)', status: 'in_progress', last_run_at: new Date().toISOString(), last_run_success: false, last_error_type: 'SyntaxError', last_error_summary: 'invalid syntax' }).eq('exercise_id', exerciseId).select().single();
     expect(result.error).toBeNull();
     expect(result.data).toMatchObject({ code: 'print(1)', status: 'in_progress', last_run_success: false, last_error_type: 'SyntaxError' });
-    expect((await admin.from('assignments').delete().eq('class_id', classId).eq('lesson_id', lessonId)).error).toBeNull();
+    expect((await admin.from('group_module_assignments').delete().eq('class_id', classId).eq('module_id', moduleId)).error).toBeNull();
     expect((await student.from('exercises').select('id').eq('id', exerciseId)).data).toEqual([]);
     expect((await student.from('student_work').update({ code: 'no access' }).eq('exercise_id', exerciseId).select()).data).toEqual([]);
     // Saved work is retained for reassignment and remains visible to its owner.

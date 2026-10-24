@@ -44,6 +44,8 @@ export default function AccountApp({ messages: t, locale, headerTarget }: { mess
       <Route path="student/exercises/:exerciseId" element={<RequireRole role="student" messages={t}><StudentExercisePage messages={t} locale={locale} /></RequireRole>} />
       <Route path="teacher" element={<RequireRole role="teacher" messages={t}><DashboardLayout /></RequireRole>}>
         <Route index element={<TeacherDashboardPage />} />
+        <Route path="modules" element={<TeacherModulesPage messages={t} />} />
+        <Route path="modules/:moduleId" element={<TeacherModulePage messages={t} />} />
         <Route path="groups" element={<GroupsPage />} />
         <Route path="students" element={<AccountsPage />} />
         <Route path="materials" element={<MaterialsPage />} />

@@ -13,7 +13,7 @@ test('admin module grants combine group and individual access and preserve saved
     const lookup = await student.rpc('student_login_address', { p_username: f.username });
     expect((await student.auth.signInWithPassword({ email: lookup.data!, password: f.password })).error).toBeNull();
     expect((await student.rpc('claim_account_session')).data).toBe(true);
-    const migrated = await teacher.from('modules').select('id').eq('legacy_class_id', f.classId).single();
+    const migrated = await teacher.from('modules').select('id').eq('id', f.moduleId).single();
     if (migrated.error) throw migrated.error;
     const moduleId = migrated.data.id;
     expect((await student.from('modules').select('id')).data).toEqual([{ id: moduleId }]);

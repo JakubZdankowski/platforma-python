@@ -18,6 +18,10 @@ interface Props {
 }
 
 export function OutputPanel({ messages: t, locale, status, result, stdout, stderr, truncated, drawing = false, input, onSubmitInput }: Props) {
+  const outputBody = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (input && outputBody.current) outputBody.current.scrollTop = outputBody.current.scrollHeight;
+  }, [input?.requestId]);
   const runnerBusy = status === 'loading' || status === 'running' || status === 'waiting-input';
   const busy = runnerBusy || drawing;
   const resultText = result ? {
@@ -36,7 +40,7 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
         <h2 id="console-title">{t.console}</h2>
         {result && <span className="execution-time">{new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(result.durationMs)} ms</span>}
       </div>
-      <div className="output-body" tabIndex={0} aria-labelledby="console-title">
+      <div ref={outputBody} className="output-body" tabIndex={0} aria-labelledby="console-title">
         {statusText && <p role="status" className={`execution-status ${hasError ? 'has-error' : ''}`}>
           <span className={`status-dot ${busy ? 'is-busy' : ''}`} aria-hidden="true" />{statusText}
         </p>}
@@ -47,7 +51,6 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
           <p>{t.pythonErrorHint}</p>
           <pre data-testid="python-error">{result.traceback ?? `${result.errorType}: ${result.errorMessage}`}</pre>
         </div>}
-        {input && onSubmitInput && <InputForm key={input.requestId} messages={t} onSubmit={(value) => onSubmitInput(input.requestId, value)} />}
         {truncated && <p className="output-notice">{t.outputTruncated}</p>}
         {!result && !busy && !stdout && !stderr && <div className="output-placeholder">
           <span className="console-symbol" aria-hidden="true">&gt;_</span>
@@ -55,6 +58,7 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
         </div>}
         {result?.success && !stdout && !stderr && <p className="output-hint">{t.noOutput}</p>}
       </div>
+        {input && onSubmitInput && <InputForm key={input.requestId} messages={t} onSubmit={(value) => onSubmitInput(input.requestId, value)} />}
     </section>
   );
 }
@@ -64,8 +68,17 @@ function InputForm({ messages: t, onSubmit }: { messages: Messages; onSubmit: (v
   const [sent, setSent] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const field = useRef<HTMLInputElement>(null);
-  useEffect(() => { field.current?.focus(); }, []);
-  return <form className="console-input" onSubmit={(event) => {
+  const form = useRef<HTMLFormElement>(null);
+  useEffect(() => { field.current?.focus({ preventScroll: true }); }, []);
+  useEffect(() => {
+    const reveal = () => form.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    reveal();
+    // Keep the whole form visible when a mobile keyboard changes the viewport.
+    const viewport = window.visualViewport;
+    viewport?.addEventListener('resize', reveal);
+    return () => viewport?.removeEventListener('resize', reveal);
+  }, [invalid]);
+  return <form ref={form} className="console-input" onSubmit={(event) => {
     event.preventDefault();
     if (!sent && !invalid && onSubmit(value)) setSent(true);
   }}>

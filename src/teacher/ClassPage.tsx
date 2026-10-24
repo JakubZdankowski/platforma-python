@@ -19,7 +19,7 @@ export function ClassPage({ messages: t }: { messages: Messages }) {
   const { data, reload } = useClassData(client, profile.id, classId);
   const [credentials, setCredentials] = useState<IssuedCredentials | null>(null);
 
-  const back = <p><Link to="/teacher/groups">← {t.allClasses}</Link></p>;
+  const back = <p><Link to="/teacher/groups">{t.allClasses}</Link></p>;
   if (data.status === 'loading') return <main className="account-page">{back}<p className="account-muted" role="status">{t.loadingData}</p></main>;
   if (data.status === 'not-found') return <main className="account-page">{back}<Notice tone="error">{t.classNotFound}</Notice></main>;
   if (data.status === 'error') {

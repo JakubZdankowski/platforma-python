@@ -15,7 +15,7 @@
 .authoring-actions, .authoring-exercise-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .authoring-workspace .field { gap: 8px; font-size: var(--font-meta); }
 .authoring-workspace .field input, .authoring-workspace .field select { font-size: var(--font-control); }
-.authoring-workspace textarea { box-sizing: border-box; width: 100%; min-width: 0; resize: vertical; color: var(--text); background: var(--surface-editor); border: 1px solid var(--border-control); border-radius: var(--control-radius); padding: 18px; line-height: 1.75; font-size: var(--font-control); }
+.authoring-workspace textarea { box-sizing: border-box; width: 100%; min-width: 0; resize: vertical; color: var(--text); background: var(--surface-raised); border: 1px solid var(--border-control); border-radius: var(--control-radius); padding: 18px; line-height: 1.75; font-size: var(--font-control); }
 .authoring-studio { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 28px; }
 .authoring-outline { border-right: 1px solid var(--border); padding-right: 20px; min-width: 0; }
 .authoring-editor { min-width: 0; }
@@ -91,3 +91,6 @@
   .authoring-code textarea { flex: 1; min-height: 340px; }
   .authoring-write textarea { min-height: 340px; height: 45dvh; }
 }
+
+/* Starter Python keeps the same dark palette as the student editor. */
+.authoring-code textarea { background: var(--surface-editor); color: var(--code-text); color-scheme: dark; border-color: var(--nav-border); }

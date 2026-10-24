@@ -1,3 +1,4 @@
+import { assignLessonModule } from './moduleFixture';
 import { adminClient } from './localSupabase';
 
 export async function sessionFixture(role: 'teacher' | 'admin' = 'teacher') {
@@ -34,9 +35,8 @@ export async function sessionFixture(role: 'teacher' | 'admin' = 'teacher') {
     const exercise = await admin.from('exercises').insert({ lesson_id: lesson.data.id, slug: 'session-test', title: 'Kod sesji', position: 1,
       instructions_markdown: 'Test sesji', starter_code: 'print("start")', runtime_type: 'python-console' }).select('id').single();
     if (exercise.error) throw exercise.error;
-    const assignment = await admin.from('assignments').insert({ class_id: classroom.data.id, lesson_id: lesson.data.id });
-    if (assignment.error) throw assignment.error;
+    const moduleId = await assignLessonModule(admin, classroom.data.id, lesson.data.id);
     return { admin, password, teacherEmail, teacherId, studentEmail, studentId, username, classId: classroom.data.id,
-      joinCode: classroom.data.join_code, exerciseId: exercise.data.id, cleanup };
+      moduleId, joinCode: classroom.data.join_code, exerciseId: exercise.data.id, cleanup };
   } catch (error) { await cleanup(); throw error; }
 }

@@ -1,3 +1,4 @@
+import { formatMeeting } from '../classes/groupMeeting';
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -11,7 +12,7 @@ async function load(client: AppSupabaseClient, moduleId: string, _teacherId: str
     client.from('modules').select('id, title, position').eq('id', moduleId).maybeSingle(),
     client.from('lessons').select('id, title, position').eq('publication_status', 'approved').order('position').order('slug'),
     client.from('module_lessons').select('lesson_id, position').eq('module_id', moduleId),
-    client.from('classes').select('id, name').order('name'),
+    client.from('classes').select('id, name, meeting_day, meeting_time').order('name'),
     client.from('group_module_assignments').select('class_id').eq('module_id', moduleId),
     client.from('profiles').select('id, display_name, username').eq('role', 'student').order('display_name'),
     client.from('student_module_assignments').select('student_id').eq('module_id', moduleId),
@@ -73,11 +74,22 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
     if (!title || !Number.isSafeInteger(position) || position < 0 || position > 1000000) return;
     void mutate(() => client.from('modules').update({ title, position }).eq('id', moduleId));
   }
-  return <main className="account-page"><p className="student-back"><Link to="/admin/modules">← Materiały</Link></p>
+  if (profile.role !== 'admin') return <main className="account-page"><h1>{data?.module?.title ?? 'Moduł'}</h1>
+    <p className="account-lead">Moduł to zbiór lekcji przypisany do Twoich grup.</p>
+    {error && <Notice tone="error">{error}<Button onClick={() => setAttempt(v => v + 1)}>{t.retry}</Button></Notice>}
+    {!data && !error && <Notice>{t.loadingData}</Notice>}
+    {data && !data.module && <Notice tone="error">Moduł nie istnieje lub nie masz do niego dostępu.</Notice>}
+    {data?.module && <><section className="account-section"><h2>Lekcje w module</h2><ul className="module-checklist">{[...data.links].sort((a,b) => a.position - b.position || a.lesson_id.localeCompare(b.lesson_id)).map(link => {
+      const lesson = data.lessons.find(l => l.id === link.lesson_id);
+      return lesson ? <li key={lesson.id}><Link to={`/teacher/materials/${lesson.id}`}>{lesson.title}</Link></li> : null;
+    })}</ul>{!data.links.length && <p>Moduł nie zawiera jeszcze lekcji.</p>}</section>
+    <section className="account-section"><h2>Przypisane grupy</h2><ul className="module-checklist">{data.groups.filter(g => data.assignedGroups.some(a => a.class_id === g.id)).map(g => <li key={g.id}><Link to={`/teacher/classes/${g.id}`}>{g.name}</Link><span className="account-muted">{formatMeeting(g)}</span></li>)}</ul></section></>}
+  </main>;
+  return <main className="account-page"><p className="student-back"><Link to="/admin/modules">Moduły</Link></p>
     {error && <div className="form-error" role="alert">{error}<Button variant="secondary" onClick={() => setAttempt((v) => v + 1)}>{t.retry}</Button></div>}
     {!data && !error && <Notice>{t.loadingData}</Notice>}
     {data && !data.module && <Notice tone="error">Ten moduł nie istnieje lub nie masz do niego dostępu.</Notice>}
-    {data?.module && <><h1>{data.module.title}</h1><p className="account-lead">Zawartość modułu i dostęp uczniów</p>
+    {data?.module && <><h1>{data.module.title}</h1><p className="account-lead">Zbiór lekcji i przypisania do grup oraz uczniów</p>
       <fieldset className="module-editor-fields" disabled={busy}>
         {profile.role === 'admin' && <div className="staff-actions"><Button variant="danger" onClick={() => void removeModule()}>Usuń moduł</Button></div>}
         <form className="form form-inline" key={`${data.module.title}-${data.module.position}`} onSubmit={saveModule}>
@@ -101,12 +113,12 @@ function ModuleEditor({ moduleId, messages: t }: { moduleId: string; messages: M
             }}><label>Kolejność<input key={link.position} type="number" name="position" min="0" max="1000000" step="1" defaultValue={link.position} required aria-label={`Kolejność: ${lesson.title}`} /></label><Button variant="secondary" size="compact">Zapisz kolejność</Button></form>}</li>;
           })}</ul>
         </section>
-        <section className="account-section"><h2>Udostępnij grupom</h2><p className="account-muted">Dostęp otrzymają obecni i przyszli członkowie zaznaczonych grup.</p>
+        <section className="account-section"><h2>Przypisz do grup</h2><p className="account-muted">Dostęp otrzymają obecni i przyszli członkowie zaznaczonych grup.</p>
           {!data.groups.length && <p>Nie masz jeszcze grup. <Link to="/admin/groups">Utwórz grupę</Link></p>}
           <ul className="module-checklist">{data.groups.map((group) => <li key={group.id}><label><input type="checkbox" checked={data.assignedGroups.some((g) => g.class_id === group.id)} onChange={(e) => {
             const checked = e.target.checked; if (!confirmRemoval(checked)) return;
             void mutate(() => checked ? client.from('group_module_assignments').insert({ module_id: moduleId, class_id: group.id }) : client.from('group_module_assignments').delete().eq('module_id', moduleId).eq('class_id', group.id), (prev) => ({ ...prev, assignedGroups: checked ? [...prev.assignedGroups, { class_id: group.id }] : prev.assignedGroups.filter((g) => g.class_id !== group.id) }));
-          }} />{group.name}</label></li>)}</ul>
+          }} />{group.name} — {formatMeeting(group)}</label></li>)}</ul>
         </section>
         <section className="account-section"><h2>Udostępnij indywidualnie</h2><p className="account-muted">Dodatkowy dostęp niezależny od grup. Odznaczenie nie odbiera dostępu uzyskanego przez grupę.</p>
           {!data.students.length && <p>Nie masz jeszcze uczniów. <Link to="/admin/students">Utwórz konto ucznia</Link></p>}

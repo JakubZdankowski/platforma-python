@@ -61,7 +61,7 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
         {lesson.exercises.length ? <Link className="module-lesson-link" to={`/student/exercises/${lesson.exercises[0]!.id}`} state={{ moduleId }}>
           <span className="module-lesson-index">{String(index + 1).padStart(2, '0')}</span>
           <span className="module-lesson-title">{lesson.title}<small>{lesson.exercises.every((exercise) => data.completed.has(exercise.id)) ? t.completed : lesson.exercises.some((exercise) => data.started.has(exercise.id)) ? 'W trakcie' : 'Jeszcze nierozpoczęte'}</small></span>
-          <span aria-hidden="true">→</span>
+
         </Link> : <><h3>{lesson.title}</h3><p className="account-muted">{t.noClassExercises}</p></>}
       </li>)}</ol>}
   </div>;
@@ -70,9 +70,9 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
 export function StudentHelpPage() {
   return <main className="account-page"><h1>Pomoc</h1><p className="account-lead">Najważniejsze wskazówki do pracy z platformą.</p>
     <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Przejdź do Materiałów, rozwiń moduł i wybierz lekcję. W edytorze kliknij nazwę lekcji w lewym panelu, aby przejść do dowolnego zadania z lekcji.</p></section>
-    <section className="help-section"><h2>Gdzie jest mój kod?</h2><p>Kod zapisuje się automatycznie na Twoim koncie. Stan zapisu zobaczysz nad edytorem. Możesz też pobrać plik .py.</p></section>
+    <section className="help-section"><h2>Gdzie jest mój kod?</h2><p>Kod zapisuje się automatycznie na Twoim koncie. Po powrocie do ćwiczenia możesz kontynuować pracę.</p></section>
     <section className="help-section"><h2>Jak uruchomić program?</h2><p>Naciśnij „Uruchom” lub Ctrl + Enter. Jeśli program działa zbyt długo, użyj przycisku „Zatrzymaj”.</p></section>
     <section className="help-section"><h2>Nie widzę materiałów</h2><p>Poproś nauczyciela o udostępnienie modułu. Do logowania potrzebujesz tylko nazwy użytkownika i hasła.</p></section>
-    <section className="help-section"><h2>Co zrobić, gdy zapis nie działa?</h2><p>Zachowaj otwartą kartę i sprawdź połączenie z internetem. Przed wyjściem pobierz kod, aby nie stracić ostatnich zmian.</p></section>
+    <section className="help-section"><h2>Co zrobić, gdy zapis nie działa?</h2><p>Zachowaj otwartą kartę i sprawdź połączenie z internetem. Przed wyjściem skopiuj kod w bezpieczne miejsce, aby nie stracić ostatnich zmian.</p></section>
   </main>;
 }

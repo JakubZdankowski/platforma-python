@@ -9,5 +9,6 @@ export function PlaygroundPage({ messages, locale }: { messages: Messages; local
   const exercise = sampleExercises[index]!;
   return <ExercisePage messages={messages} locale={locale} exercise={exercise} exercises={sampleExercises}
     exerciseIndex={index} code={codes[index]!} onSelect={setIndex}
+    onReset={() => setCodes((previous) => previous.map((value, i) => i === index ? exercise.starterCode : value))}
     onChange={(code) => setCodes((previous) => previous.map((value, i) => i === index ? code : value))} />;
 }

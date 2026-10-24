@@ -9,5 +9,5 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
   return <div className="student-empty"><h2>{title}</h2>{children && <p>{children}</p>}</div>;
 }
 export function MaterialModule({ title, expanded, onToggle, id, children }: { title: string; expanded: boolean; onToggle: () => void; id: string; children: ReactNode }) {
-  return <section className="material-module"><h2><button type="button" className="material-toggle" id={`module-${id}`} aria-expanded={expanded} aria-controls={`lessons-${id}`} onClick={onToggle}><span>{title}</span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m9 5 7 7-7 7" /></svg></button></h2><div id={`lessons-${id}`} role="region" aria-labelledby={`module-${id}`} hidden={!expanded}>{expanded && children}</div></section>;
+  return <section className="material-module"><h2><button type="button" className="material-toggle" id={`module-${id}`} aria-expanded={expanded} aria-controls={`lessons-${id}`} onClick={onToggle}><span>{title}</span><span aria-hidden="true">{expanded ? '−' : '+'}</span></button></h2><div id={`lessons-${id}`} role="region" aria-labelledby={`module-${id}`} hidden={!expanded}>{expanded && children}</div></section>;
 }

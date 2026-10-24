@@ -17,7 +17,7 @@ interface Props {
 }
 
 const editorTheme = EditorView.theme({
-  '&': { height: '100%', fontSize: 'var(--font-code)', backgroundColor: 'var(--surface-editor)', color: 'var(--text)' },
+  '&': { height: '100%', fontSize: 'var(--font-code)', backgroundColor: 'var(--surface-editor)', color: 'var(--code-text)' },
   '&.cm-focused': { outline: 'none' },
   '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--font-mono)', lineHeight: '1.7' },
   '.cm-content': { padding: '20px 0', minHeight: '100%' },
@@ -28,12 +28,12 @@ const editorTheme = EditorView.theme({
     backgroundPosition: '12px 0',
     backgroundRepeat: 'no-repeat',
   },
-  '.cm-gutters': { backgroundColor: 'var(--surface-editor)', color: 'var(--text-subtle)', border: 'none', paddingLeft: '12px' },
+  '.cm-gutters': { backgroundColor: 'var(--code-gutter)', color: 'var(--code-muted)', border: 'none', paddingLeft: '12px' },
   '.cm-lineNumbers .cm-gutterElement': { minWidth: '30px', paddingRight: '12px' },
   // drawSelection paints behind the line, so its tint must remain translucent.
   '.cm-activeLine': { backgroundColor: 'rgba(130, 169, 235, 0.06)' },
-  '.cm-activeLineGutter': { backgroundColor: '#18253a' },
-  '.cm-cursor': { borderLeftColor: '#a8c7f4' },
+  '.cm-activeLineGutter': { backgroundColor: '#1b3856' },
+  '.cm-cursor': { borderLeftColor: '#7fd6ff' },
   '.cm-selectionBackground': { backgroundColor: '#2b4263' },
   '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground': { backgroundColor: '#3b6397' },
   '.cm-content ::selection, .cm-content::selection': { color: '#f4f7fc' },
@@ -41,12 +41,12 @@ const editorTheme = EditorView.theme({
 }, { dark: true });
 
 const highlighting = HighlightStyle.define([
-  { tag: tags.keyword, color: '#c4b5e7' },
-  { tag: [tags.string, tags.special(tags.string)], color: '#abd2b2' },
-  { tag: tags.number, color: '#ddbe91' },
-  { tag: tags.comment, color: '#94a3b8', fontStyle: 'italic' },
-  { tag: tags.function(tags.variableName), color: '#a8c7f4' },
-  { tag: tags.operator, color: '#bdc7d8' },
+  { tag: tags.keyword, color: '#ffcf6b' },
+  { tag: [tags.string, tags.special(tags.string)], color: '#b5e8a6' },
+  { tag: tags.number, color: '#ffb88a' },
+  { tag: tags.comment, color: '#8aa7c4', fontStyle: 'italic' },
+  { tag: tags.function(tags.variableName), color: '#7fd6ff' },
+  { tag: tags.operator, color: '#ecf5ff' },
 ]);
 
 export function CodeEditor({ value, onChange, onRun, label, helpId, readOnly = false }: Props) {

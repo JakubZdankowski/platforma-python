@@ -10,21 +10,15 @@ interface Props {
   onSelect: (index: number) => void;
 }
 
-const arrow = (direction: 'left' | 'right') => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d={direction === 'left' ? 'M10 3 5 8l5 5' : 'm6 3 5 5-5 5'} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 /** Previous/next navigation shared by the playground and assigned lessons. */
 export function SampleExercisePicker({ exercises, selectedIndex, disabled, labels, onSelect }: Props) {
   return (
     <nav className="exercise-picker" aria-label={labels.navigation}>
       <Button unstyled type="button" className="exercise-picker-button" disabled={disabled || selectedIndex <= 0} onClick={() => onSelect(selectedIndex - 1)}>
-        {arrow('left')}<span className="exercise-picker-label">{labels.previous}</span>
+        <span className="exercise-picker-label">{labels.previous}</span>
       </Button>
       <Button unstyled type="button" className="exercise-picker-button" disabled={disabled || selectedIndex >= exercises.length - 1} onClick={() => onSelect(selectedIndex + 1)}>
-        <span className="exercise-picker-label">{labels.next}</span>{arrow('right')}
+        <span className="exercise-picker-label">{labels.next}</span>
       </Button>
     </nav>
   );
@@ -52,7 +46,7 @@ export function ExerciseListPicker({ exercises, selectedIndex, disabled, labels,
           if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); trigger.current?.focus(); }
         }}>
           <Button unstyled ref={trigger} type="button" className="exercise-picker-button exercise-picker-current" aria-expanded={open} aria-controls={listId} disabled={disabled} onClick={() => setOpen(!open)}>
-            <span>{title}</span><svg className="exercise-list-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span>{title}</span>
           </Button>
           <ol id={listId} className="exercise-picker-list" hidden={!open} aria-label={labels.navigation}>
             {exercises.map((exercise, index) => <li key={exercise.id}>

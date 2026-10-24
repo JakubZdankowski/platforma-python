@@ -2,6 +2,7 @@
 import type { PyodideAPI } from 'pyodide';
 import type { PyProxy } from 'pyodide/ffi';
 import executeSource from './execute.py?raw';
+import { detectInputSupport, type InputSupport } from './inputSupport';
 import { OutputBuffer } from './OutputBuffer';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 import { parseTurtleMessage, TurtleBatcher, turtleSource } from './turtleBridge';
@@ -9,7 +10,7 @@ import { MAX_TURTLE_COMMANDS } from '../turtle/turtleTypes';
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 let python: PyodideAPI | undefined;
-let inputSupported = false;
+let inputSupport: InputSupport = 'initialization-failed';
 let active = false;
 let nextRequestId = 0;
 let waiting: { runId: number; requestId: number; resolve: (value: string) => void } | undefined;
@@ -31,15 +32,17 @@ async function initialize(indexURL: string): Promise<void> {
   const { loadPyodide } = (await import(/* @vite-ignore */ loaderURL)) as typeof import('pyodide');
   python = await loadPyodide({ indexURL, stdout: () => {}, stderr: () => {} });
   python.setStdin({ stdin: () => null });
-  try {
-    inputSupported = await python.runPythonAsync('from pyodide.ffi import run_sync\nfrom js import Promise\nrun_sync(Promise.resolve(True))') === true;
-  } catch { inputSupported = false; }
-  send({ type: 'ready', inputSupported });
+  inputSupport = await detectInputSupport(
+    WebAssembly as unknown as { Suspending?: unknown; promising?: unknown },
+    () => python!.runPythonAsync('from pyodide.ffi import run_sync\nfrom js import Promise\nrun_sync(Promise.resolve(True))'),
+    (error) => console.error('[python-worker] Input initialization failed', error),
+  );
+  send({ type: 'ready', inputSupported: inputSupport === 'supported' });
 }
 
 async function execute(request: Extract<WorkerRequest, { type: 'run' }>): Promise<void> {
   if (!python) throw new Error('Python worker is not initialized.');
-  const { runId, code, inputUnavailableMessage, turtle } = request;
+  const { runId, code, inputUnavailableMessage, inputInitializationFailedMessage, turtle } = request;
   // Buffered text always shares one turtleIndex: it is flushed before each new command is counted.
   let turtleCount = 0;
   const output = new OutputBuffer(
@@ -60,8 +63,8 @@ async function execute(request: Extract<WorkerRequest, { type: 'run' }>): Promis
 
   const globals = python.toPy({
     _source: code,
-    _input_supported: inputSupported,
-    _input_message: inputUnavailableMessage,
+    _input_supported: inputSupport === 'supported',
+    _input_message: inputSupport === 'missing-jspi' ? inputUnavailableMessage : (inputInitializationFailedMessage ?? 'Interactive input() initialization failed. Reload the page and try again. [INPUT_INIT_FAILED]'),
     _turtle_source: turtle ? turtleSource : '',
     _turtle_limit: MAX_TURTLE_COMMANDS,
   }) as PyProxy;
