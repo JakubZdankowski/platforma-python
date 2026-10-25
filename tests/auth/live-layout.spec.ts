@@ -4,7 +4,7 @@ import { signInTeacher } from '../../src/auth/authService';
 import { studentAuthEmail } from '../../supabase/functions/teacher-students/handler';
 import { adminClient, anonClient, SEED } from '../db/localSupabase';
 
-test('four students remain visible beside a tall read-only editor without scrolling the page', async ({ page }) => {
+test('students can be selected above a tall read-only editor without scrolling the page', async ({ page }) => {
   const admin = adminClient();
   const teacher = anonClient();
   expect(await signInTeacher(teacher, SEED.teacher.email, SEED.teacher.password)).toBeNull();
@@ -39,9 +39,9 @@ test('four students remain visible beside a tall read-only editor without scroll
     await expect(page).toHaveURL(/\/teacher$/);
     await page.goto(`/teacher/classes/${classId}/live`);
     for (let i = 1; i <= 4; i++) {
-      const button = page.getByRole('button', { name: `Podgląd: Uczeń układu ${i}`, exact: true });
-      await expect(button).toBeInViewport();
-      await button.click();
+      const picker = page.getByLabel('Podgląd ucznia');
+      await expect(picker).toBeInViewport();
+      await picker.selectOption(userIds[i - 1]!);
       const editor = page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' });
       await expect(editor).toContainText(`print("uczeń ${i}, linia 1")`);
       await expect(editor).toHaveAttribute('aria-readonly', 'true');

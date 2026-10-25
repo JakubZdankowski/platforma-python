@@ -153,9 +153,10 @@ for (const role of ['student', 'teacher', 'admin'] as const) {
         await expect(page.locator('main [role="alert"]')).toHaveCount(0);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${role} ${routes[index]} at ${width}px`).toBe(true);
         if (routes[index]!.endsWith('/live')) {
-          const student = page.getByRole('button', { name: /Podgląd:/ }).first();
-          await student.click();
-          await expect(student.locator('.activity-label')).toHaveText(/^(aktywny|nieaktywny)$/);
+          const picker = page.getByLabel('Podgląd ucznia');
+          await picker.selectOption({ index: 1 });
+          const student = picker.locator('option:checked');
+          await expect(student).toContainText(/ · (aktywny|nieaktywny)/);
           await expect(student).not.toContainText(/Sukces|bezczynny|Jeszcze nie uruchamiał/);
           await expect(page.getByRole('textbox', { name: 'Kod Python ucznia (tylko do odczytu)' })).toBeVisible();
         }

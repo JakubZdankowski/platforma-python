@@ -50,9 +50,9 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await expect(connection).toHaveText('Na żywo');
     const row = page.getByTestId(`live-student-${student.value.studentId}`);
     const waitingRow = page.getByTestId(`live-student-${otherStudent.value.studentId}`);
-    await expect(row.locator('.activity-label')).toHaveText('nieaktywny');
-    await expect(waitingRow.locator('.activity-label')).toHaveText('nieaktywny');
-    await page.getByRole('button', { name: 'Podgląd: Testowy uczeń', exact: true }).click();
+    await expect(row).toContainText(' · nieaktywny');
+    await expect(waitingRow).toContainText(' · nieaktywny');
+    await page.getByLabel('Podgląd ucznia').selectOption(student.value.studentId);
     await expect(page.getByText('Uczeń nie otworzył jeszcze żadnego ćwiczenia.')).toBeVisible();
 
     const studentPage = await studentContext.newPage();
@@ -68,8 +68,8 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await expect(watched).toHaveText('print("start")');
     await editor.fill('print("Żółw i ąęł — zmiana na żywo")');
     await expect(watched).toHaveText('print("Żółw i ąęł — zmiana na żywo")', { timeout: 3000 });
-    await expect(row.locator('.activity-label')).toHaveText('aktywny');
-    await expect(waitingRow.locator('.activity-label')).toHaveText('nieaktywny');
+    await expect(row).toContainText(' · aktywny');
+    await expect(waitingRow).toContainText(' · nieaktywny');
     await expect(watched).toHaveAttribute('aria-readonly', 'true');
     await expect(watched).toHaveAttribute('contenteditable', 'false');
     await watched.click();

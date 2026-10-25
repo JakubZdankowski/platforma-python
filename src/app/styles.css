@@ -205,7 +205,8 @@ a.brand { color: inherit; text-decoration: none; }
 .live-connection-line, .live-viewer-heading { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .live-connection { font-size: var(--font-control); color: var(--warning); }
 .live-connection.live, .run-success { color: var(--success); }
-.live-workspace { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--space-4); flex: 1; min-height: 0; }
+.live-workspace { display: flex; flex: 1; min-height: 0; }
+.live-workspace > .live-viewer { flex: 1; }
 .live-students-panel, .live-viewer { min-width: 0; min-height: 0; border: 1px solid var(--border); border-radius: var(--panel-radius); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
 .live-students-panel > h2 { margin: 0; padding: var(--space-3); font-size: var(--font-control); border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .live-student-list { list-style: none; margin: 0; padding: var(--space-2); overflow-y: auto; flex: 1; min-height: 0; }
@@ -229,7 +230,12 @@ a.brand { color: inherit; text-decoration: none; }
 .live-work-details { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-6); font-size: var(--font-meta); color: var(--text-muted); padding: var(--space-2) var(--space-3) var(--space-2); flex-shrink: 0; }
 .live-viewer > .form-error { margin: 0; padding: var(--space-2) var(--space-3); max-height: 80px; overflow-y: auto; flex-shrink: 0; }
 .live-empty { padding: var(--space-6); font-size: var(--font-control); }
-.live-exercise-picker { display: grid; gap: var(--space-2); padding: var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; font-size: var(--font-meta); color: var(--text-muted); }
+.live-exercise-pickers { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1.4fr); align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.live-mode-button { min-height: 32px; white-space: nowrap; }
+.live-mode-button[aria-pressed="true"] { background: var(--success-fill); border-color: var(--success-fill); color: var(--on-accent); }
+.live-mode-button[aria-pressed="true"]:hover:not(:disabled) { background: var(--success-hover); border-color: var(--success-hover); }
+.live-exercise-picker { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-2); min-width: 0; font-size: var(--font-meta); color: var(--text-muted); }
+.live-exercise-pickers .live-exercise-picker select { min-height: 32px; padding: var(--space-1) var(--space-2); font-size: var(--font-control); }
 .live-exercise-picker select { width: 100%; min-width: 0; padding: var(--space-2) var(--space-2); border: 1px solid var(--border-control); border-radius: var(--control-radius); background: var(--surface-raised); color: var(--text); font: inherit; font-size: var(--font-control); }
 .live-exercise-picker option { background: var(--surface-raised); color: var(--text); }
 .live-exercise-picker [data-work-status="completed"] { color: var(--success); }
@@ -241,14 +247,36 @@ a.brand { color: inherit; text-decoration: none; }
 .live-code-container { flex: 1; min-height: 0; overflow: hidden; border-top: 1px solid var(--border); background: var(--surface-editor); display: flex; }
 .live-code-container .cm-content { cursor: text; }
 .live-code-preview { display: flex; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
+.live-preview-instructions { display: flex; flex-shrink: 0; min-height: 0; border-right: 1px solid var(--border); background: var(--surface); }
+.live-instructions-rail { width: 44px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface-raised); }
+.live-instructions-rail button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); width: 100%; min-height: 52px; color: var(--accent); background: transparent; border: 0; cursor: pointer; }
+.live-instructions-rail button:hover { background: var(--surface-hover); }
+.live-instructions-rail button:focus-visible { outline-offset: -3px; }
+.live-instructions-content { width: clamp(220px, 23vw, 320px); padding: var(--space-4); overflow: auto; overflow-wrap: anywhere; }
+.live-instructions-content[hidden] { display: none; }
+.live-instructions-content h2 { font-size: var(--font-control); margin: 0 0 var(--space-4); }
+.live-instructions-content pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .live-preview-editor { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
-.live-preview-output { display: flex; flex-direction: column; width: 38%; min-width: 0; min-height: 0; }
+.live-preview-editor > .panel-heading { flex-shrink: 0; background: var(--code-toolbar); color: var(--code-text); border-color: var(--nav-border); }
+.live-preview-editor > .panel-heading h2 { margin: 0; }
+.live-preview-editor > .panel-heading .live-readonly { color: var(--code-muted); font-weight: 400; margin-left: var(--space-2); }
+.live-preview-editor .editor-header-actions { margin-left: auto; min-height: 0; padding: 0; border: 0; background: transparent; gap: var(--space-2); }
+.live-preview-output { display: flex; flex-direction: column; width: 30%; min-width: 0; min-height: 0; }
 .live-preview-output .output-panel { flex: 1; }
 .live-preview-output .turtle-panel { flex: 1; }
 @media (max-width: 700px) {
+  .live-exercise-pickers { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .live-exercise-picker { grid-template-columns: 5.5em minmax(0, 1fr); }
+  .live-exercise-pickers .live-exercise-picker select { min-height: 40px; }
   .live-code-preview { flex-direction: column; overflow-y: auto; }
+  .live-preview-instructions { border-right: 0; border-bottom: 1px solid var(--border); }
+  .live-instructions-content { width: auto; flex: 1; min-width: 0; max-height: 240px; }
   .live-preview-editor { flex: none; min-height: 240px; }
   .live-preview-output { width: 100%; flex: none; min-height: 200px; }
+}
+@media (pointer: coarse) {
+  .live-mode-button { min-height: 44px; }
+  .live-exercise-pickers .live-exercise-picker select { min-height: 44px; }
 }
 @media (min-width: 901px) {
   .site-header:has(~ .live-class-page) .site-header-inner { height: 52px; }
