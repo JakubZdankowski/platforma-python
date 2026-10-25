@@ -1,4 +1,4 @@
-// Privileged management of student accounts (admin-only in the Deno adapter). Runtime-independent: the
+// Student account creation for admins and password resets for assigned teachers. Runtime-independent: the
 // Deno entry point (index.ts) supplies the Supabase-backed dependencies,
 // unit tests supply fakes.
 
@@ -23,8 +23,9 @@ export type StudentAction =
   | { action: 'reset-password'; studentId: string };
 
 export interface StudentAdmin {
-  /** Returns the caller's id when the access token belongs to an administrator. */
+  /** Returns the id of an administrator or teacher with a current session. */
   teacherIdFromToken(accessToken: string): Promise<string | null>;
+  canCreateStudents(callerId: string): Promise<boolean>;
   ownsClass(teacherId: string, classId: string): Promise<boolean>;
   usernameTaken(teacherId: string, username: string): Promise<boolean>;
   /** Creates the auth user; the database trigger creates the profile. */
@@ -130,6 +131,7 @@ export async function handleRequest(
     if (!action) return fail(400, 'invalid-input');
 
     if (action.action === 'create') {
+      if (!(await admin.canCreateStudents(teacherId))) return fail(403, 'forbidden');
       if (action.classId && !(await admin.ownsClass(teacherId, action.classId))) return fail(404, 'not-found');
       if (await admin.usernameTaken(teacherId, action.username)) return fail(409, 'username-taken');
       const password = makePassword();

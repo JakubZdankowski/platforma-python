@@ -16,6 +16,7 @@ const STUDENT = '44444444-4444-4444-8444-444444444444';
 function fakeAdmin(overrides: Partial<StudentAdmin> = {}): StudentAdmin {
   return {
     teacherIdFromToken: vi.fn(async (token: string) => (token === 'teacher-token' ? TEACHER : token === 'other-teacher' ? OTHER_TEACHER : null)),
+    canCreateStudents: vi.fn(async () => true),
     ownsClass: vi.fn(async (teacherId: string, classId: string) => teacherId === TEACHER && classId === CLASS),
     usernameTaken: vi.fn(async (_teacherId: string, username: string) => username === 'kuba'),
     createStudentUser: vi.fn(async () => STUDENT),
@@ -37,6 +38,13 @@ function post(body: unknown, token: string | null = 'teacher-token'): Request {
 const create = { action: 'create', classId: CLASS, username: 'Ania ', displayName: '  Ania   Nowak ' };
 
 describe('teacher-students handler', () => {
+  it('does not allow teachers with reset access to create accounts', async () => {
+    const admin = fakeAdmin({ canCreateStudents: vi.fn(async () => false) });
+    expect((await handleRequest(post(create), admin)).status).toBe(403);
+    expect(admin.createStudentUser).not.toHaveBeenCalled();
+    expect((await handleRequest(post({ action: 'reset-password', studentId: STUDENT }), admin)).status).toBe(200);
+    expect(admin.setPassword).toHaveBeenCalledTimes(1);
+  });
   it('creates an independent account without a class', async () => {
     const admin = fakeAdmin();
     const response = await handleRequest(post({ action: 'create', username: 'independent', displayName: 'Independent' }), admin);

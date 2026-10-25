@@ -64,7 +64,7 @@ test('teacher dashboard adds and removes a module with readable mobile layout', 
     await page.setViewportSize({width:390,height:844});
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     page.once('dialog',dialog=>dialog.accept());
-    await page.getByRole('button', {name:'Usuń z grupy: Drugi moduł',exact:true}).click();
+    await page.getByRole('button', {name:'Odepnij ten moduł: Drugi moduł',exact:true}).click();
     await expect(page.getByRole('link', {name:'Drugi moduł'})).toHaveCount(0);
     await expect(page.getByText('Usunięto moduł z grupy.', {exact:true})).toBeVisible();
     expect((await f.admin.from('modules').select('id').eq('id',other.moduleId)).data).toHaveLength(1);

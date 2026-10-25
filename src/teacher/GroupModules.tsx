@@ -50,13 +50,13 @@ export function GroupModules({ client, classId, messages: t }: { client: AppSupa
   function add(event: FormEvent) { event.preventDefault(); if (selected) void toggle(selected, true); }
   const available = data?.modules.filter(m => !data.assigned.has(m.id)) ?? [];
   return <section className="account-section group-modules-panel" aria-labelledby="group-modules-title">
-    <div className="classroom-panel-heading"><div><h2 id="group-modules-title">Moduły grupy{data && <span className="group-count">{data.assigned.size}</span>}</h2><p>Wybierz materiały, które realizuje ta grupa.</p></div></div>
+    <div className="classroom-panel-heading"><div><h2 id="group-modules-title">Moduły grupy{data && <span className="group-count">{data.assigned.size}</span>}</h2></div></div>
     {error && <Notice tone="error">{error}{!data && <Button variant="secondary" onClick={() => setAttempt(v => v + 1)}>{t.retry}</Button>}</Notice>}
     {!data && !error && <Notice>{t.loadingData}</Notice>}
     {data && <>
       {data.assigned.size ? <ul className="group-module-cards">{data.modules.filter(m => data.assigned.has(m.id)).map(m => <li key={m.id}>
         <Link className="group-module-content" aria-label={m.title} to={`${base}/modules/${m.id}`}><strong>{m.title}</strong><span>Liczba lekcji: {m.lesson_count}</span></Link>
-        <Button variant="quiet" size="compact" disabled={busy} aria-label={`Usuń z grupy: ${m.title}`} onClick={() => void toggle(m.id, false)}>Usuń z grupy</Button>
+        <Button variant="quiet" size="compact" disabled={busy} aria-label={`Odepnij ten moduł: ${m.title}`} onClick={() => void toggle(m.id, false)}>Odepnij ten moduł</Button>
       </li>)}</ul> : <div className="classroom-empty">Nie przypisano jeszcze modułów do tej grupy.</div>}
       <form className="group-add-module form" onSubmit={add}>
         <label className="field">Dodaj moduł<select aria-label="Dodaj moduł" value={selected} disabled={busy || !available.length} onChange={e => setSelected(e.target.value)}><option value="">{available.length ? 'Wybierz moduł' : 'Brak kolejnych modułów'}</option>{available.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}</select></label>

@@ -1,4 +1,4 @@
-// Legacy endpoint name, now restricted to administrators.
+// Admin account creation and password resets for admins or assigned teachers.
 // The service role key is only available here, never in the browser.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import { handleRequest, type StudentAdmin } from './handler.ts';
@@ -29,7 +29,12 @@ const admin: StudentAdmin = {
     const profile = check(
       await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle(),
     );
-    return profile?.role === 'admin' ? data.user.id : null;
+    return profile?.role === 'admin' || profile?.role === 'teacher' ? data.user.id : null;
+  },
+
+  async canCreateStudents(callerId) {
+    const profile = check(await supabase.from('profiles').select('role').eq('id', callerId).maybeSingle());
+    return profile?.role === 'admin';
   },
 
   async ownsClass(_teacherId, classId) {
@@ -66,7 +71,7 @@ const admin: StudentAdmin = {
     if (error) console.error('teacher-students cleanup failed', error.message);
   },
 
-  async isOwnStudent(_teacherId, studentId) {
+  async isOwnStudent(teacherId, studentId) {
     const row = check(
       await supabase
         .from('profiles')
@@ -76,7 +81,15 @@ const admin: StudentAdmin = {
 
         .maybeSingle(),
     );
-    return row !== null;
+    if (!row) return false;
+    const caller = check(await supabase.from('profiles').select('role').eq('id', teacherId).maybeSingle());
+    if (caller?.role === 'admin') return true;
+    if (caller?.role !== 'teacher') return false;
+    const groups = check(await supabase.from('class_teachers').select('class_id').eq('teacher_id', teacherId));
+    if (!groups.length) return false;
+    const membership = check(await supabase.from('class_members').select('student_id')
+      .eq('student_id', studentId).in('class_id', groups.map(group => group.class_id)).limit(1).maybeSingle());
+    return membership !== null;
   },
 
   async setPassword(studentId, password) {

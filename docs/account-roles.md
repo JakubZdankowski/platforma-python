@@ -2,7 +2,8 @@
 
 | Operacja | Administrator | Nauczyciel | Uczeń |
 | --- | --- | --- | --- |
-| Tworzenie, edycja, usuwanie kont nauczycieli i uczniów, reset hasła | Tak | Nie | Nie |
+| Tworzenie, edycja, usuwanie kont nauczycieli i uczniów | Tak | Nie | Nie |
+| Wygenerowanie nowego hasła ucznia | Tak | Tylko uczniowie przypisanych grup | Nie |
 | Przypisywanie uczniów i nauczycieli do grup | Tak | Nie | Nie |
 | Użytkownicy i statystyki całej platformy | Tak | Nie | Nie |
 | Podgląd grup, uczniów i zapisanego kodu na żywo | Wszystkie grupy | Przypisane grupy | Własny kod |
@@ -33,13 +34,15 @@ Zatwierdzenie nie przydziela lekcji automatycznie. Administrator dodaje ją do m
 ## Wdrożenie
 
 1. Zastosuj migracje: `pnpm exec supabase db push` (lokalnie: `pnpm exec supabase migration up --local`). Migracja roli jest osobna, ponieważ Postgres wymaga zatwierdzenia nowej wartości enum przed jej użyciem.
-2. Wdróż obie funkcje: `pnpm exec supabase functions deploy admin-accounts` i `pnpm exec supabase functions deploy teacher-students`. Druga zachowuje wcześniejszy protokół operacji kont uczniów, ale wymaga teraz roli administratora. Nie zostawiaj starej wersji tej funkcji.
+2. Wdróż obie funkcje: `pnpm exec supabase functions deploy admin-accounts` i `pnpm exec supabase functions deploy teacher-students`. Druga pozwala administratorowi tworzyć konta i resetować hasła uczniów, a nauczycielowi resetować hasła wyłącznie uczniów przypisanych do jego grup. Wymagana jest bieżąca sesja; sprawdzenie uprawnień odbywa się po stronie serwera.
 3. Utwórz pierwszego administratora: ustaw w powłoce `SUPABASE_URL` i `SUPABASE_SECRET_KEY`, następnie `pnpm admin:create admin@szkola.example "Administrator"`. Wygenerowane hasło pojawia się raz. Klucz serwisowy nigdy nie trafia do Vite ani przeglądarki.
 4. Zbuduj i opublikuj frontend: `pnpm build`.
 
 Dotychczasowe role pozostają bez zmian. Istniejący właściciele grup stają się przypisanymi nauczycielami. Istniejące lekcje otrzymują status zatwierdzony, więc uczniowie zachowują dostęp. Nowe lekcje domyślnie są szkicami. Import przez zaufany skrypt z kluczem serwisowym jawnie zatwierdza importowane treści.
 
 Usunięcie konta nauczyciela przenosi jego grupy i materiały oraz powiązania twórcy kont uczniów do administratora; usuwa przypisania tego nauczyciela do grup. Usunięcie ucznia usuwa jego konto i prace, po potwierdzeniu w interfejsie. Zmiana loginu ucznia zachowuje identyfikator konta i zapisany kod. Reset hasła kończy poprzednie sesje.
+
+W widoku grupy nauczyciel ma przy uczniu przycisk „Zresetuj hasło”. Po potwierdzeniu poprzednie hasło przestaje działać, a nowe jest widoczne tylko do ukrycia lub opuszczenia widoku. Hasło nie jest zapisywane w localStorage, sessionStorage ani jako jawny tekst w bazie. Obecnego hasła nie można odczytać.
 
 Lokalny seed zawiera `admin@example.test` / `admin-dev-password`. To dane wyłącznie deweloperskie; seed nie służy do produkcji. Przy testach funkcji uruchom `pnpm exec supabase functions serve`.
 

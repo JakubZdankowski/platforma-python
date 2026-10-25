@@ -20,9 +20,9 @@ export function AccountBar({ messages: t, target }: { messages: Messages; target
 
   return createPortal(<>
       <p className="header-account-summary">
-        <span className="account-muted">{t.signedInAs} </span>
+        {profile.role !== 'teacher' && <span className="account-muted">{t.signedInAs} </span>}
         <strong>{profile.displayName}</strong>
-        <span className="account-muted"> · {profile.role === 'admin' ? 'Administrator' : profile.role === 'teacher' ? t.roleTeacher : profile.username}</span>
+        <span className="account-muted">{profile.role === 'teacher' ? ` (${t.roleTeacher})` : ` · ${profile.role === 'admin' ? 'Administrator' : profile.username}`}</span>
       </p>
       <Button type="button" variant="secondary" size="compact" onClick={() => void handleSignOut()}>{t.signOut}</Button>
   </>, target);

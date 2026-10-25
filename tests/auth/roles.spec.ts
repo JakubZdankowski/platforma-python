@@ -10,7 +10,7 @@ test('teacher submits Markdown; admin approves and assigns it; student receives 
   let lessonId: string | undefined, moduleId: string | undefined;
   try {
     await login(page,SEED.teacher.email,SEED.teacher.password,'teacher');
-    await page.getByRole('link',{name:'Grupy',exact:true}).click();
+    await page.getByRole('link',{name:'Pulpit',exact:true}).click();
     await expect(page.getByRole('button',{name:'Utwórz grupę'})).toHaveCount(0);
     await page.getByRole('link',{name:'Uczniowie',exact:true}).click();
     await expect(page.getByRole('button',{name:'Utwórz konto'})).toHaveCount(0);
@@ -84,7 +84,7 @@ test('admin creates, edits, assigns and deletes a teacher account', async ({ pag
     await page.getByRole('link',{name:'Grupy',exact:true}).click(); await page.getByRole('link',{name:SEED.className,exact:true}).click();
     const member=page.getByRole('checkbox',{name:`${name} poprawiony`,exact:true}); await member.check(); await expect(member).toBeEnabled(); await expect(member).toBeChecked();
     const teacherPage=await context.newPage(); await login(teacherPage,`edited-${email}`,password,'teacher');
-    await teacherPage.getByRole('link',{name:'Grupy',exact:true}).click(); await expect(teacherPage.getByRole('link',{name:SEED.className,exact:true})).toBeVisible();
+    await teacherPage.getByRole('link',{name:'Pulpit',exact:true}).click(); await expect(teacherPage.getByRole('link',{name:SEED.className,exact:true})).toBeVisible();
     await page.getByRole('link',{name:'Konta',exact:true}).click(); page.once('dialog',d=>void d.accept());
     await row.getByRole('button',{name:'Usuń',exact:true}).click(); await expect(row).toHaveCount(0);
     expect((await service.from('profiles').select('id').eq('id',userId)).data).toEqual([]);

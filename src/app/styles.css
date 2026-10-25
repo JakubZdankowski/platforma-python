@@ -629,7 +629,15 @@ a.brand { color: inherit; text-decoration: none; }
 .classroom-rows li + li { border-top: 1px solid var(--border); }
 .classroom-rows a { display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 78px; padding: 20px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
 .classroom-rows a:hover { background: var(--surface-hover); }
-.classroom-rows a > span { color: var(--text-muted); white-space: nowrap; }
+.classroom-rows a > span { color: var(--text-muted); min-width: 0; }
+.group-settings { margin-block: var(--space-6); }
+.group-membership { min-width: 0; }
+.group-roster-filters { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-block: var(--space-4); }
+.group-roster-filters .field { flex: 1 1 160px; min-width: 0; }
+.group-roster .module-checklist li > label { min-width: 0; overflow-wrap: anywhere; }
+.group-roster .module-checklist li > label > span { min-width: 0; }
+.group-membership-label { display: block; color: var(--text-muted); font-size: var(--font-meta); }
+.group-membership-feedback { min-height: 1.55em; margin-block: var(--space-3); overflow-wrap: anywhere; }
 .classroom-empty { padding: 32px; text-align: center; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-raised); color: var(--text-muted); }
 .classroom-dashboard .data-table { background: var(--surface); border: 1px solid var(--border); }
 .classroom-dashboard .data-table td, .classroom-dashboard .data-table th { padding: 24px 20px; }
@@ -679,7 +687,12 @@ a.brand { color: inherit; text-decoration: none; }
 
 .group-meeting { display: block; color: var(--text-muted); font-size: var(--font-control); font-weight: 400; margin-top: 4px; }
 .teacher-group-dashboard .group-detail-heading { padding: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; }
-.teacher-group-dashboard .group-dashboard-grid { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(0, 1.4fr); gap: 24px; align-items: start; }
+.teacher-group-dashboard .group-detail-heading h1 { font-size: 32px; }
+.teacher-group-dashboard .group-detail-heading .account-lead { font-size: 18px; }
+.teacher-group-dashboard .group-dashboard-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 24px; align-items: start; }
+.teacher-group-dashboard .group-roster .module-checklist li > span { min-width: 0; overflow-wrap: anywhere; }
+.student-password-action { min-width: 0; max-width: 100%; margin-left: auto; }
+.student-password-action .credential-notice { margin-top: var(--space-3); overflow-wrap: anywhere; }
 .teacher-group-dashboard .group-dashboard-grid .account-section { margin-top: 0; }
 .teacher-group-dashboard .group-dashboard-grid > fieldset { min-width: 0; }
 .group-count { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; margin-left: 12px; padding: 0 8px; border-radius: 8px; background: var(--surface-selected); color: var(--accent); font-size: var(--font-control); vertical-align: middle; }

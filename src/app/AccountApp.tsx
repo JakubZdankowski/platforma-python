@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from 'react-router';
+import { Link, Navigate, Route, Routes } from 'react-router';
 import { AccountBar, HeaderSignIn } from '../auth/AccountBar';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
 import { AuthStatus, RequireRole } from '../auth/RequireRole';
@@ -16,7 +16,6 @@ import { MaterialEditorPage } from '../staff/MaterialEditorPage';
 import { AdminDashboardPage } from '../staff/AdminDashboardPage';
 import { TeacherLivePage } from '../teacher/TeacherLivePage';
 import { DashboardLayout } from './DashboardLayout';
-import { TeacherDashboardPage } from '../teacher/TeacherDashboardPage';
 import { TeacherModulesPage } from '../teacher/TeacherModulesPage';
 import { TeacherModulePage } from '../teacher/TeacherModulePage';
 
@@ -43,10 +42,10 @@ export default function AccountApp({ messages: t, locale, headerTarget }: { mess
       </Route>
       <Route path="student/exercises/:exerciseId" element={<RequireRole role="student" messages={t}><StudentExercisePage messages={t} locale={locale} /></RequireRole>} />
       <Route path="teacher" element={<RequireRole role="teacher" messages={t}><DashboardLayout /></RequireRole>}>
-        <Route index element={<TeacherDashboardPage />} />
+        <Route index element={<GroupsPage />} />
         <Route path="modules" element={<TeacherModulesPage messages={t} />} />
         <Route path="modules/:moduleId" element={<TeacherModulePage messages={t} />} />
-        <Route path="groups" element={<GroupsPage />} />
+        <Route path="groups" element={<Navigate to="/teacher" replace />} />
         <Route path="students" element={<AccountsPage />} />
         <Route path="materials" element={<MaterialsPage />} />
         <Route path="materials/:lessonId" element={<MaterialEditorPage />} />

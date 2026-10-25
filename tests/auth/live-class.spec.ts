@@ -42,7 +42,7 @@ test('teacher watches saved student code within 3 seconds, read-only, and resync
     await page.getByLabel('Adres e-mail').fill(SEED.teacher.email);
     await page.getByLabel('Hasło').fill(SEED.teacher.password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await page.getByRole('link', { name: 'Grupy', exact: true }).click();
+    await page.getByRole('link', { name: 'Pulpit', exact: true }).click();
     await page.getByRole('link', { name: className, exact: true }).click();
     await page.getByRole('link', { name: 'Podgląd pracy uczniów' }).click();
     await expect(page).toHaveURL(new RegExp(`/teacher/classes/${classId}/live$`));
