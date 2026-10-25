@@ -830,60 +830,20 @@ a.brand { color: inherit; text-decoration: none; }
   .lesson-workspace { --lesson-rail-width: 52px; }
 }
 
-/* The console shares the editor column; drawing keeps its own preview. */
-.lesson-workspace.console-below {
-  grid-template-columns: var(--lesson-rail-track, var(--lesson-rail-width)) min(var(--sidebar-width, 28vw), 38%) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-}
-.lesson-workspace.console-below.lesson-panel-collapsed {
-  grid-template-columns: var(--lesson-rail-width) minmax(0, 1fr);
-}
-.lesson-workspace.console-below.has-turtle {
-  grid-template-columns: var(--lesson-rail-track, var(--lesson-rail-width)) min(var(--sidebar-width, 24vw), 30%) minmax(0, 1fr) var(--output-column);
-}
-.lesson-workspace.console-below.has-turtle.lesson-panel-collapsed {
-  grid-template-columns: var(--lesson-rail-width) minmax(0, 1fr) var(--output-column);
-}
-.coding-workspace { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; min-height: 0; }
-.coding-workspace > .editor-panel { flex: 1; min-height: 200px; }
-.coding-workspace > .output-panel { flex: 0 0 clamp(200px, 30%, 280px); min-height: 200px; }
-.console-below > .output-column > .turtle-panel { flex: 1; }
-.coding-workspace .editor-panel > .panel-heading { flex-wrap: wrap; padding-block: var(--space-2); }
-.coding-workspace .editor-header-actions { margin-left: auto; min-height: 0; padding: 0; border: 0; background: transparent; gap: var(--space-2); }
+.lesson-workspace .editor-panel > .panel-heading { flex-wrap: wrap; padding-block: var(--space-2); }
+.lesson-workspace .editor-header-actions { margin-left: auto; min-height: 0; padding: 0; border: 0; background: transparent; gap: var(--space-2); }
 .editor-header-actions .run-controls { gap: var(--space-2); min-width: 0; max-width: 100%; }
 .editor-header-actions .button { min-height: var(--control-height-small); padding: var(--space-1) var(--space-3); }
 .editor-header-actions .button-secondary { background: transparent; color: var(--code-text); border-color: #7fa6dc; }
 .editor-header-actions .button-secondary:hover:not(:disabled) { background: var(--nav-hover); }
 .editor-header-actions .runtime-status, .editor-header-actions .shortcut { color: var(--code-muted); }
-.coding-workspace .save-status { margin-left: 0; }
-@media (max-width: 1100px) {
-  .lesson-workspace.console-below, .lesson-workspace.console-below.lesson-panel-collapsed {
-    grid-template-columns: var(--lesson-rail-track, var(--lesson-rail-width)) minmax(0, 1fr);
-    grid-template-rows: auto minmax(600px, 75dvh);
-  }
-  .lesson-workspace.console-below.has-turtle, .lesson-workspace.console-below.has-turtle.lesson-panel-collapsed {
-    grid-template-columns: var(--lesson-rail-track, var(--lesson-rail-width)) minmax(0, 1fr) minmax(240px, 35%);
-  }
-  .console-below > .coding-workspace { grid-column: 2; grid-row: 2; }
-  .console-below > .output-column { grid-column: 3; grid-row: 2; }
-  .lesson-workspace.console-below.lesson-panel-collapsed { grid-template-rows: minmax(600px, 80dvh); }
-  .console-below > .lesson-tool-rail { grid-row: 1 / -1; }
-  .console-below.lesson-panel-collapsed > .coding-workspace,
-  .console-below.lesson-panel-collapsed > .output-column { grid-row: 1; }
-}
+.lesson-workspace .save-status { margin-left: 0; }
 @media (max-width: 720px) {
-  .lesson-workspace.console-below.has-turtle, .lesson-workspace.console-below.has-turtle.lesson-panel-collapsed {
-    grid-template-columns: var(--lesson-rail-track, var(--lesson-rail-width)) minmax(0, 1fr);
-    grid-template-rows: auto 640px 360px;
-  }
-  .console-below.has-turtle > .output-column { grid-column: 2; grid-row: 3; }
-  .lesson-workspace.console-below.has-turtle.lesson-panel-collapsed { grid-template-rows: 640px 360px; }
-  .console-below.has-turtle.lesson-panel-collapsed > .output-column { grid-row: 2; }
   .editor-header-actions .shortcut, .editor-header-actions .runtime-status { display: none; }
 }
 @media (pointer: coarse) { .editor-header-actions .button { min-height: 44px; } }
 
-.coding-workspace .editor-header-actions { min-width: 0; max-width: 100%; }
+.lesson-workspace .editor-header-actions { min-width: 0; max-width: 100%; }
 
 .editor-header-actions .reset-code-button { width: var(--control-height-small); padding: 0; flex-shrink: 0; }
 @media (pointer: coarse) { .editor-header-actions .reset-code-button { width: 44px; } }

@@ -22,7 +22,7 @@ export function SiteHeader({ setHeaderTarget }: { setHeaderTarget: (element: HTM
   const { pathname } = useLocation();
   const path = pathname.replace(/\/$/, '') || '/';
   if (['/', '/ui', '/sign-in'].includes(path)) return null;
-  const home = path === '/join' ? '/' : /^\/student(?:\/|$)/.test(path) ? '/student' : /^\/admin(?:\/|$)/.test(path) ? '/admin' : '/teacher';
+  const home = ['/join', '/login'].includes(path) ? '/' : /^\/student(?:\/|$)/.test(path) ? '/student' : /^\/admin(?:\/|$)/.test(path) ? '/admin' : '/teacher';
   return <header className="site-header">
       <div className="site-header-inner">
         <Link to={home} className="brand">

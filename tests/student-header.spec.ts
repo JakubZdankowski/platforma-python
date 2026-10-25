@@ -29,7 +29,11 @@ test('student shares the branded header and can sign out on desktop and mobile',
   }
 });
 
-test('teacher login logo leads to the teacher dashboard', async ({ page }) => {
-  await page.goto('/login');
-  await expect(page.locator('.site-header .brand')).toHaveAttribute('href', '/teacher');
+test('teacher login logo returns to the start page', async ({ page }) => {
+  for (const path of ['/login', '/login/']) {
+    await page.goto(path);
+    await page.getByRole('banner').getByRole('link', { name: /Sky Blue/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('navigation', { name: 'Wybierz sposób logowania' })).toBeVisible();
+  }
 });

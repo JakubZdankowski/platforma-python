@@ -41,7 +41,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
   const [activePanel, setActivePanel] = useState<'instructions' | 'contents' | null>('instructions');
   useEffect(() => { setActivePanel('instructions'); }, [exercise.id]);
   const instructionsCollapsed = activePanel === null;
-  // Width of the drawing column chosen with the resizer; null uses the responsive default.
+  // Width of the console and drawing column; null uses the responsive default.
   const [outputWidth, setOutputWidth] = useState<number | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -91,7 +91,7 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
       </header>
       {warning && <div className="work-warning" role="alert">{warning}</div>}
       <div
-        className={`exercise-layout lesson-workspace console-below${instructionsCollapsed ? ' lesson-panel-collapsed' : ''}${turtleEnabled ? ' has-turtle' : ''}`}
+        className={`exercise-layout lesson-workspace${instructionsCollapsed ? ' lesson-panel-collapsed' : ''}`}
         style={{ ...(outputWidth === null ? {} : { '--output-width': `${outputWidth}px` }), ...(sidebarWidth === null ? {} : { '--sidebar-width': `${sidebarWidth}px` }) } as CSSProperties}
       >
         <nav className="lesson-tool-rail" aria-label={t.lessonPanels}>
@@ -114,7 +114,6 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             </>}
           </div>
         </aside>
-        <div className="coding-workspace">
           <section ref={editorRef} className="editor-panel" aria-labelledby="editor-title">
             <div className="panel-heading">
               <h2 id="editor-title">{t.editorTitle}</h2>
@@ -137,19 +136,18 @@ export function ExercisePage({ messages: t, locale, exercise, exercises, exercis
             </Suspense>
             <p id="editor-help" className="sr-only">{t.editorHelp}</p>
           </section>
-          {output}
-        </div>
-        {turtleEnabled && <div ref={outputRef} className="output-column">
+        <div ref={outputRef} className="output-column">
           <PanelResizer label={t.resizePanels} editorRef={editorRef} outputRef={outputRef} onResize={setOutputWidth} />
-          <TurtlePanel
+          {turtleEnabled && <TurtlePanel
             messages={t}
             drawing={runner.turtle}
             speed={runner.turtleSpeed}
             onSpeedChange={runner.setTurtleSpeed}
             canSkip={runner.isBusy}
             onSkip={runner.skipAnimation}
-          />
-        </div>}
+          />}
+          {output}
+        </div>
       </div>
       <footer className="page-footer">{saveStatus ? t.savedNotice : t.localNotice}</footer>
     </main>

@@ -55,7 +55,6 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
         {truncated && <p className="output-notice">{t.outputTruncated}</p>}
         {!result && !busy && !stdout && !stderr && <div className="output-placeholder">
           <span className="console-symbol" aria-hidden="true">&gt;_</span>
-          <div><p>{t.emptyOutput}</p><p>{t.emptyHint}</p></div>
         </div>}
         {result?.success && !stdout && !stderr && <p className="output-hint">{t.noOutput}</p>}
       </div>
