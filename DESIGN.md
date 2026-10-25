@@ -213,7 +213,7 @@ Główne powierzchnie robocze mają maksymalną szerokość 1800 px. Strona star
 
 ### Other surfaces
 
-Panel ucznia ma boczną nawigację na dużych ekranach; panel nauczyciela i administratora korzysta z poziomej nawigacji. Materiały rozwijają moduły i lekcje. Redaktor materiałów ma własne progi 1250 i 760 px oraz zestawione pola i podgląd; nie przenosić do niego bez sprawdzenia reguł siatki ćwiczenia.
+Panele korzystają ze wspólnego nagłówka z logo, kontem i wylogowaniem. Uczeń ma ikonę pomocy bezpośrednio przed wylogowaniem i nie ma osobnego paska nawigacji; konto ma postać „Imię (uczeń)”. Lista modułów znajduje się na stronie głównej. Nauczyciel i administrator mają poziomą nawigację pod nagłówkiem. Materiały rozwijają moduły i lekcje. Redaktor materiałów ma własne progi 1250 i 760 px oraz zestawione pola i podgląd; nie przenosić do niego bez sprawdzenia reguł siatki ćwiczenia.
 
 Układy pozostają elastyczne: kontrolki mogą przechodzić do następnego wiersza, a treść tabel przewijać się we własnym obszarze. Minimalna wysokość domyślnej kontrolki to 40 px, kompaktowej 32 px; obsługa dotykowa podnosi ważne cele do co najmniej 44 px.
 
@@ -253,7 +253,7 @@ Jasne formularze używają powierzchni pomocniczej, tekstu głównego i wyraźne
 
 ### Navigation
 
-Nawigacja ucznia jest granatowa z jasnymi etykietami; wybór ma jaśniejsze wypełnienie i wyraźną ramkę. Pozioma nawigacja nauczyciela i administratora jest jasna, z błękitnymi etykietami. Zachować rzeczywistą różnicę wariantów.
+Pozioma nawigacja ucznia, nauczyciela i administratora jest jasna, z błękitnymi etykietami. Wybrana pozycja ma błękitne wypełnienie i wyraźną ramkę.
 
 ### Panels, chips and materials
 

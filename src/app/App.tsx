@@ -18,13 +18,14 @@ export function App() {
   </BrowserRouter>;
 }
 
-function SiteHeader({ setHeaderTarget }: { setHeaderTarget: (element: HTMLDivElement | null) => void }) {
+export function SiteHeader({ setHeaderTarget }: { setHeaderTarget: (element: HTMLDivElement | null) => void }) {
   const { pathname } = useLocation();
-  if (['/', '/ui', '/sign-in'].includes(pathname.replace(/\/$/, '') || '/')) return null;
-  if (['/student', '/student/materials', '/student/help'].includes(pathname.replace(/\/$/, ''))) return null;
+  const path = pathname.replace(/\/$/, '') || '/';
+  if (['/', '/ui', '/sign-in'].includes(path)) return null;
+  const home = path === '/join' ? '/' : /^\/student(?:\/|$)/.test(path) ? '/student' : /^\/admin(?:\/|$)/.test(path) ? '/admin' : '/teacher';
   return <header className="site-header">
       <div className="site-header-inner">
-        <Link to="/" className="brand">
+        <Link to={home} className="brand">
           <img className="brand-logo" src={blueLogo} width="1020" height="740" alt="Sky Blue" />
           <span className="brand-name">{pl.appName}</span>
         </Link>

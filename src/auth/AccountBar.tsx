@@ -1,4 +1,5 @@
 import { Button } from '../app/ui/Button';
+import { Icon } from '../app/ui/Icon';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { createPortal } from 'react-dom';
 import type { Messages } from '../i18n/en';
@@ -20,10 +21,11 @@ export function AccountBar({ messages: t, target }: { messages: Messages; target
 
   return createPortal(<>
       <p className="header-account-summary">
-        {profile.role !== 'teacher' && <span className="account-muted">{t.signedInAs} </span>}
+        {profile.role === 'admin' && <span className="account-muted">{t.signedInAs} </span>}
         <strong>{profile.displayName}</strong>
-        <span className="account-muted">{profile.role === 'teacher' ? ` (${t.roleTeacher})` : ` · ${profile.role === 'admin' ? 'Administrator' : profile.username}`}</span>
+        <span className="account-muted">{profile.role === 'teacher' ? ` (${t.roleTeacher})` : profile.role === 'student' ? ' (uczeń)' : ' · Administrator'}</span>
       </p>
+      {profile.role === 'student' && <Link to="/student/help" className="button button-quiet header-help" aria-label="Pomoc" title="Pomoc"><Icon kind="help" /></Link>}
       <Button type="button" variant="secondary" size="compact" onClick={() => void handleSignOut()}>{t.signOut}</Button>
   </>, target);
 }

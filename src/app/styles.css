@@ -141,6 +141,7 @@ a.brand { color: inherit; text-decoration: none; }
 .header-actions { display: flex; align-items: center; gap: var(--space-4); flex-shrink: 0; }
 .header-link { color: var(--text-muted); font-size: var(--font-control); font-weight: 600; text-decoration: none; padding: var(--space-2) var(--space-1); }
 .header-link:hover { color: var(--text); text-decoration: underline; }
+.header-help { min-width: 40px; padding: var(--space-2); }
 .account-header-controls { display: flex; align-items: center; gap: var(--space-4); }
 .account-header-controls:empty { display: none; }
 .header-account-summary { font-size: var(--font-control); text-align: right; }

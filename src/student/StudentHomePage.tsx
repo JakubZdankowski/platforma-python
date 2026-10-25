@@ -22,7 +22,7 @@ export function StudentHomePage({ messages: t, materials = false }: { messages: 
   }, [client, attempt]);
   const selected = params.get('module');
   return <main className="account-page student-materials">
-    <PageHeading title={materials ? 'Materiały' : t.studentGreeting(profile.displayName)} description={materials ? 'Rozwiń moduł, aby zobaczyć dostępne lekcje.' : 'Wybierz moduł i wróć do programowania.'} />
+    <PageHeading title={materials ? 'Materiały' : t.studentGreeting(profile.displayName)} description={materials ? 'Rozwiń moduł, aby zobaczyć dostępne lekcje.' : undefined} />
     {!materials && <h2>Materiały</h2>}
     {error && <Notice tone="error">{t.dataUnavailable}<Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>{t.retry}</Button></Notice>}
     {!modules && !error && <Notice>{t.loadingData}</Notice>}
@@ -69,7 +69,7 @@ function ModuleLessons({ moduleId, messages: t }: { moduleId: string; messages: 
 
 export function StudentHelpPage() {
   return <main className="account-page"><h1>Pomoc</h1><p className="account-lead">Najważniejsze wskazówki do pracy z platformą.</p>
-    <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Przejdź do Materiałów, rozwiń moduł i wybierz lekcję. W edytorze kliknij nazwę lekcji w lewym panelu, aby przejść do dowolnego zadania z lekcji.</p></section>
+    <section className="help-section"><h2>Jak otworzyć zadanie?</h2><p>Na <Link to="/student">stronie głównej</Link> rozwiń moduł i wybierz lekcję. W edytorze kliknij nazwę lekcji w lewym panelu, aby przejść do dowolnego zadania z lekcji.</p></section>
     <section className="help-section"><h2>Gdzie jest mój kod?</h2><p>Kod zapisuje się automatycznie na Twoim koncie. Po powrocie do ćwiczenia możesz kontynuować pracę.</p></section>
     <section className="help-section"><h2>Jak uruchomić program?</h2><p>Naciśnij „Uruchom” lub Ctrl + Enter. Jeśli program działa zbyt długo, użyj przycisku „Zatrzymaj”.</p></section>
     <section className="help-section"><h2>Nie widzę materiałów</h2><p>Poproś nauczyciela o udostępnienie modułu. Do logowania potrzebujesz tylko nazwy użytkownika i hasła.</p></section>

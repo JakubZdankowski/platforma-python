@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-test('student sidebar and full-width modules reveal lessons only after expansion', async ({ page }) => {
+test('student top navigation and full-width modules reveal lessons only after expansion', async ({ page }) => {
   await page.goto('/tests/fixtures/student-home.html');
-  await expect(page.getByRole('navigation', { name: 'Panel ucznia' })).toBeVisible();
+  await expect(page.locator('.dashboard-sidebar')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Pulpit', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Materiały', exact: true })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Cześć, Ania!' })).toBeVisible();
   await expect(page.getByText('Kurs programowania w języku Python')).toHaveCount(0);
   await expect(page.locator('.module-lesson-list')).toHaveCount(0);
@@ -19,7 +21,6 @@ test('student sidebar and full-width modules reveal lessons only after expansion
   await expect(page.locator('.module-lesson-list')).toHaveCount(0);
   await page.getByRole('button', { name: '2. Programowanie obiektowe', exact: true }).click();
   await expect(page.getByText('W tym module nie ma jeszcze dostępnych lekcji.')).toBeVisible();
-  await page.getByRole('link', { name: 'Materiały', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Materiały', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

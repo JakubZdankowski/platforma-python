@@ -4,21 +4,27 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { SessionHome } from '../../src/app/AccountApp';
 import { AuthProvider } from '../../src/auth/AuthProvider';
 import { RequireRole } from '../../src/auth/RequireRole';
-import { StudentHomePage } from '../../src/student/StudentHomePage';
+import { StudentHelpPage, StudentHomePage } from '../../src/student/StudentHomePage';
 import type { AppSupabaseClient } from '../../src/database/supabase';
 import { pl } from '../../src/i18n/pl';
 import { DashboardLayout } from '../../src/app/DashboardLayout';
+import { SiteHeader } from '../../src/app/App';
+import { AccountBar } from '../../src/auth/AccountBar';
+import { useState } from 'react';
 import '../../src/app/styles.css';
 
 const mode = new URLSearchParams(location.search).get('mode');
 let failed = false;
+let authChanged: (event: string, session: unknown) => void;
 const client = {
   auth: {
     onAuthStateChange(callback: (event: string, session: unknown) => void) {
+      authChanged = callback;
       queueMicrotask(() => callback('SIGNED_IN', { user: { id: 'student' } }));
       return { data: { subscription: { unsubscribe() {} } } };
     },
     getSession: async () => ({ data: { session: null } }),
+    signOut: async () => { authChanged('SIGNED_OUT', null); return { error: null }; },
   },
   rpc: async () => ({ data: true, error: null }),
   from(table: string) {
@@ -42,9 +48,14 @@ const client = {
     return query;
   },
 } as unknown as AppSupabaseClient;
-createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={['/student']}>
-  <AuthProvider client={client}><Routes>
+function Fixture() {
+  const [headerTarget, setHeaderTarget] = useState<HTMLDivElement | null>(null);
+  return <>{mode === 'header' && <SiteHeader setHeaderTarget={setHeaderTarget} />}
+  <AuthProvider client={client}>{mode === 'header' && <AccountBar messages={pl} target={headerTarget} />}<Routes>
+    <Route path="/join" element={<h1>Logowanie ucznia</h1>} />
+    <Route path="/student/help" element={<StudentHelpPage />} />
     <Route path="/" element={<SessionHome messages={pl} />} />
     <Route path="/student" element={<RequireRole role="student" messages={pl}><DashboardLayout /></RequireRole>}><Route index element={<StudentHomePage messages={pl} />} /><Route path="materials" element={<StudentHomePage messages={pl} materials />} /></Route>
-  </Routes></AuthProvider>
-</MemoryRouter>);
+  </Routes></AuthProvider></>;
+}
+createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={['/student']}><Fixture /></MemoryRouter>);
