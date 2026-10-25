@@ -26,9 +26,9 @@ test.afterAll(async () => {
 
 test('the home page links to student sign-in', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Zaloguj się', exact: true }).click();
+  await page.getByRole('link', { name: 'Jestem uczniem', exact: true }).click();
   await expect(page).toHaveURL(/\/join$/);
-  await expect(page.getByRole('heading', { name: 'Zaloguj się' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Logowanie ucznia' })).toBeVisible();
 });
 
 test('a student signs in with class code, username and password, then signs out', async ({ page }) => {
@@ -41,11 +41,9 @@ test('a student signs in with class code, username and password, then signs out'
 
   await page.goto('/');
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('heading', { name: 'Cześć, Ania!' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Zaloguj/ })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Wyloguj się' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Wybierz sposób logowania' })).toBeVisible();
   await page.reload();
-  await page.getByRole('link', { name: 'Przejdź do pulpitu →' }).click();
+  await page.getByRole('link', { name: 'Jestem uczniem' }).click();
   await expect(page).toHaveURL(/\/student$/);
 
   await page.getByRole('button', { name: 'Wyloguj się' }).click();

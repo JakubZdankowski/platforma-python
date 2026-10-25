@@ -1,0 +1,50 @@
+.platform-carousel { width: 100%; }
+.platform-carousel figure { margin: 0; }
+.platform-carousel figure[hidden] { display: none; }
+.platform-carousel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1440 / 820;
+  object-fit: contain;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--panel-radius);
+}
+.platform-carousel figcaption {
+  margin-top: var(--space-6);
+  color: var(--nav-background);
+  font-size: var(--font-section);
+  font-weight: 650;
+  text-align: center;
+}
+.platform-carousel-controls { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-4); flex-wrap: wrap; }
+.platform-carousel-navigation { display: flex; align-items: center; gap: var(--space-2); }
+.platform-carousel-count { min-width: 40px; text-align: center; color: var(--text-muted); font-size: var(--font-control); font-variant-numeric: tabular-nums; }
+.login-choice-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-4);
+  background: var(--background);
+}
+.login-choice-card {
+  width: min(100%, 640px);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--panel-radius);
+  background: var(--surface);
+  text-align: center;
+}
+.login-choice-logo { width: 180px; max-width: 100%; margin: 0 auto var(--space-4); }
+.login-choice-logo img { display: block; width: 100%; height: auto; }
+.login-choice-card h1 { color: var(--nav-background); font-size: var(--font-title); line-height: 1.3; }
+.login-choice-actions { display: flex; justify-content: center; gap: var(--space-4); margin: var(--space-6) 0 var(--space-8); }
+.login-choice-actions .button { min-height: 44px; }
+@media (max-width: 650px) {
+  .login-choice-card { padding: var(--space-8) var(--space-6); }
+  .login-choice-card h1 { font-size: 24px; }
+  .login-choice-actions { flex-direction: column; }
+  .platform-carousel-controls { justify-content: center; }
+  .platform-carousel figcaption { font-size: var(--font-body); }
+}

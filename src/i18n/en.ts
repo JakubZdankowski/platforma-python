@@ -89,7 +89,7 @@ export const en = {
   authUnavailable: 'We could not load your account. Check your connection and try again.',
   noAccess: 'This account is not connected to any class. Ask your teacher for help.',
   backendNotConfigured: 'Signing in is not set up in this copy of the app yet. You can still use the practice exercises.',
-  studentLoginTitle: 'Sign in',
+  studentLoginTitle: 'Student sign-in',
   studentLoginLead: 'Enter the class code, your username and the password from your teacher.',
   teacherLoginTitle: 'Teacher sign-in',
   joinCode: 'Class code',

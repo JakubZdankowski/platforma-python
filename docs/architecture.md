@@ -28,7 +28,7 @@ Serwer aplikacji dostarcza pliki statyczne. Python wykonuje się w przeglądarce
 
 ```mermaid
 flowchart LR
-  Router[App / React Router] -->|/| Home[HomePage / strona startowa]
+  Router[App / React Router] -->|/| Home[LoginChoicePage / strona główna z wyborem roli]
   Router -->|/join /login /student /teacher| Account[AccountApp, ładowany leniwie]
   Account --> Auth[AuthProvider + RequireRole]
   Account --> Services[authService / classService]

@@ -91,7 +91,7 @@ export const pl: Messages = {
   authUnavailable: 'Nie udało się wczytać konta. Sprawdź połączenie i spróbuj ponownie.',
   noAccess: 'To konto nie ma dostępu do platformy. Poproś nauczyciela o pomoc.',
   backendNotConfigured: 'Logowanie nie jest jeszcze skonfigurowane w tej kopii aplikacji. Możesz korzystać z ćwiczeń próbnych.',
-  studentLoginTitle: 'Zaloguj się',
+  studentLoginTitle: 'Logowanie ucznia',
   studentLoginLead: 'Wpisz swoją nazwę użytkownika i hasło od nauczyciela.',
   teacherLoginTitle: 'Logowanie nauczyciela',
   joinCode: 'Kod klasy',

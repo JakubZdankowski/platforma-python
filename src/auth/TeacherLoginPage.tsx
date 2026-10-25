@@ -1,7 +1,7 @@
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate } from 'react-router';
+import { Navigate } from 'react-router';
 import type { Messages } from '../i18n/en';
 import { useAuth } from './AuthProvider';
 import { signInTeacher, type SignInError } from './authService';
@@ -32,7 +32,7 @@ export function TeacherLoginPage({ messages: t }: { messages: Messages }) {
   };
 
   return <main className="account-page account-narrow">
-    <h1>Logowanie nauczyciela i administratora</h1>
+    <h1 className="login-form-title">{t.teacherLoginTitle}</h1>
     <form className="form" onSubmit={(event) => void submit(event)} noValidate>
       <label className="field">
         <span>{t.email}</span>
@@ -45,6 +45,5 @@ export function TeacherLoginPage({ messages: t }: { messages: Messages }) {
       {error && <Notice tone="error">{signInErrorMessage(t, error, 'teacher')}</Notice>}
       <Button type="submit" variant="primary" disabled={submitting}>{submitting ? t.signingIn : t.signIn}</Button>
     </form>
-    <p className="account-links"><Link to="/join">{t.studentLoginLink}</Link></p>
   </main>;
 }

@@ -15,20 +15,13 @@
 body { margin: 0; }
 a { color: var(--accent); text-underline-offset: 3px; }
 .home-page { max-width: 1080px; margin: 0 auto; padding: clamp(var(--space-8), 7vh, 80px) var(--space-8) var(--space-12); }
-.home-intro { max-width: 700px; margin-bottom: var(--space-8); }
-.home-intro h1 { font-size: clamp(28px, 4vw, 40px); margin: var(--space-3) 0 var(--space-6); }
-.home-intro > p:last-child { color: var(--text-muted); font-size: var(--font-body); line-height: 1.7; }
-.home-entries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
 .home-card { padding: var(--space-8); border: 1px solid var(--border); border-radius: var(--panel-radius); background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
 .home-role { color: var(--accent); font-size: var(--font-meta); letter-spacing: 1.5px; }
 .home-card h2 { font-size: 24px; }
-.home-card p, .home-card small, .home-note { color: var(--text-muted); }
+.home-card p { color: var(--text-muted); }
 .home-card .button { margin-top: auto; text-decoration: none; max-width: 100%; text-align: center; }
-.home-card small { font-size: var(--font-meta); }
-.home-note { margin-top: var(--space-6); font-size: var(--font-control); }
 @media (max-width: 650px) {
   .home-page { padding: var(--space-8) var(--space-4); }
-  .home-entries { grid-template-columns: 1fr; gap: var(--space-4); }
   .home-card { padding: var(--space-6); }
 }
 button, select { font: inherit; }
@@ -155,6 +148,7 @@ a.brand { color: inherit; text-decoration: none; }
 .account-page { max-width: 960px; margin: 0 auto; padding: var(--space-8) var(--space-8) var(--space-12); }
 .account-narrow { max-width: 480px; }
 .account-page h1 { margin-bottom: var(--space-3); }
+.account-page .login-form-title { text-align: center; margin-bottom: var(--space-8); }
 .account-page h2 { font-size: 18px; font-weight: 650; margin-bottom: var(--space-4); }
 .account-lead { color: var(--text-muted); font-size: var(--font-body); line-height: 1.6; margin-bottom: var(--space-6); }
 .account-muted { color: var(--text-muted); font-size: var(--font-control); line-height: 1.6; }

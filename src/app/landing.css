@@ -1,0 +1,25 @@
+.login-choice-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-4);
+  background: var(--background);
+}
+.login-choice-card {
+  width: min(100%, 640px);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--panel-radius);
+  background: var(--surface);
+  text-align: center;
+}
+.login-choice-logo { width: 180px; max-width: 100%; margin: 0 auto var(--space-4); }
+.login-choice-logo img { display: block; width: 100%; height: auto; }
+.login-choice-card h1 { color: var(--nav-background); font-size: var(--font-title); line-height: 1.3; }
+.login-choice-actions { display: flex; justify-content: center; gap: var(--space-4); margin: var(--space-6) 0 0; }
+.login-choice-actions .button { min-height: 44px; }
+@media (max-width: 650px) {
+  .login-choice-card { padding: var(--space-8) var(--space-6); }
+  .login-choice-card h1 { font-size: 24px; }
+  .login-choice-actions { flex-direction: column; }
+}

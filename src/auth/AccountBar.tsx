@@ -9,8 +9,7 @@ import { loginPath } from './RequireRole';
 export function AccountBar({ messages: t, target }: { messages: Messages; target: HTMLElement | null }) {
   const { state, signOut } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  if (state.status === 'signed-out' && target && pathname === '/') return createPortal(<Link to="/join" className="header-link">{t.signIn}</Link>, target);
+  if (state.status === 'signed-out') return <HeaderSignIn target={target} label={t.signIn} />;
   if (state.status !== 'signed-in' || !target) return null;
   const { profile } = state;
 
@@ -27,4 +26,10 @@ export function AccountBar({ messages: t, target }: { messages: Messages; target
       </p>
       <Button type="button" variant="secondary" size="compact" onClick={() => void handleSignOut()}>{t.signOut}</Button>
   </>, target);
+}
+
+export function HeaderSignIn({ target, label }: { target: HTMLElement | null; label: string }) {
+  const { pathname } = useLocation();
+  if (['/join', '/login'].includes(pathname.replace(/\/$/, ''))) return null;
+  return target ? createPortal(<Link to="/" className="header-link">{label}</Link>, target) : null;
 }
