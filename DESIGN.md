@@ -208,7 +208,7 @@ Główne powierzchnie robocze mają maksymalną szerokość 1800 px. Strona star
 - Na dużym ekranie: pasek ikon i przylegające instrukcje po lewej, edytor z konsolą pod nim; Turtle, gdy aktywny, ma osobny podgląd z prawej.
 - Pasek ikon zachowuje szerokość po rozwinięciu: 52 px standardowo i 58 px w zapisanym ćwiczeniu na dużym ekranie. Na małym ekranie 42 px lub 52 px przy sterowaniu dotykiem. Wspólna krawędź z instrukcjami jest prosta; zewnętrzne narożniki pozostają zaokrąglone.
 - Podstawowe progi układu pracy: do 1100 px oraz do 720 px. Na węższych ekranach instrukcja znajduje się nad obszarem kodu, a rysunek może przejść pod niego.
-- Konsola ma obecnie podstawę `clamp(200px, 30%, 280px)` i minimum 200 px. Przewija się zapis wyniku; formularz odpowiedzi nie jest częścią tego przewijania.
+- Konsola ma obecnie podstawę `clamp(200px, 30%, 280px)` i minimum 200 px. Wynik i aktywna linia odpowiedzi przewijają się razem; oczekiwanie na `input()` odsłania aktywne pole.
 - Zmiana zadania otwiera instrukcję. Uczeń może ją ponownie zwinąć w bieżącym zadaniu.
 
 ### Other surfaces
@@ -249,7 +249,7 @@ Przejścia przycisków trwają 120 ms z domyślną krzywą CSS `ease`. Istnieją
 
 ### Fields
 
-Jasne formularze używają powierzchni pomocniczej, tekstu głównego i wyraźnego obramowania. Etykieta pozostaje nad polem; błąd ma semantyczny kolor i dostępny komunikat. Pole odpowiedzi w konsoli jest ciemne i ma jasny tekst oraz dopasowany obrys.
+Jasne formularze używają powierzchni pomocniczej, tekstu głównego i wyraźnego obramowania. Etykieta pozostaje nad polem; błąd ma semantyczny kolor i dostępny komunikat. Pole odpowiedzi w konsoli wtapia się w tekst: przezroczyste tło, wspólny font i jasny kursor. Zachowuje dostępną nazwę dla czytnika ekranu.
 
 ### Navigation
 
@@ -265,7 +265,7 @@ W ćwiczeniu ucznia nagłówki kodu i konsoli mają to samo granatowe tło i jas
 
 Pasek edytora nie zawiera etykiet „Zapisano”, „Python”, statusu gotowości ani pobierania kodu .py. Dotyczy to tego paska; awaryjne odzyskiwanie niezapisanej pracy po zakończeniu sesji pozostaje odrębną funkcją.
 
-Formularz `input()` ma stały obszar pod przewijanym wynikiem. Po pojawieniu się otrzymuje fokus i jest odsłaniany; zachowywać widoczność etykiety, pola i przycisku wysyłania także po długim wyjściu i zmianie rozmiaru widoku. Poprawny przebieg programu, błędy i oczekiwanie na dane są komunikowane w konsoli.
+Pole `input()` znajduje się bezpośrednio za ostatnim tekstem stdout, z natywnym mrugającym kursorem. Po pojawieniu się otrzymuje fokus i jest odsłaniane także po długim wyjściu i zmianie rozmiaru widoku. Enter wysyła odpowiedź, która pozostaje w zapisie konsoli. Poprawny przebieg programu, błędy i oczekiwanie na dane są komunikowane w konsoli.
 
 ## Do's and Don'ts
 
@@ -277,7 +277,7 @@ Formularz `input()` ma stały obszar pod przewijanym wynikiem. Po pojawieniu si�
 
 ### Don't:
 - Don't przywracaj usuniętych opisów statusu ani pobierania .py do paska edytora bez nowej decyzji użytkownika.
-- Don't chowaj formularza input() wewnątrz przewijanego wyniku programu.
+- Don't pozostawiaj aktywnej linii input() poza widocznym obszarem konsoli.
 - Don't zwiększaj szerokości paska ikon podczas rozwijania instrukcji.
 - Don't zmieniaj potwierdzonej palety, fontów ani skali odstępów przy dodawaniu pojedynczego ekranu.
 

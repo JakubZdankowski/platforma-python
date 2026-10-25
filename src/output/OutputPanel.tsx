@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '../app/ui/Button';
 import type { Messages, Locale } from '../i18n/en';
 import type { ExecutionResult, RunnerStatus, InputRequest } from '../runtime/protocol';
 
@@ -45,7 +44,9 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
           <span className={`status-dot ${busy ? 'is-busy' : ''}`} aria-hidden="true" />{statusText}
         </p>}
         {status === 'loading' && <p className="output-hint">{t.loadingHint}</p>}
-        {stdout && <pre className="console-text" data-testid="stdout">{stdout}</pre>}
+        {input && onSubmitInput
+          ? <InputForm key={input.requestId} messages={t} stdout={stdout} onSubmit={(value) => onSubmitInput(input.requestId, value)} />
+          : stdout && <pre className="console-text" data-testid="stdout">{stdout}</pre>}
         {stderr && <div className="stderr-block"><span className="output-label">{t.stderr}</span><pre className="console-text" data-testid="stderr">{stderr}</pre></div>}
         {result?.outcome === 'python-error' && <div className="python-error">
           <p>{t.pythonErrorHint}</p>
@@ -58,41 +59,37 @@ export function OutputPanel({ messages: t, locale, status, result, stdout, stder
         </div>}
         {result?.success && !stdout && !stderr && <p className="output-hint">{t.noOutput}</p>}
       </div>
-        {input && onSubmitInput && <InputForm key={input.requestId} messages={t} onSubmit={(value) => onSubmitInput(input.requestId, value)} />}
     </section>
   );
 }
 
-function InputForm({ messages: t, onSubmit }: { messages: Messages; onSubmit: (value: string) => boolean }) {
+function InputForm({ messages: t, stdout, onSubmit }: { messages: Messages; stdout: string; onSubmit: (value: string) => boolean }) {
   const [value, setValue] = useState('');
   const [sent, setSent] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const field = useRef<HTMLInputElement>(null);
-  const form = useRef<HTMLFormElement>(null);
   useEffect(() => { field.current?.focus({ preventScroll: true }); }, []);
   useEffect(() => {
-    const reveal = () => form.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    const reveal = () => field.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
     reveal();
-    // Keep the whole form visible when a mobile keyboard changes the viewport.
+    // Keep the active line visible when a mobile keyboard changes the viewport.
     const viewport = window.visualViewport;
     viewport?.addEventListener('resize', reveal);
     return () => viewport?.removeEventListener('resize', reveal);
   }, [invalid]);
-  return <form ref={form} className="console-input" onSubmit={(event) => {
+  return <form className="console-input console-text" onSubmit={(event) => {
     event.preventDefault();
     if (!sent && !invalid && onSubmit(value)) setSent(true);
   }}>
-    <label htmlFor="console-answer">{t.inputLabel}</label>
-    <div className="console-input-row">
-      <input id="console-answer" ref={field} value={value} disabled={sent} autoComplete="off"
+    <span data-testid="stdout">{stdout}</span><input id="console-answer" ref={field} value={value} disabled={sent} autoComplete="off"
+        aria-label={t.inputLabel} spellCheck={false} autoCapitalize="off" enterKeyHint="send"
+        style={{ width: `${Math.max(1, Array.from(value).length + 1)}ch` }}
         aria-invalid={invalid}
         aria-describedby={invalid ? 'console-input-error' : undefined}
         onPaste={(event) => {
           if (/[\r\n]/.test(event.clipboardData.getData('text'))) { event.preventDefault(); setInvalid(true); }
         }}
         onChange={(event) => { setValue(event.target.value); setInvalid(false); }} />
-      <Button type="submit" disabled={sent || invalid}>{t.inputSend}</Button>
-    </div>
     {invalid && <p id="console-input-error" role="alert">{t.inputSingleLine}</p>}
   </form>;
 }

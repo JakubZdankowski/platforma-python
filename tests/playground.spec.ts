@@ -158,7 +158,7 @@ test('input accepts sequential answers, empty lines and Unicode without a browse
   await answer.press('Enter');
   await expect(answer).toBeFocused();
   await answer.fill('żółw');
-  await page.getByRole('button', { name: 'Wyślij', exact: true }).click();
+  await answer.press('Enter');
   await expect(page.getByRole('status')).toHaveText('Program zakończony');
   await expect(page.getByTestId('stdout')).toContainText("'  Łucja  '");
   await expect(page.getByTestId('stdout')).toContainText("''");
