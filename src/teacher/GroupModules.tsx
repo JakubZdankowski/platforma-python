@@ -1,6 +1,7 @@
 import { useProfile } from '../auth/AuthProvider';
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
+import { Icon } from '../app/ui/Icon';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import type { AppSupabaseClient } from '../database/supabase';
@@ -56,7 +57,7 @@ export function GroupModules({ client, classId, messages: t }: { client: AppSupa
     {data && <>
       {data.assigned.size ? <ul className="group-module-cards">{data.modules.filter(m => data.assigned.has(m.id)).map(m => <li key={m.id}>
         <Link className="group-module-content" aria-label={m.title} to={`${base}/modules/${m.id}`}><strong>{m.title}</strong><span>Liczba lekcji: {m.lesson_count}</span></Link>
-        <Button variant="quiet" size="compact" disabled={busy} aria-label={`Odepnij ten moduł: ${m.title}`} onClick={() => void toggle(m.id, false)}>Odepnij ten moduł</Button>
+        <Button variant="quiet" size="compact" disabled={busy} aria-label={`Odepnij ten moduł: ${m.title}`} title="Odepnij moduł od grupy" onClick={() => void toggle(m.id, false)}><Icon kind="trash" /></Button>
       </li>)}</ul> : <div className="classroom-empty">Nie przypisano jeszcze modułów do tej grupy.</div>}
       <form className="group-add-module form" onSubmit={add}>
         <label className="field">Dodaj moduł<select aria-label="Dodaj moduł" value={selected} disabled={busy || !available.length} onChange={e => setSelected(e.target.value)}><option value="">{available.length ? 'Wybierz moduł' : 'Brak kolejnych modułów'}</option>{available.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}</select></label>

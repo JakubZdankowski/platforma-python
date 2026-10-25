@@ -10,6 +10,7 @@ export function Icon({ kind, size = 20 }: { kind: string; size?: number }) {
     help: 'M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3M12 17v.01',
     group: 'M2 21v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3M17 14a4 4 0 0 1 5 4v3M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M17 3a4 4 0 0 1 0 8',
     person: 'M4 21v-3a8 8 0 0 1 16 0v3M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
+    trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
   };
   return <svg aria-hidden="true" className="ui-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{kind === 'help' && <circle cx="12" cy="12" r="10" />}<path d={paths[kind]} /></svg>;
 }

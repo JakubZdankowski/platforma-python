@@ -686,9 +686,9 @@ a.brand { color: inherit; text-decoration: none; }
 .student-info-dialog dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 
 .group-meeting { display: block; color: var(--text-muted); font-size: var(--font-control); font-weight: 400; margin-top: 4px; }
-.teacher-group-dashboard .group-detail-heading { padding: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; }
+.teacher-group-dashboard .group-detail-heading { padding: 16px 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; }
 .teacher-group-dashboard .group-detail-heading h1 { font-size: 32px; }
-.teacher-group-dashboard .group-detail-heading .account-lead { font-size: 18px; }
+.teacher-group-dashboard .group-detail-heading .account-lead { font-size: 18px; margin: 0; }
 .teacher-group-dashboard .group-dashboard-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 24px; align-items: start; }
 .teacher-group-dashboard .group-roster .module-checklist li > span { min-width: 0; overflow-wrap: anywhere; }
 .student-password-action { min-width: 0; max-width: 100%; margin-left: auto; }
@@ -697,11 +697,11 @@ a.brand { color: inherit; text-decoration: none; }
 .teacher-group-dashboard .group-dashboard-grid > fieldset { min-width: 0; }
 .group-count { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; margin-left: 12px; padding: 0 8px; border-radius: 8px; background: var(--surface-selected); color: var(--accent); font-size: var(--font-control); vertical-align: middle; }
 .group-module-cards { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
-.group-module-cards > li { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-raised); }
-.group-module-content { display: flex; flex-direction: column; gap: 8px; padding: 18px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.group-module-cards > li { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-raised); }
+.group-module-content { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 8px; padding: 18px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
 .group-module-content:hover { background: var(--surface-hover); }
 .group-module-content > span { font-size: var(--font-control); color: var(--text-muted); }
-.group-module-cards .button { margin: 0 10px 10px; }
+.group-module-cards .button { flex-shrink: 0; min-width: 40px; min-height: 40px; margin: 0 18px 0 8px; }
 .group-add-module { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 24px; }
 .group-add-module .field { flex: 1 1 180px; min-width: 0; }
 .group-add-module select { width: 100%; }
@@ -711,7 +711,7 @@ a.brand { color: inherit; text-decoration: none; }
 .teacher-group-cards a { min-height: 120px; align-items: flex-start; flex-direction: column; gap: 16px; }
 @media (max-width: 960px) {
   .teacher-group-dashboard .group-dashboard-grid { grid-template-columns: minmax(0, 1fr); }
-  .teacher-group-dashboard .group-detail-heading { padding: 20px; }
+  .teacher-group-dashboard .group-detail-heading { padding: 16px 20px; }
 }
 
 /* Simulator visual language: light work surfaces and navy navigation. */
