@@ -27,6 +27,8 @@ Edytor korzysta z układu **Pracownia**: lista ćwiczeń po lewej, instrukcja Ma
 
 W **Materiałach** utwórz lekcję, wpisz instrukcje w Markdown, kod początkowy i rodzaj środowiska. Pasek formatowania wstawia nagłówki, pogrubienie, listy, kod i wskazówki; obok działa sanitizowany podgląd. Można dodać kilka ćwiczeń. Zapis całej lekcji odbywa się w jednej transakcji.
 
+Instrukcje obsługują także bezpieczny HTML, np. `<br>` do łamania wierszy i `<table><tr><td>Treść</td></tr></table>` do tabel bez nagłówka. Aby dodać pusty wiersz po tabeli lub separatorze `---`, umieść `<br>` w osobnej linii, oddzielonej pustymi liniami od pozostałej treści. HTML jest parsowany przed sanitizacją w podglądzie i widoku ucznia; skrypty, osadzone ramki, style inline i atrybuty zdarzeń są usuwane. Znaczniki wewnątrz bloków kodu pozostają tekstem.
+
 Nauczyciel zapisuje szkic i wysyła go do zatwierdzenia. Zgłoszony materiał jest zablokowany do edycji. Administrator może go poprawić, zatwierdzić lub zwrócić do szkicu. Zatwierdzone materiały nauczyciel może skopiować do nowego szkicu, zachowując działającą wersję dla uczniów.
 
 Zatwierdzenie nie przydziela lekcji automatycznie. Administrator dodaje ją do modułu w **Modułach**, a następnie udostępnia moduł grupie albo uczniowi. Szkice i zgłoszenia nigdy nie są widoczne uczniom, również gdy ich identyfikator jest znany. Kod uczniów pozostaje tylko do odczytu dla administratora i nauczyciela. Podgląd na żywo korzysta z istniejącego autosave i Realtime.

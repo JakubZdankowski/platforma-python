@@ -36,6 +36,8 @@
 .authoring-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .authoring-write { min-width: 0; background: var(--surface); padding: 20px; }
 .authoring-write textarea { height: 360px; min-height: 240px; border: 0; background: transparent; padding: 12px 0; font-family: var(--font-mono); }
+.authoring-workspace .authoring-write textarea { border: 0; border-radius: 0; outline: none; box-shadow: none; }
+.authoring-write:focus-within .authoring-section-label { color: var(--accent); }
 .authoring-workspace .authoring-write .authoring-section-label { margin-bottom: 12px; }
 .authoring-format { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
 .authoring-format .button { padding-inline: 8px; background: transparent; border-color: transparent; }
@@ -55,10 +57,10 @@
 @media (max-width: 1250px) {
   .authoring-studio { grid-template-columns: 180px minmax(0, 1fr); gap: 18px; }
   .authoring-topbar { flex-wrap: wrap; }
-  .authoring-split { grid-template-columns: 1fr; }
-  .authoring-preview { border-left: 0; border-top: 1px solid var(--border); }
 }
 @media (max-width: 760px) {
+  .authoring-split { grid-template-columns: 1fr; }
+  .authoring-preview { border-left: 0; border-top: 1px solid var(--border); }
   .authoring-header { flex-wrap: wrap; margin-bottom: 24px; }
   .authoring-topbar .authoring-lesson-title { flex-basis: 100%; max-width: none; }
   .authoring-studio { display: block; }
@@ -71,7 +73,7 @@
   .authoring-write, .authoring-preview, .authoring-code { padding: 18px; }
 }
 
-/* Keep instructions, starter code and preview alongside each other. */
+/* Keep Markdown and preview alongside each other, with starter code below. */
 @media (min-width: 1251px) {
   .dashboard-content > .authoring-workspace { max-width: none; padding: 20px 18px; }
   .authoring-header { margin-bottom: 16px; }
@@ -80,15 +82,13 @@
   .authoring-topbar { padding-block: 16px; margin-bottom: 18px; }
   .authoring-studio { grid-template-columns: 150px minmax(0, 1fr); gap: 18px; }
   .authoring-outline { padding-right: 12px; }
-  .authoring-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+  .authoring-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
   .authoring-exercise-controls, .authoring-details { grid-column: 1 / -1; margin: 0; }
   .authoring-split { display: contents; }
-  .authoring-write, .authoring-preview, .authoring-code { min-height: 55dvh; border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: var(--surface); }
+  .authoring-write, .authoring-preview { min-height: 55dvh; border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: var(--surface); }
   .authoring-write { grid-column: 1; grid-row: 3; }
-  .authoring-code { grid-column: 2; grid-row: 3; margin: 0; display: flex; flex-direction: column; }
-  .authoring-preview { grid-column: 3; grid-row: 3; }
-  .authoring-code .field { flex: 1; }
-  .authoring-code textarea { flex: 1; min-height: 340px; }
+  .authoring-code { grid-column: 1 / -1; grid-row: 4; margin: 0; }
+  .authoring-preview { grid-column: 2; grid-row: 3; }
   .authoring-write textarea { min-height: 340px; height: 45dvh; }
 }
 
