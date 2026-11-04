@@ -74,7 +74,7 @@ export const pl: Messages = {
   lessonExercises: 'Ćwiczenia w tej lekcji',
   savedNotice: 'Twój kod jest automatycznie zapisywany na Twoim koncie.',
   exerciseNotFound: 'To ćwiczenie nie jest dostępne. Poproś nauczyciela o przypisanie lekcji.',
-  inputUnavailable: 'Interaktywne input() wymaga WebAssembly JSPI, które nie jest dostępne w tej przeglądarce. Na Windows zaktualizuj Chrome lub Edge do najnowszej wersji (Chrome wymaga wersji 137 lub nowszej), uruchom przeglądarkę ponownie i otwórz platformę. Jeśli problem pozostaje, przekaż nauczycielowi wersję przeglądarki i systemu. [INPUT_JSPI_UNAVAILABLE]',
+  inputUnavailable: 'Interaktywne input() wymaga WebAssembly JSPI, którego ta przeglądarka nie udostępnia. Zaktualizuj przeglądarkę i otwórz platformę ponownie. JSPI jest dostępne od wersji Firefox 153 oraz Chrome 137 i Edge 137. Jeśli błąd się powtarza, spróbuj w innej z tych przeglądarek i podaj nauczycielowi wersję przeglądarki oraz systemu. [INPUT_JSPI_UNAVAILABLE]',
   inputInitializationFailed: 'Nie udało się uruchomić obsługi interaktywnego input(), mimo że przeglądarka udostępnia WebAssembly JSPI. Odśwież stronę i spróbuj ponownie. Jeśli problem pozostaje, przekaż nauczycielowi ten komunikat oraz wersję przeglądarki i systemu. Szczegóły błędu są w konsoli przeglądarki. [INPUT_INIT_FAILED]',
   'waiting-input': 'Program czeka na dane',
   inputLabel: 'Twoja odpowiedź',
