@@ -1,8 +1,9 @@
 import { Notice } from '../app/ui/Patterns';
 import { Button } from '../app/ui/Button';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { MarkdownInstructions } from '../markdown/MarkdownInstructions';
+import { downloadLessonInstructions, type LessonInstructionsFormat } from './downloadLessonInstructions';
 import { publicationLabels } from './MaterialsPage';
 import { useMaterialEditor } from './useMaterialEditor';
 import './material-authoring.css';
@@ -16,6 +17,19 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
   const { id, title, exercises, selected, status, admin, base, loading, busy, error, notice, dirty, editable } = state;
   const exercise = exercises[selected];
   const textarea = useRef<HTMLTextAreaElement>(null);
+  const [downloading, setDownloading] = useState<LessonInstructionsFormat | null>(null);
+  const [downloadError, setDownloadError] = useState(false);
+  async function downloadInstructions(format: LessonInstructionsFormat) {
+    setDownloading(format);
+    setDownloadError(false);
+    try {
+      await downloadLessonInstructions(title, exercises, format);
+    } catch {
+      setDownloadError(true);
+    } finally {
+      setDownloading(null);
+    }
+  }
   function insert(before: string, after = '') {
     const input = textarea.current;
     if (!input || !exercise) return;
@@ -36,12 +50,19 @@ function MaterialEditor({ lessonId }: { lessonId: string }) {
       <fieldset disabled={busy} className="module-editor-fields authoring-fields"><legend className="sr-only">Edycja lekcji</legend>
         <div className="authoring-topbar">
           <label className="field authoring-lesson-title">Tytuł lekcji<input required maxLength={200} readOnly={!editable} value={title} onChange={event => actions.changeTitle(event.target.value)} /></label>
+          <div className="authoring-actions" role="group" aria-label="Pobieranie instrukcji lekcji">
+            <Button type="button" disabled={downloading !== null || !exercises.length} onClick={() => void downloadInstructions('md')}>Pobierz instrukcje .md</Button>
+            <Button type="button" disabled={downloading !== null || !exercises.length} onClick={() => void downloadInstructions('html')}>
+              {downloading === 'html' ? 'Przygotowywanie HTML…' : 'Pobierz instrukcje .html'}
+            </Button>
+          </div>
           <div className="authoring-actions">
             {editable && <><Button onClick={() => void actions.saveDraft()}>Zapisz szkic</Button><Button variant="primary" onClick={() => void (admin ? actions.approve() : actions.submitForApproval())}>{admin ? 'Zatwierdź i zapisz' : 'Wyślij do zatwierdzenia'}</Button></>}
             {admin && status === 'pending' && <Button onClick={() => void actions.saveDraft()}>Zwróć do poprawy</Button>}
             {!admin && status === 'approved' && <Button onClick={actions.copyToDraft}>Utwórz kopię do edycji</Button>}
           </div>
         </div>
+        {downloadError && <Notice tone="error">Nie udało się pobrać instrukcji. Spróbuj ponownie.</Notice>}
         <div className="authoring-studio">
           <aside className="authoring-outline" aria-label="Ćwiczenia lekcji">
             <h2 className="authoring-section-label">ĆWICZENIA <span>{String(exercises.length).padStart(2, '0')}</span></h2>
